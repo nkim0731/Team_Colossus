@@ -1,19 +1,28 @@
+// Requires
 const { MongoClient, ObjectId } = require('mongodb');
 const express = require('express');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
+
+// Other files interfaces
 const Database = require('./Database.js');
+const { initializeSocketIo } = require('./Messaging.js');
 
 const port = 8081;
 const app = express();
 const server = http.createServer(app);
 // const httpsServer = https.createServer(credentials, app);
 
-const uri = "mongodb://localhost:27017"
-const client = new MongoClient(uri);
+/*
+* API calls and calls to/from frontend go here
+*/
+let db = new Database();
 
-let db = new Database()
+// app.get
 
+// Start server
 server.listen(3000, () => console.log('Server started on port 3000'));
 // httpsServer.listen(port, () => console.log('Server started on port ' + port));
+
+initializeSocketIo(server);
