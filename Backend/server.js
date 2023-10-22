@@ -6,8 +6,8 @@ const https = require('https');
 const fs = require('fs');
 
 // Other files interfaces
-const Database = require('./Database.js');
-const { initializeSocketIo } = require('./Messaging.js');
+const Database = require('./Interfaces/Database.js');
+const { initializeSocketIo } = require('./Interfaces/Messaging.js');
 
 const port = 8081;
 const app = express();
