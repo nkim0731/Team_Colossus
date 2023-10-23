@@ -8,7 +8,14 @@ class Calendar {
     constructor() {
         //
     }
-
+    /*
+    * calendar event representation (temp)
+    * to be stored in user database under user (?)
+    * 
+    * Event name: name
+    * Date: dd/mm/yyyy
+    * Time: hour/min/seconds(?)
+    */
 }
 
 module.exports = Calendar;
