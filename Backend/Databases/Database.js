@@ -10,7 +10,13 @@ const userSchema = new mongoose.Schema({
     },
     events: [mongoose.Schema.Types.Mixed], // Calendar data saved here as events array
 });
-// const UserModel = mongoose.model('User', userSchema);
+const chatSchema = new mongoose.Schema({
+    chatID: Number,
+    messages: [mongoose.Schema.Types.Mixed],
+});
+
+const UserModel = mongoose.model('User', userSchema);
+const ChatModel = mongoose.model('Chat', chatSchema);
 
 class UserDB {
     constructor() {
@@ -21,8 +27,9 @@ class UserDB {
 
     async connect() {
         try {
-            this.db = await mongoose.createConnection('mongodb://localhost:27017/cpen321'); // can probably rename to 'users'
-            this.model = this.db.model('User', userSchema);
+            await mongoose.connect('mongodb://localhost:27017/cpen321');
+            // this.db = await mongoose.createConnection('mongodb://localhost:27017/cpen321'); // can probably rename to 'users'
+            // this.model = this.db.model('User', userSchema);
 
             console.log('Connected to User MongoDB');
         } catch (err) {
@@ -33,8 +40,8 @@ class UserDB {
     // Get data for user by username/email (unique)
     async getUser(username) {
         try {
-            // return await UserModel.findOne({ username: username });
-            return await this.model.findOne({ username: username });
+            return await UserModel.findOne({ username: username });
+            // return await this.model.findOne({ username: username });
         } catch (e) {
             console.log('Error: ' + e);
         }
@@ -48,8 +55,8 @@ class UserDB {
                 preptime: 1,
             };
             user.events = [];
-            // const newUser = new UserModel(user);
-            const newUser = new this.model(user);
+            const newUser = new UserModel(user);
+            // const newUser = new this.model(user);
 
             // UserModel.create(user);
             await newUser.save();
@@ -61,7 +68,7 @@ class UserDB {
     // get calendar events
 	async getCalendar(username) {
 		try {
-			return await this.model.findOne({ username }).select('events');
+			return await UserModel.findOne({ username }).select('events');
 		} catch (e) {
 			console.log('Error: ' + e);
 		}
@@ -71,7 +78,7 @@ class UserDB {
     async addEvents(username, events) {
 		try {
             // TODO check if event already exists before adding
-			await this.model.updateOne(
+			await UserModel.updateOne(
                 { 'username': username },
                 { $push: { events: { $each: events } } }
             );

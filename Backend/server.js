@@ -7,13 +7,12 @@ const fs = require('fs');
 const path = require('path');
 
 // Requires for defined interfaces
-const Database = require('./Interfaces/Database.js');
+// const Database = require('./Interfaces/Database.js');
 const Session = require('./Interfaces/Session.js');
 const Calendar = require('./Interfaces/Calendar.js');
 const { initializeSocketIo } = require('./Interfaces/Messaging.js');
-
-const UserDB = require('./Databases/UserDB.js');
-const MessageDB = require('./Databases/MessageDB.js');
+const db = require('./Databases/Database.js');
+// const MessageDB = require('./Databases/MessageDB.js');
 
 const app = express();
 const server = http.createServer(app);
@@ -36,7 +35,7 @@ app.use('/', express.static(clientApp, { extensions: ['html'] }));
 app.post('/login', async (req, res) => {
     let data = req.body;
     try {
-        let user = await UserDB.getUser(data.username);
+        let user = await db.getUser(data.username);
         // password check logic
         if (user.password === data.password) {
             // proceed to main calendar application
@@ -55,11 +54,11 @@ app.post('/register', async (req, res) => {
     // new account probably also need to input preferences
     let data = req.body; // req.body.username = email if google auth
     try {
-        let checkUser = await UserDB.getUser(data.username);
+        let checkUser = await db.getUser(data.username);
         if (checkUser !== null) {
             res.status(400).json({ message: 'Username/Email already exists' });
         } else {
-            await UserDB.addUser(data);
+            await db.addUser(data);
             res.status(200).json({ message: 'Register successful' });
         }
     } catch (e) {
@@ -72,7 +71,7 @@ app.get('/api/calendar/import', async (req, res) => {
     const token = req.body.token; // users access token from oauth2.0
     try {
         let events = await calendar.importCalendar(token); // import calendar from google with token
-        await UserDB.addEvents(req.body.username, events); // update database with imported events
+        await db.addEvents(req.body.username, events); // update database with imported events
         res.status(200).json({ 'events': events });
     } catch (e) {
         res.status(500).json({ message: e });
