@@ -10,19 +10,17 @@ const userSchema = new mongoose.Schema({
     },
     events: [mongoose.Schema.Types.Mixed], // Calendar data saved here as events array
 });
-
-// Create Mongoose models for User and Calendar
 const UserModel = mongoose.model('User', userSchema);
 
 class UserDB {
     constructor() {
+        this.db = null;
         this.connect();
     }
 
     async connect() {
         try {
-            // Connect to your MongoDB using Mongoose
-            await mongoose.connect('mongodb://localhost:27017/cpen321'); // can probably rename to 'users'
+            this.db = await mongoose.createConnection('mongodb://localhost:27017/cpen321'); // can probably rename to 'users'
 
             console.log('Connected to User MongoDB');
         } catch (err) {
@@ -67,6 +65,7 @@ class UserDB {
     // add events (array) to calendar
     async addEvents(username, events) {
 		try {
+            // TODO check if event already exists before adding
 			await UserModel.updateOne(
                 { 'username': username },
                 { $push: { events: { $each: events } } }
