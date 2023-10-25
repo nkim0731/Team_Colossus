@@ -6,7 +6,7 @@ const messageSchema = new mongoose.Schema({
     message: String,
     timeStamp: Date,
 });
-const MessageModel = mongoose.model('Message', messageSchema);
+// const MessageModel = mongoose.model('Message', messageSchema);
 
 class MessageDB {
     constructor() {
@@ -17,6 +17,7 @@ class MessageDB {
     async connect() {
         try {
             this.db = await mongoose.createConnection('mongodb://localhost:27017/messages');
+            this.model = this.db.model('Message', messageSchema);
 
             console.log('Connected to Messages MongoDB');
         } catch (err) {
