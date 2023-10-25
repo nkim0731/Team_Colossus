@@ -15,7 +15,6 @@ const { initializeSocketIo } = require('./Interfaces/Messaging.js');
 const UserDB = require('./Databases/UserDB.js');
 const MessageDB = require('./Databases/MessageDB.js');
 
-const port = 8081;
 const app = express();
 const server = http.createServer(app);
 // const httpsServer = https.createServer(credentials, app);
@@ -81,7 +80,10 @@ app.get('/api/calendar/import', async (req, res) => {
 })
 
 // Start server
-server.listen(3000, () => console.log('Server started on port 3000'));
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
 // httpsServer.listen(port, () => console.log('Server started on port ' + port));
 
 initializeSocketIo(server);
