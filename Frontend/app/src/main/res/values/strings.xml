@@ -3,4 +3,6 @@
     <string name="head_text">Calendo</string>
     <string name="signIn_btn">sign in</string>
     <string name="signUp_btn">sign up</string>
+    <string name="button_chat">chat</string>
+    <string name="button_send">send</string>
 </resources>
