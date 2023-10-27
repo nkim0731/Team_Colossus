@@ -2,7 +2,7 @@ const axios = require('axios');
 const { Client } = require("@googlemaps/google-maps-services-js");
 const { apikeys } = require('googleapis/build/src/apis/apikeys');
 
-const apiKey = 'AIzaSyBBgmPm8MDBVlpuZVBa9SLlTdi0kmbiqU0';
+//const apiKey = '';
 
 class Scheduler {
     constructor() {
