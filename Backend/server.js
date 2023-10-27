@@ -1,27 +1,28 @@
 // Requires
-const { MongoClient, ObjectId } = require('mongodb');
 const express = require('express');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
+const socketIO = require('socket.io');
 
 // Requires for defined interfaces
-// const Database = require('./Interfaces/Database.js');
 const Session = require('./Interfaces/Session.js');
 const Calendar = require('./Interfaces/Calendar.js');
-const { initializeSocketIo } = require('./Interfaces/Messaging.js');
+const Scheduler = require('./Interfaces/Scheduler.js');
+
+const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
-// const MessageDB = require('./Databases/MessageDB.js');
 
 const app = express();
 const server = http.createServer(app);
 // const httpsServer = https.createServer(credentials, app);
 
+const chatManager = new ChatManager(server); // start socketio service for groupchats
+
 /*
 * API calls and calls to/from frontend go here
 */
-// let db = new Database();
 let login = new Session();
 let calendar = new Calendar();
 
@@ -66,7 +67,9 @@ app.post('/register', async (req, res) => {
     }
 })
 
-// import calendar and update calendar database
+/*
+* Calendar API calls
+*/
 app.get('/api/calendar/import', async (req, res) => {
     const token = req.body.token; // users access token from oauth2.0
     try {
@@ -78,11 +81,29 @@ app.get('/api/calendar/import', async (req, res) => {
     }
 })
 
+/*
+* Group chats API calls
+*/
+app.get('/api/message_history', async (req, res) => {
+    const chatID = req.query.chatID; // ?chatID=x 
+    try {
+        const messages = await db.getMessages(chatID);
+        res.status(200).send(messages);
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+});
+
+app.get('/api/chatrooms', async (req, res) => {
+    try {
+        const rooms = await db.getRooms();
+        res.status(200).json({ rooms: rooms });
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+})
+
 // Start server
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+server.listen(port, () => console.log('Server started on port 3000'));
 // httpsServer.listen(port, () => console.log('Server started on port ' + port));
-
-initializeSocketIo(server);

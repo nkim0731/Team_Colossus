@@ -2,24 +2,24 @@
 * Socket logic interface for Group Chats or anything else if need
 */
 const socketIo = require('socket.io');
+const db = require('../Databases/Database.js');
 
-const chatrooms = {}; // courses
-
-module.exports = {
-    initializeSocketIo: (server) => {
+class ChatManager {
+    constructor(server) {
+        this.initSocketIo(server);
+    }
+    
+    initSocketIo(server) {
         const io = socketIo(server);
-        
-        // a collection in messages db for a socket io room for a group chat
-        // could also be a messages collection with and array of objects represnting a message
+
         io.on('connection', (socket) => {
             console.log('A user connected');
-    
+
             socket.on('joinChatroom', (chatroomId) => {
-                // Create or join the chatroom
+                // create/join the chatroom
                 socket.join(chatroomId);
-          
-                // Store the user and chatroom association
                 socket.chatroomId = chatroomId;
+                // console.log(`joined chatroom ${chatroomId}`)
             });
 
             socket.on('leaveChatroom', () => {
@@ -29,9 +29,15 @@ module.exports = {
                 }
             });
 
-            socket.on('sendMessage', (message) => {
+            socket.on('sendMessage', (message, sender) => { // message string and username
                 if (socket.chatroomId) {
-                    io.to(socket.chatroomId).emit('message', message); // broadcast message
+                    let messageObj = {
+                        sender: sender,
+                        message: message,
+                        timestamp: new Date(),
+                    }
+                    io.to(socket.chatroomId).emit('message', messageObj); // broadcast message to chatroom
+                    db.addMessage(socket.chatroomId, messageObj); // store message in database
                 }
             });
 
@@ -42,5 +48,7 @@ module.exports = {
                 }
             });
         });
-    },
-};
+    }
+}
+
+module.exports = ChatManager;

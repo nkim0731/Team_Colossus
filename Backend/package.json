@@ -19,6 +19,7 @@
     "https": "^1.0.0",
     "mongodb": "^6.1.0",
     "mongoose": "^7.6.3",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2"
   }
 }
