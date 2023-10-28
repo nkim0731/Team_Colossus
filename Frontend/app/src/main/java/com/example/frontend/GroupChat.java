@@ -10,14 +10,20 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MediaType;
@@ -29,13 +35,17 @@ import okhttp3.Response;
 public class GroupChat extends AppCompatActivity {
 
     private Button sendButton;
+
+    private Socket mSocket;
+    private Emitter.Listener onMessage;
     private EditText messageEditText;
 
     private RecyclerView messageRecyclerView;
-
-    private List<Message> messages;
+    private MessageAdapter messageAdapter;
+    private List<Message> messages; //record the messages of chat room
 
     private String server_url;
+    final  static String TAG = "GroupChat";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,12 +53,19 @@ public class GroupChat extends AppCompatActivity {
 
         //initialize server url
         server_url = "http://10.0.2.2:3000";
+
+        //set up socket connection to server
+        createSocket();
+
+
         //initialize messages list
+//        getChatHistory(8);           currently initialized as empty list , will change it later to fetch from database
         messages = new ArrayList<>();
+
         //initialize recycler view
         messageRecyclerView = findViewById(R.id.recyclerView);
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        MessageAdapter messageAdapter = new MessageAdapter(messages); // 'messages' is a list of message objects
+        messageAdapter = new MessageAdapter(messages); // 'messages' is a list of message objects
         messageRecyclerView.setAdapter(messageAdapter);
 
 
@@ -68,18 +85,93 @@ public class GroupChat extends AppCompatActivity {
 
                 String user = "User1"; // dummy user. Will change it later
                 Message msg = new Message(messageText, user);
-                try {
-                    postRequest(msg);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
-                }
+
                 messages.add(msg);
                 messageRecyclerView.scrollToPosition(messages.size() - 1);
                 messageAdapter.notifyDataSetChanged();
                 messageEditText.setText(""); // Clear the message input field
+
+                //upload to database
+                try {
+                    postRequest(msg);
+                } catch (JSONException e) {
+//                    Toast.makeText(GroupChat.this,"Not JSON object", Toast.LENGTH_SHORT).show();
+                    throw new RuntimeException(e);
+                }
             }
         });
 
+    }
+
+
+    //create socket and connect it to server
+    private void createSocket(){
+        try{
+            mSocket = IO.socket(server_url);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
+
+        onMessage = new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String newText = args[0].toString();
+                        String newSender = args[1].toString();
+                        Message msg = new Message(newText,newSender);
+                        messages.add(msg);
+                        messageRecyclerView.scrollToPosition(messages.size() - 1);
+                        messageAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+        };
+        mSocket.on("message",onMessage);
+
+    }
+
+    //get previous messages of the room
+    private void getChatHistory(int chatID){
+        OkHttpClient client = new OkHttpClient();
+        String url = String.format("%s/api/message_history/?chatID=%s", server_url, chatID);
+//        Log.d(TAG,url);
+        Request request = new Request.Builder()
+                .url(server_url)
+                .get()
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.d(TAG,"request err");
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if(response.isSuccessful()){
+                    Log.d("GroupChat","response success");
+                    String responseData = response.body().string();
+                    try {
+                        JSONObject jsonObject = new JSONObject(responseData);
+                        JSONArray messageArray = jsonObject.getJSONArray("message");
+
+                        for (int i = 0; i < messageArray.length(); i++){
+                            String msg = messageArray.getString(i);
+                            //add msg to message list (tbd)
+                        }
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                    //messages = responseData  set message list
+                    Log.d(TAG,responseData);
+                }else{
+                    Log.d(TAG,"response fail");
+                }
+            }
+        });
     }
 
     //Send post request to server
@@ -103,7 +195,7 @@ public class GroupChat extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.d("GroupChat","request err");
+                Log.d(TAG,"request err");
                 e.printStackTrace();
             }
 
@@ -112,9 +204,9 @@ public class GroupChat extends AppCompatActivity {
                 if(response.isSuccessful()){
                     Log.d("GroupChat","response success");
                     String responseData = response.body().string();
-                    Log.d("GroupChat",responseData);
+                    Log.d(TAG,responseData);
                 }else{
-                    Log.d("GroupChat","response fail");
+                    Log.d(TAG,"response fail");
                 }
             }
         });
