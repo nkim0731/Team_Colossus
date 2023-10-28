@@ -11,13 +11,8 @@ const userSchema = new mongoose.Schema({
     events: [mongoose.Schema.Types.Mixed], // Calendar data saved here as events array
 });
 const chatSchema = new mongoose.Schema({
-    chatID: Number,
-    chatName: String,
-    messages: [{
-        sender: String,
-        message: String,
-        timestamp: Date,
-    },],
+    chatName: String, // each chat name should be unique (?)
+    messages: [mongoose.Schema.Types.Mixed],
 });
 // models to interact with database collections
 const UserModel = mongoose.model('User', userSchema);
@@ -95,9 +90,20 @@ class Database {
     * Message database calls
     */
     // get all messages associated with the chatroom chatID
-    async getMessages(chatID) {
+    async getMessages(chatName) {
         try {
-            return await ChatModel.findOne({ chatID }).select('messages');
+            // const id = mongoose.Types.ObjectId(chatID);
+            return await ChatModel.findOne({ chatName }).select('messages');
+        } catch (e) {
+			console.log('Error: ' + e);
+		}
+    }
+
+    // create room
+    async addRoom(chatName) {
+        try {
+            const newRoom = new ChatModel({ chatName: chatName, messages: [] });
+            await newRoom.save();
         } catch (e) {
 			console.log('Error: ' + e);
 		}
@@ -106,20 +112,22 @@ class Database {
     // get all chatrooms return ID and name
     async getRooms() {
         try {
-            return await ChatModel.find({}, 'chatID chatName');
+            return await ChatModel.find({}, '_id chatName');
         } catch (e) {
 			console.log('Error: ' + e);
 		}
     }
 
     // add a message (object) to chatroom chatID
-    async addMessage(chatID, message) {
+    async addMessage(chatName, message) {
         try {
-            let chatDocument = await ChatModel.findOne({ chatID });
-            if (!chatDocument) {
-                const document = { chatID: chatID, messages: [] };
-                chatDocument = new ChatModel(document);
-            }
+            // const id = mongoose.Types.ObjectId(chatID);
+            let chatDocument = await ChatModel.findOne({ chatName });
+            // this probably should not even happen since user cant open a room if it doesnt exist
+            // if (!chatDocument) {
+            //     const document = { chatName: chatID, messages: [] };
+            //     chatDocument = new ChatModel(document);
+            // }
             chatDocument.messages.unshift(message);
             if (chatDocument.messages.length > maxMessages) {
                 chatDocument.messages.pop();

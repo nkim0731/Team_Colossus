@@ -85,7 +85,8 @@ app.get('/api/calendar/import', async (req, res) => {
 * Group chats API calls
 */
 app.get('/api/message_history', async (req, res) => {
-    const chatID = req.query.chatID; // ?chatID=x 
+    console.log('getting message history')
+    const chatID = req.query.chatName; // ?chatID=x 
     try {
         const messages = await db.getMessages(chatID);
         res.status(200).send(messages);
@@ -180,5 +181,5 @@ Returns:
 
 // Start server
 const port = process.env.PORT || 3000;
-server.listen(port, () => console.log('Server started on port 3000'));
+server.listen(port, '0.0.0.0', () => console.log('Server started on port 3000'));
 // httpsServer.listen(port, () => console.log('Server started on port ' + port));
