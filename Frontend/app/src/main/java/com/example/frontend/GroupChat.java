@@ -55,7 +55,21 @@ public class GroupChat extends AppCompatActivity {
         server_url = "http://10.0.2.2:3000";
 
         //set up socket connection to server
-        createSocket();
+//        createSocket();
+        String chatName = "1"; // TODO update with intent when opening chatroom
+        mSocket = SocketManager.getSocket();
+        mSocket.emit("joinChatroom", chatName);
+
+        // listener for new messages from other users
+        mSocket.on("message", args -> {
+            try {
+                JSONObject messageObj = new JSONObject((String) args[0]);
+                Message m = new Message(messageObj.getString("message"), messageObj.getString("sender"));
+                updateMessages(m);
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+        });
 
 
         //initialize messages list
@@ -103,6 +117,11 @@ public class GroupChat extends AppCompatActivity {
 
     }
 
+    private void updateMessages(Message m) {
+        messages.add(m);
+        messageRecyclerView.scrollToPosition(messages.size() - 1);
+        messageAdapter.notifyDataSetChanged();
+    }
 
     //create socket and connect it to server
     private void createSocket(){

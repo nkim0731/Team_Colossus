@@ -30,7 +30,7 @@
             android:layout_marginStart="24dp"
             android:ems="10"
             android:inputType="text"
-            android:text="hello"
+            android:hint="@string/message_text"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"

@@ -5,6 +5,6 @@
     <string name="signUp_btn">sign up</string>
     <string name="button_chat">chat</string>
     <string name="button_send">send</string>
-    <string name="message_text">hello</string>
+    <string name="message_text">Enter Text Here</string>
     <string name="message_sender">John</string>
 </resources>
