@@ -18,6 +18,14 @@ const db = require('./Databases/Database.js');
 const app = express();
 var isHttps = null;
 // const httpsServer = https.createServer(credentials, app);
+// Load the SSL/TLS certificate and private key
+// const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
+// const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
+// const credentials = { key: privateKey, cert: certificate };
+
+// const server = https.createServer(credentials, app); // Create an HTTPS server
+
+const server = http.createServer(app); // HTTP server for testing 
 
 const chatManager = new ChatManager(server); // start socketio service for groupchats
 
@@ -231,14 +239,6 @@ Description: This module would implement google maps API and handle alarm schedu
 const smartNavigateRouter = require('./Interfaces/smartNavigate');
 app.use('/api/smartNavigate', smartNavigateRouter);
 
-
-// Load the SSL/TLS certificate and private key
-const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
-const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
-const credentials = { key: privateKey, cert: certificate };
-
-const server = https.createServer(credentials, app); // Create an HTTPS server
-
 // Add your other routes and middleware here
 
 app.get('/', (req, res) => {
@@ -261,15 +261,12 @@ if (isHttps) {
     // Start server
     port = process.env.PORT || 3000;
 
-    const serverApp = app.listen(port, () => {
-        const host = "localhost"
-        const port = serverApp.address().port;
+    server.listen(port, '0.0.0.0', () => console.log('Server started on port 3000')); // needs to be server.listen or sockets stop working
 
-        console.log(`Server is running on http://${host}:${port}`);
-    });
+    // const serverApp = app.listen(port, () => {
+    //     const host = "localhost"
+    //     const port = serverApp.address().port;
+
+    //     console.log(`Server is running on http://${host}:${port}`);
+    // });
 }
-
-
-
-
-// httpsServer.listen(port, () => console.log('Server started on port ' + port));
