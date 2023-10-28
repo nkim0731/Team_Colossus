@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
@@ -11,9 +12,12 @@ router.get('/:username/preferences', async (req, res) => {
     const username = req.params.username;
     const user = await User.findOne({ username });
 
-    if (!user) {
+    console.log('user.preferences : ', user.preferences);
+    console.log('user.preferences.params : ', user.preferences.params);
+    if (!user.preferences === undefined) {
       return res.status(404).json({ error: 'User not found' });
     }
+    
 
     const preferences = user.preferences; // Use the preferences object from the schema
 
@@ -31,8 +35,8 @@ router.post('/:username/preferences', async (req, res) => {
     const username = req.params.username;
     const user = await User.findOne({ username });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    if (user) {
+        return res.status(500).json({ error: 'user already exists, try PUT to update exisiting user' });
     }
 
     // Define the validation schema using Joi
@@ -62,7 +66,7 @@ router.post('/:username/preferences', async (req, res) => {
     }
 
     // Update user preferences based on the request body
-    user.preferences = validate_result.value.preferences; // Assign the preferences object from the request
+    user.preferences = validate_result.value; // Assign the preferences object from the request
 
     const updatedUser = await user.save();
 
@@ -110,7 +114,7 @@ router.delete('/:username/preferences', async (req, res) => {
     }
 
     // Clear user preferences
-    user.preferences = {};
+    user.preferences = null;
 
     const updatedUser = await user.save();
 

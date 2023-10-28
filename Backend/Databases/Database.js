@@ -18,6 +18,7 @@ isTest = true;
 
 var mongoURI = null;
 if (isTest) {
+    // This URL should be the same as the db connection created in the server.js
     mongoURI = 'mongodb://localhost:27017/test_calendoDB';
 } else {
     // For actual project deployment
@@ -70,8 +71,7 @@ class Database {
         try {
             if (user.preferences == null) {
                 user.preferences = {
-                    commute_method: "bus",
-                    traffic_alerts: true,
+                    commute_method: null
                 };
             }
             if (user.events == null) {
