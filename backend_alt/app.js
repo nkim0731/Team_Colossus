@@ -5,9 +5,9 @@ const express = require('express');
 const app = express();
 
 var isTest = true;
-module.exports = isTest;
+exports.isTest = isTest;
 
-mongoURI = null
+var mongoURI = null
 if (isTest) {
   mongoURI = 'mongodb://localhost:27017/test_calendoDB';
 } else {

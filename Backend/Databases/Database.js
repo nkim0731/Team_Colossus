@@ -1,24 +1,29 @@
 const mongoose = require('mongoose');
 
-// Schemas for user db collections
-const userSchema = new mongoose.Schema({
-    username: String,
-    password: String,
-    preferences: {
-        mode: String,
-        preptime: Number,
-    },
-    events: [mongoose.Schema.Types.Mixed], // Calendar data saved here as events array
-});
-const chatSchema = new mongoose.Schema({
-    chatName: String, // each chat name should be unique (?)
-    messages: [mongoose.Schema.Types.Mixed],
-});
+// Schemas needed for db
+const userSchema = require('../Schema/userSchema');
+const chatSchema = require('../Schema/chatSchema');
+const { mongo } = require("mongoose");
+
 // models to interact with database collections
-const UserModel = mongoose.model('User', userSchema);
-const ChatModel = mongoose.model('Chat', chatSchema);
+const UserModel = mongoose.model('user', userSchema);
+const ChatModel = mongoose.model('chat', chatSchema);
 
 const maxMessages = 5; // set diff value for actual, low value for testing
+
+//isTest switch from main file
+var isTest = true;
+isTest = require('../server.js').isTest;
+isTest = true;
+
+var mongoURI = null;
+if (isTest) {
+    // This URL should be the same as the db connection created in the server.js
+    mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+} else {
+    // For actual project deployment
+    mongoURI = 'mongodb://localhost:27017/calendoDB';
+}
 
 class Database {
     constructor() {
@@ -27,34 +32,57 @@ class Database {
 
     async connect() {
         try {
-            await mongoose.connect('mongodb://localhost:27017/cpen321');
+            console.log('mongoURL : ', mongoURI);
+            await mongoose.connect(mongoURI);
             console.log('Connected to User MongoDB');
         } catch (err) {
             console.error('MongoDB connection error:', err);
         }
     }
 
+    // // Get data for user by username/email (unique)
+    // async getUser(username) {
+    //     try {
+    //         return await UserModel.findOne({ username: username });
+    //     } catch (e) {
+    //         console.log('Error: ' + e);
+    //     }
+    // }
+
     // Get data for user by username/email (unique)
     async getUser(username) {
         try {
-            return await UserModel.findOne({ username: username });
-        } catch (e) {
-            console.log('Error: ' + e);
+            const user = await UserModel.findOne({ username });
+
+            if (!user) {
+                return false;
+            } else {
+                return user;
+            }
+        } catch (error) {
+            console.error('Error while fetching user:', error);
+            throw error; // Re-throw the error to handle it further up the call stack
         }
     }
+
 
     // Add a user to Users Database
     async addUser(user) {
         try {
-            user.preferences = {
-                mode: "none",
-                preptime: 1,
-            };
-            user.events = [];
+            if (user.preferences == null) {
+                user.preferences = {
+                    commute_method: null
+                };
+            }
+            if (user.events == null) {
+                user.events = [];
+            }
+            console.log('user before mongodb add : ', user);
             const newUser = new UserModel(user);
-            await newUser.save();
+            let result = await newUser.save();
+            return result;
         } catch (e) {
-            console.log('Error: ' + e);
+            console.log('addUser error -> ' + e);
         }
     }
 

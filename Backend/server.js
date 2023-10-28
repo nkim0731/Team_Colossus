@@ -5,6 +5,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const socketIO = require('socket.io');
+const mongoose = require('mongoose');
 
 // Requires for defined interfaces
 const Session = require('./Interfaces/Session.js');
@@ -15,7 +16,7 @@ const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
 
 const app = express();
-const server = http.createServer(app);
+var isHttps = null;
 // const httpsServer = https.createServer(credentials, app);
 
 const chatManager = new ChatManager(server); // start socketio service for groupchats
@@ -31,6 +32,34 @@ const clientApp = path.join(__dirname, 'Client');
 app.use(express.json())
 app.use('/', express.static(clientApp, { extensions: ['html'] }));
 // --------------------------------------
+
+
+
+
+//Universal mongoDB instantiation and other help code (used by So)
+var isTest = true;
+exports.isTest = isTest;
+
+var mongoURI = null
+if (isTest) {
+  mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+} else {
+  // For actual project deployment
+  mongoURI = 'mongodb://localhost:27017/calendoDB';
+}
+
+// Create connection for calendoDB
+// This URL should be the same as the db connection created in the Database.js
+const testDB = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Store data in app.locals
+app.locals.mongoDB = testDB;
+
+
+app.get('/', async (req, res) => {
+    res.send('Hello, World');
+});
+
 
 // login check for user
 app.post('/login', async (req, res) => {
@@ -54,13 +83,18 @@ app.post('/login', async (req, res) => {
 app.post('/register', async (req, res) => {
     // new account probably also need to input preferences
     let data = req.body; // req.body.username = email if google auth
+    // if (isTest) {console.log('req.body : ', req.body);}
+    // if (isTest) {console.log('data.username : ', data.username);}
+
     try {
         let checkUser = await db.getUser(data.username);
-        if (checkUser !== null) {
+        if (checkUser !== false) {
             res.status(400).json({ message: 'Username/Email already exists' });
+            console.log(checkUser);
         } else {
-            await db.addUser(data);
-            res.status(200).json({ message: 'Register successful' });
+            console.log('/register : adding a new user');
+            result = await db.addUser(data);
+            res.status(200).json(result);
         }
     } catch (e) {
         res.status(500).json({ message: e });
@@ -113,14 +147,15 @@ GET /api/users/:email/preferences
 Description : allows the frontend to manage the preferences data of the user. (we shouldnt put email in the URL, so we can use user ID instead)
 Return : returns json with fields
     "user_email": "CPEN321@gmail.com",
+    - This identifies the user
 
-    "default_commute_method": ["bus", "car"],
+    "commute_method": ["bus", "car"],
     - options are only bus, car, and bicycle, user can choose one or more
 
-    "default_traffic_alerts": true,
+    "traffic_alerts": true,
     - If the user choses bus and car, this would give them notification about the traffic with/without alarm
 
-    "default_preparation_time": "30 minutes",
+    "preparation_time": "30 minutes",
 
     "notification_preferences": {
         "morning_alarm": true,
@@ -146,6 +181,10 @@ Return : returns json with fields
     "vibration_alert": true
     - option for vibration for alarm and notification
 */
+
+// Use the API routes from User.js
+const userRoutes = require('./Interfaces/User'); // Replace with your actual path
+app.use('/api/users', userRoutes);
 
 
 /*
@@ -179,7 +218,44 @@ Returns:
 
 */
 
-// Start server
-const port = process.env.PORT || 3000;
-server.listen(port, '0.0.0.0', () => console.log('Server started on port 3000'));
+// Load the SSL/TLS certificate and private key
+const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
+const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
+const credentials = { key: privateKey, cert: certificate };
+
+const server = https.createServer(credentials, app); // Create an HTTPS server
+
+// Add your other routes and middleware here
+
+app.get('/', (req, res) => {
+  res.send('Hello, Welcome to Calendo!');
+});
+
+
+var port = null;
+if (isHttps) {
+    port = 443; // Standard HTTPS port
+    
+    server.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
+      const host = "20.64.250.110"
+      const port = serverApp.address().port;
+
+      console.log(`Server is running on https://${host}:${port}`);
+    });
+} else {
+    // Start server
+    port = process.env.PORT || 3000;
+
+    const serverApp = app.listen(port, () => {
+        const host = "localhost"
+        const port = serverApp.address().port;
+
+        console.log(`Server is running on http://${host}:${port}`);
+    });
+}
+
+
+
+
 // httpsServer.listen(port, () => console.log('Server started on port ' + port));
