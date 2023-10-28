@@ -217,6 +217,20 @@ Returns:
 
 */
 
+
+/*
+Smart Navigation system
+Description: This module would implement google maps API and handle alarm schedules for each event. It needs to have following features
+1) ask the user what transit is preferred for the every first even in the upcoming week after importing the google calendar data.
+2) ask the user what mode of transportation would be used for getting inbetween every other event in a upcoming week.
+3) Optimize API calls to google maps or other external API services when calculating transit time, nevigation, and routes
+4) Store and cache the past history of all google maps API calls, past history of time taken for getting ready in the morning, and GPS_location travel data to create a smart navigation time prediction.
+*/
+// Use the smart navigation router
+const smartNavigateRouter = require('./Interfaces/smartNavigate');
+app.use('/api/smartNavigate', smartNavigateRouter);
+
+
 // Load the SSL/TLS certificate and private key
 const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
 const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
