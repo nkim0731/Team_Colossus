@@ -16,14 +16,17 @@ const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
 
 const app = express();
-var isHttps = null;
-// const httpsServer = https.createServer(credentials, app);
-// Load the SSL/TLS certificate and private key
-// const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
-// const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
-// const credentials = { key: privateKey, cert: certificate };
+var isHttps = false;
 
-// const server = https.createServer(credentials, app); // Create an HTTPS server
+if (isHttps) {
+
+    // Load the SSL/TLS certificate and private key
+    const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
+    const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
+    const credentials = { key: privateKey, cert: certificate };
+
+    const httpsServer = https.createServer(credentials, app);
+}
 
 const server = http.createServer(app); // HTTP server for testing 
 
@@ -235,6 +238,7 @@ Description: This module would implement google maps API and handle alarm schedu
 3) Optimize API calls to google maps or other external API services when calculating transit time, nevigation, and routes
 4) Store and cache the past history of all google maps API calls, past history of time taken for getting ready in the morning, and GPS_location travel data to create a smart navigation time prediction.
 */
+
 // Use the smart navigation router
 const smartNavigateRouter = require('./Interfaces/smartNavigate');
 app.use('/api/smartNavigate', smartNavigateRouter);
