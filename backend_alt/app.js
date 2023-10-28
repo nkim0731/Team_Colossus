@@ -106,7 +106,6 @@ dbEvent1
 Here we import routes modules for user and calendar
 */
 const userRoutes = require('./routes/user'); // Replace with your actual path
-console.log('passing db to userRoutes()')
 app.use('/api/users', userRoutes);
 //const calendarRoutes = require('./routes/calendar'); // Replace with your actual path
 

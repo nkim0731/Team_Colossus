@@ -103,6 +103,81 @@ app.get('/api/chatrooms', async (req, res) => {
     }
 })
 
+
+
+/*
+User preferences
+
+GET /api/users/:email/preferences
+Description : allows the frontend to manage the preferences data of the user. (we shouldnt put email in the URL, so we can use user ID instead)
+Return : returns json with fields
+    "user_email": "CPEN321@gmail.com",
+
+    "default_commute_method": ["bus", "car"],
+    - options are only bus, car, and bicycle, user can choose one or more
+
+    "default_traffic_alerts": true,
+    - If the user choses bus and car, this would give them notification about the traffic with/without alarm
+
+    "default_preparation_time": "30 minutes",
+
+    "notification_preferences": {
+        "morning_alarm": true,
+        - alarm for the first event in calendar in the morning until 12PM, if there is only an event in the evening, it will not alarm
+        "event_alarm": true,
+        - If this is off, we will not use adaptive alarm system
+        "event_notification": true,
+        - this is for notification that will be deployed prior to the event such that user arrive to the event on time
+        "traffic_alerts": true,
+        "weather_alerts": true
+        - This will let user know of delays and the condition of the weather for all the day, like if its rainy need an umbrella etc
+    },
+    - 
+
+    "maxMissedBus" : "1",
+    - default number of buses that can be missed, and still arrive destination on time, if the user sets an event as important, then this will be increased by 1
+
+    "home_location": "123 Main St, Your City",
+    "school_location": "4566 Main Mall, Vancouver",
+    "work_location": "456 Business Ave, Your City",
+    "snooze_duration": "10 minutes",
+    - We do this for users who cannot wake up to a single alarm,
+    "vibration_alert": true
+    - option for vibration for alarm and notification
+*/
+
+
+/*
+Adaptive Alarm system related API calls
+
+POST /api/users/:email/adalarm/trigger
+Description: this returns boolean to let the app know if we should trigger alarm or not
+Input: 
+    "GPS_location": [
+        "latitude": 37.7749, // The latitude of the user's current location
+        "longitude": -122.4194 // The longitude of the user's current location
+    ]   
+    "noise_level": 5
+    - measure noise level from the audio from level 1 to 10
+    "phone_in_use": true,
+Returns: 
+    "trigger": true
+    "feedback_ID": 1234
+    - if the backend thinks its suitable for alarm, trigger alarm
+
+
+PUT /api/users/:email/adalarm/trigger
+Description: this returns boolean to let the app know if we should trigger alarm or not
+Input: 
+    "feedback_ID" : 1234
+    - this links to the return of POST request of the trigger, use the same ID so that backend can learn if it was a good decision or not
+    "feedback": true
+    - true or false, false means user disliked the alarm
+Returns: 
+    "sucess": feedback successfully registered.
+
+*/
+
 // Start server
 const port = process.env.PORT || 3000;
 server.listen(port, () => console.log('Server started on port 3000'));
