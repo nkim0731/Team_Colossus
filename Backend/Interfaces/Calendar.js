@@ -24,38 +24,38 @@ const eventSchema = new mongoose.Schema({
         minlength: 3
     },
     eventType: {
-      type: String
+        type: String
     },
     description: {
-      type: String
+        type: String
     },
     start: {
-      dateTime: {
+        dateTime: {
         type: Date,
         required: true
-      },
-      timeZone: {
+        },
+        timeZone: {
         type: String,
         required: true
-      }
+        }
     },
     end: {
-      dateTime: {
+        dateTime: {
         type: Date,
         required: true
-      },
-      timeZone: {
+        },
+        timeZone: {
         type: String,
         required: true
-      }
+        }
     },
     address: {
         type: String
     },
     gpsLocation: {
-      type: String
+        type: String
     }
-  });
+});
 
 class Calendar {
     #apiKey = 'key'; // private google maps api key goes here
