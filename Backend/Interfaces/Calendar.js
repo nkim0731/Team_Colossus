@@ -11,56 +11,19 @@ const apiKey = process.env.MAPS_API_KEY;
 
 // Schema and Model for event
 const eventSchema = new mongoose.Schema({
-    calendarId: {
-        type: String,
-        required: true,
-        minlength: 3
-    },
-    eventId: {
-        type: String,
-        required: true,
-        minlength: 3
-    },
-    ownerUserId: {
-        type: String,
-        required: true,
-        minlength: 3
-    },
-    eventType: {
-      type: String
-    },
-    description: {
-      type: String
-    },
-    start: {
-      dateTime: {
-        type: Date,
-        required: true
-      },
-      timeZone: {
-        type: String,
-        required: true
-      }
-    },
-    end: {
-      dateTime: {
-        type: Date,
-        required: true
-      },
-      timeZone: {
-        type: String,
-        required: true
-      }
-    },
-    address: {
-        type: String
-    },
-    gpsLocation: {
-      type: String
-    }
-  });
+    calendarId: String,
+    eventId: String,
+    ownerUserId: String, // don't think we need since events are stored under a user
+    eventType: String,
+    description: String,
+    start: Date,
+    end: Date,
+    hasChat: Boolean, // true if its a course, false otherwise
+    address: String,
+    gpsLocation: String,
+})
 
-  class Calendar {  
+class Calendar {  
     constructor() {
         this.client = new Client({});
     }

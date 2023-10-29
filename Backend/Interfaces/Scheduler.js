@@ -3,7 +3,6 @@ const { Client } = require("@googlemaps/google-maps-services-js");
 const { apikeys } = require('googleapis/build/src/apis/apikeys');
 
 // const apiKey = process.env.MAPS_API_KEY;
-const apiKey = 'AIzaSyBBgmPm8MDBVlpuZVBa9SLlTdi0kmbiqU0';
 
 class Scheduler {
     constructor() {
