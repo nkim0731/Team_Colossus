@@ -60,7 +60,7 @@ const eventSchema = new mongoose.Schema({
     }
 });
 
-  class Calendar {  
+class Calendar {  
     constructor() {
         this.client = new Client({});
     }
