@@ -1,9 +1,73 @@
 /*
 * Calendar algorithims and computation go here
 */
+const mongoose = require('mongoose');
 const { google } = require('googleapis');
 const { Client } = require("@googlemaps/google-maps-services-js");
 const OAuth2 = google.auth.OAuth2;
+
+// Schema and Model for event
+const eventSchema = new mongoose.Schema({
+    calendarId: {
+      type: String,
+      required: true,
+      minlength: 3
+    },
+    eventId: {
+      type: String,
+      required: true,
+      minlength: 3
+    },
+    organizer: {
+      email: {
+        type: String,
+        required: true,
+        validate: {
+          validator: (value) => {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); // Check if it's a valid email
+          },
+          message: 'Invalid email format'
+        }
+      },
+      displayName: {
+        type: String
+      }
+    },
+    ownerUserId: {
+      type: String,
+      required: true,
+      minlength: 3
+    },
+    summary: {
+      type: String
+    },
+    description: {
+      type: String
+    },
+    start: {
+      dateTime: {
+        type: Date,
+        required: true
+      },
+      timeZone: {
+        type: String,
+        required: true
+      }
+    },
+    end: {
+      dateTime: {
+        type: Date,
+        required: true
+      },
+      timeZone: {
+        type: String,
+        required: true
+      }
+    },
+    location: {
+      type: String
+    }
+  });
 
 class Calendar {
     #apiKey = 'key'; // private google maps api key goes here
