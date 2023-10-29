@@ -25,7 +25,7 @@ function Session() {
 		return list;
 	}
 
-	this.createSession = (response, username, id, gold, maxAge = CookieMaxAgeMs) => {
+	this.createSession = (response, username, maxAge = CookieMaxAgeMs) => {
         let token = crypto.randomBytes(20).toString('base64url')
         sessions[token] = { 
 			"username": username,

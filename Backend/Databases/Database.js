@@ -21,7 +21,6 @@ if (isTest) {
     // This URL should be the same as the db connection created in the server.js
     // mongoURI = 'mongodb://localhost:27017/test_calendoDB';
     mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
-    //mongoURI = 'mongodb://localhost:27017/test_calendoDB';
 } else {
     // For actual project deployment
     mongoURI = 'mongodb://localhost:27017/calendoDB';
@@ -88,6 +87,10 @@ class Database {
         }
     }
 
+    /*
+    * Calendar Database calls
+    */
+
     // get calendar events
 	async getCalendar(username) {
 		try {
@@ -100,19 +103,16 @@ class Database {
     // add events (array) to calendar
     async addEvents(username, events) {
 		try {
-            // TODO check if event already exists before adding
-            // const userEvents = await UserModel.findOne({ username }).select('events');
-            // for (let e of events) {
-            //     if (userEvents.includes(e)) {
-            //         events.remove(e);
-            //     }
-            // }
+            const userEvents = await UserModel.findOne({ username }).select('events');
+            const newEvents = events.filter(e => { !userEvents.events.includes(e) }); // remove existing events
+
 			await UserModel.updateOne(
                 { 'username': username },
-                { $push: { events: { $each: events } } }
+                { $push: { events: { $each: newEvents } } }
             );
 		} catch (e) {
 			console.log('Error: ' + e);
+            throw e;
 		}
 	}
 

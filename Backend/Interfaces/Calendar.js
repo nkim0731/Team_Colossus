@@ -2,9 +2,12 @@
 * Calendar algorithims and computation go here
 */
 const mongoose = require('mongoose');
+const db = require('../Databases/Database.js');
 const { google } = require('googleapis');
 const { Client } = require("@googlemaps/google-maps-services-js");
 const OAuth2 = google.auth.OAuth2;
+
+const apiKey = process.env.MAPS_API_KEY;
 
 // Schema and Model for event
 const eventSchema = new mongoose.Schema({
@@ -57,9 +60,7 @@ const eventSchema = new mongoose.Schema({
     }
   });
 
-class Calendar {
-    #apiKey = 'key'; // private google maps api key goes here
-    
+  class Calendar {  
     constructor() {
         this.client = new Client({});
     }

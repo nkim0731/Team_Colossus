@@ -115,16 +115,40 @@ app.post('/register', async (req, res) => {
 /*
 * Calendar API calls
 */
-app.get('/api/calendar/import', async (req, res) => {
-    const token = req.body.token; // users access token from oauth2.0
+
+// import events to calendar array using oauth2.0 token
+app.post('/api/calendar/import', async (req, res) => {
+    const data = req.body; // oauth2.0 token, username
     try {
-        let events = await calendar.importCalendar(token); // import calendar from google with token
-        await db.addEvents(req.body.username, events); // update database with imported events
-        res.status(200).json({ 'events': events });
+        let events = await calendar.importCalendar(data.token);
+        await db.addEvents(data.username, events); // update database with imported events
+        events = await db.getCalendar(data.username);
+        res.status(200).json({ 'events': events }); // send updated events to reload frontend
     } catch (e) {
         res.status(500).json({ message: e });
     }
 })
+
+// get / add events to calendar
+app.route('/api/calendar')
+.get(async (req, res) => { // /api/calendar?user=username (or some sort of id, stored as session in frontend)
+    const user = req.query.user; // or can use login.getUser(login.parseCookies(req)['cpen321-session'])
+    try {
+        const events = await db.getCalendar(user);
+        res.status(200).json({ 'events': events }); // send events array
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+})
+.post(async (req, res) => {
+    const data = req.body;
+    try {
+        await db.addEvents(data.username, data.events);
+        res.status(200).json({ message: 'Events add successful' });
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+});
 
 /*
 * Group chats API calls
