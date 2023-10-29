@@ -12,18 +12,37 @@ import java.util.List;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Message> messages; // List of messages
-
+    private static final int VIEW_SENDER = 1;
+    private static final int VIEW_RECEIVER = 2;
     public MessageAdapter(List<Message> messages) {
         this.messages = messages;
     }
 
+
+    @Override
+    public int getItemViewType(int position){
+        Message message = messages.get(position);
+        if(message.getIsSend()){
+            return VIEW_SENDER;
+        }else{
+            return VIEW_RECEIVER;
+        }
+
+    }
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // Inflate the message layout
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_item, parent, false);
+        View view;
+        if(viewType == VIEW_SENDER){
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_send, parent, false);
+        }else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.message_receive, parent, false);
+        }
         return new MessageViewHolder(view);
+
     }
+
 
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
@@ -36,6 +55,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     public int getItemCount() {
         return messages.size();
     }
+
+
 
     public class MessageViewHolder extends RecyclerView.ViewHolder {
         private TextView messageText;

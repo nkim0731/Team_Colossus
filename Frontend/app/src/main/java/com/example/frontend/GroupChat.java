@@ -64,7 +64,7 @@ public class GroupChat extends AppCompatActivity {
         mSocket.on("message", args -> {
             try {
                 JSONObject messageObj = new JSONObject((String) args[0]);
-                Message m = new Message(messageObj.getString("message"), messageObj.getString("sender"));
+                Message m = new Message(messageObj.getString("message"), messageObj.getString("sender"),false);
                 updateMessages(m);
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -98,7 +98,7 @@ public class GroupChat extends AppCompatActivity {
                 // Then, update the RecyclerView to display the new message
 
                 String user = "User1"; // dummy user. Will change it later
-                Message msg = new Message(messageText, user);
+                Message msg = new Message(messageText, user,true);
 
                 messages.add(msg);
                 messageRecyclerView.scrollToPosition(messages.size() - 1);
@@ -139,7 +139,7 @@ public class GroupChat extends AppCompatActivity {
                     public void run() {
                         String newText = args[0].toString();
                         String newSender = args[1].toString();
-                        Message msg = new Message(newText,newSender);
+                        Message msg = new Message(newText,newSender,false);
                         messages.add(msg);
                         messageRecyclerView.scrollToPosition(messages.size() - 1);
                         messageAdapter.notifyDataSetChanged();
