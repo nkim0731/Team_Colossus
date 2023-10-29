@@ -9,36 +9,21 @@ const OAuth2 = google.auth.OAuth2;
 // Schema and Model for event
 const eventSchema = new mongoose.Schema({
     calendarId: {
-      type: String,
-      required: true,
-      minlength: 3
-    },
-    eventId: {
-      type: String,
-      required: true,
-      minlength: 3
-    },
-    organizer: {
-      email: {
         type: String,
         required: true,
-        validate: {
-          validator: (value) => {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value); // Check if it's a valid email
-          },
-          message: 'Invalid email format'
-        }
-      },
-      displayName: {
-        type: String
-      }
+        minlength: 3
+    },
+    eventId: {
+        type: String,
+        required: true,
+        minlength: 3
     },
     ownerUserId: {
-      type: String,
-      required: true,
-      minlength: 3
+        type: String,
+        required: true,
+        minlength: 3
     },
-    summary: {
+    eventType: {
       type: String
     },
     description: {
@@ -64,7 +49,10 @@ const eventSchema = new mongoose.Schema({
         required: true
       }
     },
-    location: {
+    address: {
+        type: String
+    },
+    gpsLocation: {
       type: String
     }
   });
