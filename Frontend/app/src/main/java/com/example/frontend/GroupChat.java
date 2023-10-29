@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -73,7 +72,7 @@ public class GroupChat extends AppCompatActivity {
 
 
         //initialize messages list
-//        getChatHistory(8);           currently initialized as empty list , will change it later to fetch from database
+//        getChatHistory(8);           TODO later to fetch from database
         messages = new ArrayList<>();
 
         //initialize recycler view
@@ -105,13 +104,33 @@ public class GroupChat extends AppCompatActivity {
                 messageAdapter.notifyDataSetChanged();
                 messageEditText.setText(""); // Clear the message input field
 
-                //upload to database
+
+                HttpsRequest postClient = new HttpsRequest();
+                //create JSON data
+                MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
+                JSONObject postData = new JSONObject();
                 try {
-                    postRequest(msg);
+                    postData.put("message",msg.getMessageText());
+                    postData.put("sender",msg.getSender());
                 } catch (JSONException e) {
-//                    Toast.makeText(GroupChat.this,"Not JSON object", Toast.LENGTH_SHORT).show();
                     throw new RuntimeException(e);
                 }
+
+
+                //upload message to database
+                postClient.post(server_url, postData, new HttpsCallback() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG,response);
+                    }
+
+                    @Override
+                    public void onFailure(String error) {
+                        Log.d(TAG,"fail");
+                    }
+                });
+
+
             }
         });
 
@@ -172,6 +191,7 @@ public class GroupChat extends AppCompatActivity {
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 if(response.isSuccessful()){
                     Log.d("GroupChat","response success");
+                    assert response.body() != null;
                     String responseData = response.body().string();
                     try {
                         JSONObject jsonObject = new JSONObject(responseData);
