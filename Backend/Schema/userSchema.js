@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema({
         },
     },
     events: [mongoose.Schema.Types.Mixed],
+    daySchedule: [mongoose.Schema.Types.Mixed], // returned optimal schedule for the day from scheduler
 });
 
 module.exports = userSchema;

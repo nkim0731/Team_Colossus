@@ -7,25 +7,26 @@ const { google } = require('googleapis');
 const { Client } = require("@googlemaps/google-maps-services-js");
 const OAuth2 = google.auth.OAuth2;
 
-const apiKey = process.env.MAPS_API_KEY;
+const apiKey = process.env.GOOGLE_API_KEY;
 
 // Schema and Model for event
 const eventSchema = new mongoose.Schema({
-    calendarId: String,
+    // calendarId: String,
+    eventName: String, // for frontend display what the event is
     eventId: String,
-    ownerUserId: String, // don't think we need since events are stored under a user
+    // ownerUserId: String, // don't think we need since events are stored under a user
     eventType: String,
     description: String,
     start: Date,
     end: Date,
-    hasChat: Boolean, // true if its a course, false otherwise
+    hasChat: Boolean, // true if its a course, false otherwise (how do we know an event is a course?)
     address: String,
     gpsLocation: String,
 })
 
 class Calendar {  
     constructor() {
-        this.client = new Client({});
+        // this.client = new Client({});
     }
 
     async importCalendar(token) {
@@ -38,8 +39,8 @@ class Calendar {
         const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
         const res = await calendar.events.list({
             calendarId: 'primary',
-            timeMin: new Date().toISOString(), // do we only want upcoming events?
-            maxResults: 10,
+            timeMin: new Date().toISOString(),
+            maxResults: 10, // should this be increased ?
             singleEvents: true,
             orderBy: 'startTime',
         });

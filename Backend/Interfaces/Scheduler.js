@@ -16,13 +16,16 @@ class Scheduler {
     */
 
     // get direction to an event from position when called
-    async getDirections(origin, event, mode) { // need to pass objects
+    async getDirections(origin, event, preferences) { // need to pass objects
         try {
-            const params = {
-                origin: origin, // LatLng "lat,lng" string
-                destination: destination,
-                travelMode: mode, // DRIVING, BICYCLING, WALKING, TRANSIT (strings)
-                transitOptions: 'TransitOptions',
+            let params = {
+                origin: origin, // LatLng "lat, lng" string
+                destination: event.gpsLocation, // a LatLng string, place object can be event.address instead
+                travelMode: preferences.mode, // DRIVING, BICYCLING, WALKING, TRANSIT (strings)
+                alternatives: true,
+                key: googleAPIKey,
+            }
+            if (preferences.mode === 'TRANSIT') {
                 /*
                    {
                     arrivalTime: Date, // use event time here
@@ -31,30 +34,79 @@ class Scheduler {
                     routingPreference: TransitRoutePreference // FEWER_TRANSFERS, LESS_WALKING
                     }
                 */
-                drivingOptions: 'DrivingOptions',
+                params.transitOptions = {
+                    arrivalTime: new Date(event.start),
+                    routingPreference: preferences.routing,
+                }
+            }
+            if (preferences.mode === 'DRIVING') {
                 /*
                     {
                     departureTime: Date,
                     trafficModel: TrafficModel // bestguess, pessimistic, optimistic
                     }
                 */
-                alternatives: true,
-                key: googleAPIKey,
+                // not sure how to handle this because there is no arrivalTime field
+                // i guess we can just make the departure time whenever this function is called
+                // and have a pessimistic guess for traffic
+                params.drivingOptions = {
+                    departureTime: new Date(),
+                    trafficModel: 'pessimistic',
+                }
             }
             const result = await client.directions(params);
             console.log(result.data);
             return result.data; // array of possible routes from origin to destination
         } catch (e) {
             console.log('Error: ' + e);
+            throw e;
         }
     }
 
-    // cache driving routes, give buffer time based on traffic
-    async createDaySchedule(events) { //
+    // create schedule with routes for events taking place today
+    async createDaySchedule(events, origin, preferences) { // origin is user home location
         const today = new Date();
-        let validEvents = events.filter(() => {
-            // filter with location or not
-        })
+        const dayEvents = events.filter(e => {
+            e.start.getDate() === today.getDate() &&
+            e.start.getMonth() === today.getMonth() &&
+            e.start.getFullYear() === today.getFullYear()
+        });
+
+        let schedule = [];
+        for (let i = 0; i < dayEvents.length; i++) {
+            if (i > 0) origin = dayEvents[i].address;
+            try {
+                const routes = await this.getDirections(origin, dayEvents[i], preferences);
+                for (let route of routes) {
+                    route.legs; // path the route takes (array)
+                    /*
+                    leg object { // no waypoints returns a single leg
+                        distance: distance.value
+                        duration: duration.value // in seconds
+                        steps: array objects
+                    }
+                    step object { // steps amout of turns to make / transit changes
+                        distance
+                        duration
+                        start_location/end_location
+                        travel_mode: mode used for each step
+                        transit: arrival/departure times
+                    }
+                    */
+                    break;
+                }
+            } catch (e) {
+                console.log('Error generating routes: ' + e);
+            }
+        }
+        /*
+        Complete Event Object
+        {
+            event: event
+            route: route
+        }
+        */
+        return schedule;
     }
 }
 

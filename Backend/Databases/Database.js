@@ -78,6 +78,7 @@ class Database {
             if (user.events == null) {
                 user.events = [];
             }
+            user.daySchedule = [];
             console.log('user before mongodb add : ', user);
             const newUser = new UserModel(user);
             let result = await newUser.save();
@@ -104,7 +105,17 @@ class Database {
     async addEvents(username, events) {
 		try {
             const userEvents = await UserModel.findOne({ username }).select('events');
-            const newEvents = events.filter(e => { !userEvents.events.includes(e) }); // remove existing events
+            let newEvents = [];
+            for (let e of events) {
+                // TODO maybe do something here to determine if event is a course
+                // if (condition isCourse) e.hasChat = true;
+                // else e.hasChat = false;
+                let included = false;
+                for (let ue of userEvents.events) {
+                    if (ue.eventName === e.eventName) included = true; // assuming eventName is unique
+                }
+                if (!included) newEvents.push(e);
+            }
 
 			await UserModel.updateOne(
                 { 'username': username },
@@ -153,11 +164,11 @@ class Database {
         try {
             // const id = mongoose.Types.ObjectId(chatID);
             let chatDocument = await ChatModel.findOne({ chatName });
-            // this probably should not even happen since user cant open a room if it doesnt exist
-            // if (!chatDocument) {
-            //     const document = { chatName: chatID, messages: [] };
-            //     chatDocument = new ChatModel(document);
-            // }
+            // create chatroom in database if does not exist already
+            if (!chatDocument) {
+                const document = { chatName: chatName, messages: [] };
+                chatDocument = new ChatModel(document);
+            }
             chatDocument.messages.unshift(message);
             if (chatDocument.messages.length > maxMessages) {
                 chatDocument.messages.pop();
