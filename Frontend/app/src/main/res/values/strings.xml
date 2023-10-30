@@ -1,10 +1,18 @@
 <resources>
     <string name="app_name">Frontend</string>
     <string name="head_text">Calendo</string>
-    <string name="signIn_btn">sign in</string>
-    <string name="signUp_btn">sign up</string>
-    <string name="button_chat">chat</string>
     <string name="button_send">send</string>
     <string name="message_text">Enter Text Here</string>
     <string name="message_sender">John</string>
+
+
+    <string name="button_googleSignIn">Google Sign In</string>
+    <string name="button_signUp">sign up</string>
+    <string name="button_calendar">Calendar</string>
+    <string name="button_signOut">Sign out</string>
+    <string name="button_groupChat">Group Chat</string>
+    <string name="button_setting">Setting</string>
+
+    <string name="button_activity">Activities</string>
+    <string name="text_transit">Select Transit preference</string>
 </resources>
