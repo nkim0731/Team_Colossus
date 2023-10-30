@@ -11,11 +11,15 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +58,6 @@ public class GroupChat extends AppCompatActivity {
         server_url = "http://10.0.2.2:3000";
 
         //set up socket connection to server
-//        createSocket();
         String chatName = "1"; // TODO update with intent when opening chatroom
         mSocket = SocketManager.getSocket();
         mSocket.emit("joinChatroom", chatName);
@@ -63,7 +66,7 @@ public class GroupChat extends AppCompatActivity {
         mSocket.on("message", args -> {
             try {
                 JSONObject messageObj = new JSONObject((String) args[0]);
-                Message m = new Message(messageObj.getString("message"), messageObj.getString("sender"),false);
+                Message m = new Message(messageObj.getString("message"), messageObj.getString("sender"), messageObj.getString("timestamp"),false);
                 updateMessages(m);
             } catch (JSONException e) {
                 throw new RuntimeException(e);
@@ -72,7 +75,7 @@ public class GroupChat extends AppCompatActivity {
 
 
         //initialize messages list
-//        getChatHistory(8);           TODO later to fetch from database
+
         messages = new ArrayList<>();
 
         //initialize recycler view
@@ -80,7 +83,8 @@ public class GroupChat extends AppCompatActivity {
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         messageAdapter = new MessageAdapter(messages); // 'messages' is a list of message objects
         messageRecyclerView.setAdapter(messageAdapter);
-
+        int chatID = 8; //   TODO later to fetch from intent
+        getChatHistory(chatID);
 
         //initialize message view
         messageEditText = findViewById(R.id.editTextSend);
@@ -96,7 +100,7 @@ public class GroupChat extends AppCompatActivity {
                 // Add the message to the message list or send it to a server
                 // Then, update the RecyclerView to display the new message
 
-                String user = "User1"; // dummy user. Will change it later
+                String user = "User1"; // dummy user. TODO get it from Intent
                 Message msg = new Message(messageText, user,true);
 
                 messages.add(msg);
@@ -105,6 +109,7 @@ public class GroupChat extends AppCompatActivity {
                 messageEditText.setText(""); // Clear the message input field
 
 
+                //create post request
                 HttpsRequest postClient = new HttpsRequest();
                 //create JSON data
                 MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
@@ -172,45 +177,35 @@ public class GroupChat extends AppCompatActivity {
 
     //get previous messages of the room
     private void getChatHistory(int chatID){
-        OkHttpClient client = new OkHttpClient();
+        HttpsRequest getRequest = new HttpsRequest();
         String url = String.format("%s/api/message_history/?chatID=%s", server_url, chatID);
-//        Log.d(TAG,url);
-        Request request = new Request.Builder()
-                .url(server_url)
-                .get()
-                .build();
 
-        client.newCall(request).enqueue(new Callback() {
+        getRequest.get("http://10.0.2.2:3000/message", new HttpsCallback() { //test locally right now
             @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.d(TAG,"request err");
-                e.printStackTrace();
+            public void onResponse(String response) {
+//                JSONObject jsonObject = new JSONObject(response);
+//                JSONArray messageArray = jsonObject.getJSONArray("message");
+
+                Type listType = new TypeToken<List<Message>>(){}.getType();
+                List<Message>  msg= new Gson().fromJson(response, listType);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // This block of code is executed on the main UI thread
+                        messages.addAll(msg);
+                        messageAdapter.notifyDataSetChanged();
+                    }
+                });
+
+//                Log.d(TAG,messages.get(0).getTimestamp());
             }
 
             @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if(response.isSuccessful()){
-                    Log.d("GroupChat","response success");
-                    assert response.body() != null;
-                    String responseData = response.body().string();
-                    try {
-                        JSONObject jsonObject = new JSONObject(responseData);
-                        JSONArray messageArray = jsonObject.getJSONArray("message");
-
-                        for (int i = 0; i < messageArray.length(); i++){
-                            String msg = messageArray.getString(i);
-                            //add msg to message list (tbd)
-                        }
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                    //messages = responseData  set message list
-                    Log.d(TAG,responseData);
-                }else{
-                    Log.d(TAG,"response fail");
-                }
+            public void onFailure(String error) {
+                Log.d(TAG,error);
             }
         });
+
     }
 
     //Send post request to server
