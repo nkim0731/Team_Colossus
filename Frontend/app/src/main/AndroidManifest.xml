@@ -22,11 +22,21 @@
             android:name=".GroupChat"
             android:exported="false" />
         <activity
-            android:name=".Calendar"
+            android:name=".CalendarActivity"
             android:exported="false" />
+        <activity
+            android:name=".CalendarActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AfterSuccessLoginActivity"
+            android:exported="false"/>
+        <activity
+            android:name=".PreferenceActivity"
+            android:exported="false"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
