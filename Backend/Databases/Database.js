@@ -127,6 +127,25 @@ class Database {
 		}
 	}
 
+    // add day schedule to db
+    async addSchedule(username, schedule) {
+        try {
+            let user = await UserModel.findOne({ username });
+            user.daySchedule = schedule;
+            await user.save();
+        } catch (e) {
+            console.log('Error: ' + e);
+        }
+    }
+
+    async getSchedule(username) {
+        try {
+            return await UserModel.findOne({ username }).select('daySchedule');
+        } catch (e) {
+            console.log('Error: ' + e);
+        }
+    }
+
     /*
     * Message database calls
     */

@@ -30,7 +30,7 @@ if (isHttps) {
 
 const server = http.createServer(app); // HTTP server for testing 
 
-const chatManager = new ChatManager(server); // start socketio service for groupchats
+const chatManager = new ChatManager(server); // start socketio service for groupchats change this to HTTPS once implemented
 
 /*
 * API calls and calls to/from frontend go here
@@ -150,14 +150,36 @@ app.route('/api/calendar')
     }
 });
 
+// create day schedule on button press
+app.route('/api/calendar/day_schedule')
+.post(async (req, res) => {
+    const data = req.body; // needs username, location (origin), and preferences
+    try {
+        const calendar = db.getCalendar(data.username);
+        const schedule = await Scheduler.createDaySchedule(calendar.events, data.location, preferences);
+        await db.updateSchedule(data.username, schedule);
+        res.status(200).json({ schedule: schedule });
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+})
+.get(async (req, res) => { // ?user=username
+    try {
+        const schedule = await db.getSchedule(req.query.user);
+        res.status(200).json({ schedule: schedule });
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+})
+
 /*
 * Group chats API calls
 */
 app.get('/api/message_history', async (req, res) => {
     console.log('getting message history')
-    const chatID = req.query.chatName; // ?chatID=x 
+    const chatName = req.query.chatName; // ?chatName=x 
     try {
-        const messages = await db.getMessages(chatID);
+        const messages = await db.getMessages(chatName);
         res.status(200).send(messages);
     } catch (e) {
         res.status(500).json({ message: e });

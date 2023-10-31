@@ -76,38 +76,61 @@ class Scheduler {
         for (let i = 0; i < dayEvents.length; i++) {
             if (i > 0) origin = dayEvents[i].address;
             try {
-                const routes = await this.getDirections(origin, dayEvents[i], preferences);
-                for (let route of routes) {
-                    route.legs; // path the route takes (array)
-                    /*
-                    leg object { // no waypoints returns a single leg
-                        distance: distance.value
-                        duration: duration.value // in seconds
-                        steps: array objects
+                let routes = await this.getDirections(origin, dayEvents[i], preferences);
+                // callback for sort, optimize for shortest duration, least steps, earliest arrival
+                // assumption no waypoints, hence only one leg in legs []
+                compareRoutes = (a, b) => {
+                    // compare by duration
+                    if (a.legs[0].duration.value < b.legs[0].duration.value) {
+                        return -1;
+                    } else if (a.legs[0].duration.value > b.legs[0].duration.value) {
+                        return 1;
                     }
-                    step object { // steps amout of turns to make / transit changes
-                        distance
-                        duration
-                        start_location/end_location
-                        travel_mode: mode used for each step
-                        transit: arrival/departure times
+                    // compare by steps, if duration is equal
+                    if (a.legs[0].steps.length < b.legs[0].steps.length) {
+                        return -1;
+                    } else if (a.legs[0].steps.length > b.legs[0].steps.length) {
+                        return 1;
                     }
-                    */
-                    break;
+                    // compare arrival time to then use earliest arrival
+                    if (a.legs[0].arrival_time.value < b.legs[0].arrival_time.value) {
+                        return -1;
+                    } else if (a.legs[0].arrival_time.value > b.legs[0].arrival_time.value) {
+                        return 1;
+                    }
+                    return 0; // route a and b are equal in duration and steps
                 }
+                // routes sorted by lowest duration/steps, optimal is route[0]
+                routes.sort(compareRoutes); 
+                const eventRoute = { event: dayEvents[i], routes: routes };
+                schedule.push(eventRoute);
             } catch (e) {
                 console.log('Error generating routes: ' + e);
             }
         }
-        /*
-        Complete Event Object
-        {
-            event: event
-            route: route
-        }
-        */
         return schedule;
     }
 }
+
+/*
+    leg object {
+        distance: distance.value
+        duration: duration.value // in seconds
+        arrival_time: Time object: {value: Date, text: String, time_zone}
+        departure_time.value: Date
+        steps: array objects
+    }
+    step object { // steps amout of turns to make / transit changes
+        distance
+        duration
+        start_location/end_location
+        travel_mode: mode used for each step
+        transit: arrival/departure times
+    }
+    Schedule Object {
+        event: event
+        route: route
+    }
+*/
 
 module.exports = new Scheduler();
