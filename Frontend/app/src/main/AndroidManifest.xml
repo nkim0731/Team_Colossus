@@ -25,14 +25,14 @@
             android:name=".CalendarActivity"
             android:exported="false" />
         <activity
-            android:name=".CalendarActivity"
-            android:exported="false" />
-        <activity
             android:name=".AfterSuccessLoginActivity"
             android:exported="false"/>
         <activity
             android:name=".PreferenceActivity"
-            android:exported="false"/>
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:label="Settings"
+            android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">
