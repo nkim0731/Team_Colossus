@@ -103,4 +103,45 @@ public class HttpsRequest {
 
 
     }
+
+
+    /*
+     * Send PUT request to server
+     * Parameters: url: the url of server
+     *             postData: JSON object that would be send to server
+     * */
+    public void put(String url, JSONObject postData, HttpsCallback callback){
+        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(postData.toString(),mediaType);
+        Request request = new Request.Builder()
+                .url(url)
+                .put(body)
+                .build();
+
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                Log.d(TAG,"request err");
+                callback.onFailure(e.getMessage());
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if(response.isSuccessful()){
+                    String responseData = response.body().string();
+                    if(responseData != null){
+                        callback.onResponse(responseData);
+                    }else{
+                        callback.onFailure("response is null");
+                    }
+                }else{
+                    Log.d(TAG,"response fail");
+                    callback.onFailure("response fail");
+                }
+            }
+        });
+
+
+    }
 }
