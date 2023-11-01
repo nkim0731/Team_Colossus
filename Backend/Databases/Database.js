@@ -53,7 +53,7 @@ class Database {
     // Get data for user by username/email (unique)
     async getUser(useremail) {
         try {
-            const user = await UserModel.findOne({ useremail });
+            const user = await UserModel.findOne({ username: useremail });
 
             if (!user) {
                 return false;
