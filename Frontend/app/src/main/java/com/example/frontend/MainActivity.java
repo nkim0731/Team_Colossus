@@ -111,6 +111,9 @@ public class MainActivity extends AppCompatActivity {
 
             // send token and username to server
 
+            JSONObject obj = new JSONObject(json);
+            JSONObject jsonWh = obj.getJSONObject("json");
+
             JsonObject jsonObject = Json.createObjectBuilder()
                     .add("userIdToken", account.getIdToken())
                     .build();
