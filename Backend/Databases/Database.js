@@ -19,8 +19,8 @@ isTest = true;
 var mongoURI = null;
 if (isTest) {
     // This URL should be the same as the db connection created in the server.js
-    // mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-    mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+    //mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
 } else {
     // For actual project deployment
     mongoURI = 'mongodb://localhost:27017/calendoDB';
