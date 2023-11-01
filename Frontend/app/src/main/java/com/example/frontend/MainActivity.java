@@ -31,6 +31,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Type;
@@ -110,14 +111,16 @@ public class MainActivity extends AppCompatActivity {
             bundles.putString("userServerAuthCode", account.getServerAuthCode());
 
             // send token and username to server
+            JSONObject jObjectData = new JSONObject();
+            Object userToken = account.getIdToken();
 
-            JSONObject obj = new JSONObject(json);
-            JSONObject jsonWh = obj.getJSONObject("json");
+            try {
+                jObjectData.put("id", userToken);
+            } catch (JSONException e){
+                Log.e(TAG, "unexpected JSON exception", e);
+            }
 
-            JsonObject jsonObject = Json.createObjectBuilder()
-                    .add("userIdToken", account.getIdToken())
-                    .build();
-            httpsRequest.post(server_url + "/login", jsonObject, new HttpsCallback() {
+            httpsRequest.post(server_url + "/login", jObjectData, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     Log.d(TAG, "success to send token");
