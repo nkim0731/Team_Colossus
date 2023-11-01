@@ -182,8 +182,11 @@ app.get('/api/message_history', async (req, res) => {
 
 app.get('/api/chatrooms', async (req, res) => {
     try {
-        const rooms = await db.getRooms();
-        res.status(200).json({ rooms: rooms });
+        const user = req.query.user; // ?user=username
+        const calendar = await db.getCalendar(user);
+        let events = calendar.events;
+        const courses = events.filter(e => { e.hasChat })
+        res.status(200).json({ rooms: courses });
     } catch (e) {
         res.status(500).json({ message: e });
     }

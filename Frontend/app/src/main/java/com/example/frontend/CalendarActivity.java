@@ -6,7 +6,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.icu.util.Calendar;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.TextView;
@@ -24,21 +23,24 @@ public class CalendarActivity extends AppCompatActivity {
     TextView tv_schedule;
     Button chatButton;
 
+    private Bundle userData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
 
+        userData = getIntent().getExtras();
+
         // initialize socket connection
         Socket socket = SocketManager.getSocket();
         socket.connect();
+
         chatButton = findViewById(R.id.button_chat);
-        chatButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent chatIntent = new Intent(CalendarActivity.this,GroupChat.class);
-                startActivity(chatIntent);
-            }
+        chatButton.setOnClickListener(view -> {
+            Intent chatRoomsIntent = new Intent(CalendarActivity.this, ChatRoomsActivity.class);
+            chatRoomsIntent.putExtras(userData);
+            startActivity(chatRoomsIntent);
         });
 
         calendarView = findViewById(R.id.calendarView);
@@ -65,7 +67,5 @@ public class CalendarActivity extends AppCompatActivity {
         // selected_data load its events and show them under the calendar.
         // GET
         tv_schedule = findViewById(R.id.textView_schedule);
-        // connect chat page.
-
     }
 }

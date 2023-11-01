@@ -37,18 +37,13 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
-    private Button activityButton;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // initialize global socket connection need for chats
-        Socket socket = SocketManager.getSocket();
-        socket.connect();
-
+        // handle sign in
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
@@ -57,40 +52,25 @@ public class MainActivity extends AppCompatActivity {
             signIn();
         });
 
+        // handle sign out
         signOutButton = findViewById(R.id.button_signOut);
-        signOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                signOut();
-            }
-        });
+        signOutButton.setOnClickListener(view -> signOut());
 
-        activityButton = findViewById(R.id.button_activity);
-        activityButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent afterSuccessLoginIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
-                startActivity(afterSuccessLoginIntent);
-            }
-        });
-
-//        chatButton = findViewById(R.id.button_chat);
-//        chatButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                Intent chatIntent = new Intent(MainActivity.this,GroupChat.class);
-//                startActivity(chatIntent);
-//            }
-//        });
-    }
-    @Override
-    protected void onStart() {
-        super.onStart();
-        // Check for existing Google Sign In account, if the user is already signed in
-        // the GoogleSignInAccount will be non-null.
+        // when opening app check if logged in and go to main menu
+        // but allow user to return to main menu for logout
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         updateUI(account);
     }
+
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+//        // Check for existing Google Sign In account, if the user is already signed in
+//        // the GoogleSignInAccount will be non-null.
+//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+//        updateUI(account);
+//    }
+
     private void updateUI(GoogleSignInAccount account) {
         if (account == null){
             Log.d(TAG, "There is no user signed in");
@@ -99,9 +79,12 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, account.getDisplayName());
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
-            loginSuccessIntent.putExtra("username", account.getEmail());
-            loginSuccessIntent.putExtra("token", account.getIdToken());
-            loginSuccessIntent.putExtra("authCode", account.getServerAuthCode());
+            Bundle userData = new Bundle();
+            userData.putString("username", account.getEmail());
+            userData.putString("token", account.getIdToken());
+            userData.putString("authCode", account.getServerAuthCode());
+
+            loginSuccessIntent.putExtras(userData);
             startActivity(loginSuccessIntent);
         }
     }

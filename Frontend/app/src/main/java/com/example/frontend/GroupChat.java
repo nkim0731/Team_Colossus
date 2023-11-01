@@ -46,19 +46,22 @@ public class GroupChat extends AppCompatActivity {
     private RecyclerView messageRecyclerView;
     private MessageAdapter messageAdapter;
     private List<Message> messages; //record the messages of chat room
+    private Bundle userData;
+    private HttpsRequest httpsRequest;
 
-    private String server_url;
+    private final String server_url = "http://10.0.2.2:3000";
+    // https://calendo.westus2.cloudapp.azure.com:8081
     final  static String TAG = "GroupChat";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_chat);
 
-        //initialize server url
-        server_url = "http://10.0.2.2:3000";
+        userData = getIntent().getExtras();
+        String chatName = userData.getString("chatName");
+        httpsRequest = new HttpsRequest();
 
         //set up socket connection to server
-        String chatName = "1"; // TODO update with intent when opening chatroom
         mSocket = SocketManager.getSocket();
         mSocket.emit("joinChatroom", chatName);
 
@@ -75,7 +78,6 @@ public class GroupChat extends AppCompatActivity {
 
 
         //initialize messages list
-
         messages = new ArrayList<>();
 
         //initialize recycler view
@@ -83,8 +85,28 @@ public class GroupChat extends AppCompatActivity {
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         messageAdapter = new MessageAdapter(messages); // 'messages' is a list of message objects
         messageRecyclerView.setAdapter(messageAdapter);
-        int chatID = 8; //   TODO later to fetch from intent
-        getChatHistory(chatID);
+//        int chatID = 8;
+//        getChatHistory(chatID);
+        httpsRequest.get(server_url + "/api/message_history?chatName=" + chatName, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                // array
+                Type listType = new TypeToken<List<Message>>(){}.getType();
+                List<Message> msg = new Gson().fromJson(response, listType);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        // This block of code is executed on the main UI thread
+                        messages.addAll(msg);
+                        messageAdapter.notifyDataSetChanged();
+                    }
+                });
+            }
+            @Override
+            public void onFailure(String error) {
+                Log.e(TAG, error);
+            }
+        });
 
         //initialize message view
         messageEditText = findViewById(R.id.editTextSend);
