@@ -24,9 +24,6 @@ jobs:
       - name: Install project dependencies
         run: npm install
 
-      - name: Build your project (if needed)
-        run: npm run build
-
       - name: Start the application with PM2
         run: sudo systemctl start pm2-calendo.service
       
