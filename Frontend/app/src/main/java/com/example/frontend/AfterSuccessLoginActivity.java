@@ -19,9 +19,15 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private Button groupChatButton;
     private Button settingButton;
 
+    private Bundle userData;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_after_successful_login);
+
+        // get userdata from login
+        userData = getIntent().getExtras();
+        // access data with String value1 = receivedData.getString("key1");
 
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
@@ -30,6 +36,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             public void onClick(View view) {
 //                setContentView(R.layout.activity_calendar);
                 Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
+                calendarIntent.putExtras(userData);
                 startActivity(calendarIntent);
             }
         });

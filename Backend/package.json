@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+
+    "start": "nodemon server.js",
+    "serverStart": "sudo ~/.nvm/versions/node/v21.0.0/bin/node ~/project/https_test.js"
   },
   "keywords": [],
   "author": "",

@@ -1,10 +1,9 @@
 const axios = require('axios');
 const { Client } = require("@googlemaps/google-maps-services-js");
 const { apikeys } = require('googleapis/build/src/apis/apikeys');
-require('dotenv').config();
 
+require('dotenv').config({ path: `${__dirname}/../.env` });
 const googleAPIKey = process.env.GOOGLE_API_KEY;
-// const apiKey = process.env.MAPS_API_KEY;
 
 class Scheduler {
     constructor() {

@@ -7,7 +7,9 @@ const { google } = require('googleapis');
 const { Client } = require("@googlemaps/google-maps-services-js");
 const OAuth2 = google.auth.OAuth2;
 
-const apiKey = process.env.GOOGLE_API_KEY;
+require('dotenv').config({ path: `${__dirname}/../.env` });
+const googleAPIKey = process.env.GOOGLE_API_KEY;
+
 
 // Schema and Model for event
 const eventSchema = new mongoose.Schema({
@@ -27,18 +29,47 @@ const eventSchema = new mongoose.Schema({
 class Calendar {  
     constructor() {
         // this.client = new Client({});
+        const oauth2Client = new google.auth.OAuth2(
+            process.env.CLIENT_ID,
+            process.env.CLIENT_SECRET,
+            process.env.REDIRECT_URL
+        )
+        
+        const googleCalendar = google.calendar({
+            version : "v3",
+            auth : googleAPIKey
+        });
+        
+        
+        const googleUser = google.oauth2({
+            version : "v2",
+            auth : googleAPIKey
+        });
+        
+        const scopes = [
+            'https://www.googleapis.com/auth/calendar',
+            'https://www.googleapis.com/auth/userinfo.email'
+        ];
+        
+        // Generate a url that asks permissions for the two scopes defined above
+        const authorizationUrl = oauth2Client.generateAuthUrl({
+            // 'online' (default) or 'offline' (gets refresh_token)
+            access_type: 'offline',
+            /** Pass in the scopes array defined above.
+                 * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+            scope: scopes,
+            // Enable incremental authorization. Recommended as a best practice.
+            include_granted_scopes: true
+        });
     }
 
     async importCalendar(token) {
-        const oauth2Client = new OAuth2();
-        oauth2Client.setCredentials({
-            access_token: token, // replace with user oath2.0 access token
-        });
 
         // https://developers.google.com/calendar/api/quickstart/nodejs
         const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
         const res = await calendar.events.list({
             calendarId: 'primary',
+            auth: Calendar.oauth2Client,
             timeMin: new Date().toISOString(),
             maxResults: 10, // should this be increased ?
             singleEvents: true,

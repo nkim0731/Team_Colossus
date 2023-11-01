@@ -16,16 +16,16 @@ const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
 
 const app = express();
-var isHttps = false;
+var isHttps = true;
 
+var httpsServer = null
 if (isHttps) {
+    const options = {
+        key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'), // Path to your private key
+        cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'), // Path to your certificate
+    };
 
-    // Load the SSL/TLS certificate and private key
-    const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
-    const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
-    const credentials = { key: privateKey, cert: certificate };
-
-    const httpsServer = https.createServer(credentials, app);
+    httpsServer = https.createServer(options, app);
 }
 
 const server = http.createServer(app); // HTTP server for testing 
@@ -65,11 +65,6 @@ const testDB = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useU
 
 // Store data in app.locals
 app.locals.mongoDB = testDB;
-
-
-app.get('/', async (req, res) => {
-    res.send('Hello, World');
-});
 
 
 // login check for user
@@ -286,24 +281,27 @@ Description: This module would implement google maps API and handle alarm schedu
 */
 
 // Use the smart navigation router
-const smartNavigateRouter = require('./Interfaces/smartNavigate');
+const smartNavigateRouter = require('./Interfaces/SmartNavigate');
 app.use('/api/smartNavigate', smartNavigateRouter);
 
 // Add your other routes and middleware here
 
 app.get('/', (req, res) => {
-  res.send('Hello, Welcome to Calendo!');
+    if (isHttps) {
+        res.send('Hello, Welcome to Calendo using HTTPS on port 8081!');
+    } else {
+        res.send('Hello, Welcome to Calendo using HTTP on port 3000!');
+    }
 });
 
 
 var port = null;
 if (isHttps) {
-    port = 443; // Standard HTTPS port
+    port = 8081; // Standard HTTPS port
     
-    server.listen(port, () => {
+    httpsServer.listen(port, () => {
       console.log(`Server is running on port ${port}`);
-      const host = "20.64.250.110"
-      const port = serverApp.address().port;
+      const host = "calendo.westus2.cloudapp.azure.com"
 
       console.log(`Server is running on https://${host}:${port}`);
     });
@@ -311,7 +309,8 @@ if (isHttps) {
     // Start server
     port = process.env.PORT || 3000;
 
-    server.listen(port, '0.0.0.0', () => console.log('Server started on port 3000')); // needs to be server.listen or sockets stop working
+    const host = "20.64.250.110"
+    server.listen(port, '0.0.0.0', () => console.log(`Server started on http://${host}:${port}`)); // needs to be server.listen or sockets stop working
 
     // const serverApp = app.listen(port, () => {
     //     const host = "localhost"
