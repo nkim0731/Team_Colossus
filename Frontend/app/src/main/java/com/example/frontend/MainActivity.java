@@ -27,8 +27,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONObject;
+
+import java.lang.reflect.Type;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -42,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
     private final String CHANNEL_ID = "32";
+    private HttpsRequest httpsRequest;
+    private final String server_url = "http://10.0.2.2:3000";
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
@@ -101,18 +110,21 @@ public class MainActivity extends AppCompatActivity {
             bundles.putString("userServerAuthCode", account.getServerAuthCode());
 
             // send token and username to server
-            RequestBody postBody = new FormBody.Builder()
-                    .add("userToken", account.getId())
-                    .add("userName", account.getDisplayName())
-                    .build();
 
-            Request request = new Request.Builder()
-                    .url(URL)
-                    .post(postBody)
+            JsonObject jsonObject = Json.createObjectBuilder()
+                    .add("userIdToken", account.getIdToken())
                     .build();
+            httpsRequest.post(server_url + "/login", jsonObject, new HttpsCallback() {
+                @Override
+                public void onResponse(String response) {
+                    Log.d(TAG, "success to send token");
+                }
 
-            client = new OkHttpClient();
-            Call call = client.newCall(request);
+                @Override
+                public void onFailure(String error) {
+                    Log.d(TAG, "fail to send token");
+                }
+            });
             //
 
             loginSuccessIntent.putExtras(bundles);

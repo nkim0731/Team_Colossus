@@ -41,5 +41,6 @@ dependencies {
     implementation ("io.socket:socket.io-client:2.1.0")
     implementation ("com.google.android.gms:play-services-auth:20.7.0")
     implementation ("com.google.code.gson:gson:2.8.6")
+    implementation ("org.json:json:20200518")
 
 }
