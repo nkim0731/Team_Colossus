@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const socketIO = require('socket.io');
 const mongoose = require('mongoose');
+const { google } = require('googleapis');
 
 // Requires for defined interfaces
 const Session = require('./Interfaces/Session.js');
@@ -15,11 +16,15 @@ const Scheduler = require('./Interfaces/Scheduler.js');
 const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
 
+// Schemas needed for db
+const userSchema = require('./Schema/userSchema');
+const chatSchema = require('./Schema/chatSchema');
+
+
 const app = express();
 var isHttps = false;
 
 if (isHttps) {
-
     // Load the SSL/TLS certificate and private key
     const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
     const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
@@ -27,10 +32,14 @@ if (isHttps) {
 
     const httpsServer = https.createServer(credentials, app);
 }
-
 const server = http.createServer(app); // HTTP server for testing 
 
 const chatManager = new ChatManager(server); // start socketio service for groupchats
+
+
+
+// For loading env variables
+require('dotenv').config({ path: `${__dirname}/.env` });
 
 /*
 * API calls and calls to/from frontend go here
@@ -59,16 +68,62 @@ if (isTest) {
   mongoURI = 'mongodb://localhost:27017/calendoDB';
 }
 
+/*
+Everything related to Google API
+*/
+const googleAPIKey = process.env.GOOGLE_API_KEY;
+const oauth2Client = new google.auth.OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    process.env.REDIRECT_URL
+)
+
+const googleCalendar = google.calendar({
+    version : "v3",
+    auth : googleAPIKey
+});
+
+
+const googleUser = google.oauth2({
+    version : "v2",
+    auth : googleAPIKey
+});
+
+
+// generate a url that asks permissions for Blogger and Google Calendar scopes
+const scopes = [
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/userinfo.email'
+];
+
+// Generate a url that asks permissions for the two scopes defined above
+const authorizationUrl = oauth2Client.generateAuthUrl({
+    // 'online' (default) or 'offline' (gets refresh_token)
+    access_type: 'offline',
+    /** Pass in the scopes array defined above.
+         * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+    scope: scopes,
+    // Enable incremental authorization. Recommended as a best practice.
+    include_granted_scopes: true
+});
+
+
+
 // Create connection for calendoDB
 // This URL should be the same as the db connection created in the Database.js
 const testDB = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// models to interact with database collections
+const User = testDB.model('user', userSchema);
 
 // Store data in app.locals
 app.locals.mongoDB = testDB;
 
 
 app.get('/', async (req, res) => {
-    res.send('Hello, World');
+    userInfo = googleUser.userinfo.get({ auth : oauth2Client});
+    var txt = "Hi, this is Calendo backend API endpoint :)\n" + userInfo.data.email;
+    res.send(txt);
 });
 
 
@@ -155,7 +210,7 @@ app.route('/api/calendar')
 */
 app.get('/api/message_history', async (req, res) => {
     console.log('getting message history')
-    const chatID = req.query.chatName; // ?chatID=x 
+    const chatName = req.query.chatName; // ?chatID=x 
     try {
         const messages = await db.getMessages(chatID);
         res.status(200).send(messages);
@@ -267,13 +322,80 @@ Description: This module would implement google maps API and handle alarm schedu
 const smartNavigateRouter = require('./Interfaces/smartNavigate');
 app.use('/api/smartNavigate', smartNavigateRouter);
 
-// Add your other routes and middleware here
 
-app.get('/', (req, res) => {
-  res.send('Hello, Welcome to Calendo!');
+/*
+Google authentication token management
+*/
+app.get('/auth/google', (req, res) => {
+    res.redirect(authorizationUrl);
+});
+
+app.get('/auth/google/redirect', async (req, res) => {
+    const code = req.query.code;
+
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
+    console.log('you have successfully logged in with email: ', userInfo.data.email);
+
+    userEmail = userInfo.data.email;
+
+    // You can now use 'userEmail' to save events to the user's database
+    res.redirect(`http://localhost:3000/api/calendar/test/${userEmail}`);
+
+});
+
+app.get('/api/calendar/test/:userEmail', async (req, res) => {
+    const userEmail = req.params.userEmail;
+    try {
+        const calendarEvents = await googleCalendar.events.list({
+            calendarId: 'primary',
+            auth: oauth2Client,
+            timeMin: new Date().toISOString(),
+            maxResults: 10,
+            singleEvents: true,
+            orderBy: 'startTime'
+        });
+
+
+        //console.log(calendarEvents);
+        const extractedEvents = [];
+        for (const event of calendarEvents.data.items) {
+            const extractedEvent = {
+                eventID: event.id,
+                summary: event.summary,
+                description: event.description,
+                creator_email: event.creator.email,
+                status: event.status,
+                kind: event.kind,
+                location: event.location,
+                start: event.start.dateTime,
+                start_timeZone: event.start.timeZone,
+                end: event.end.dateTime,
+                end_timeZone: event.end.timeZone,
+                // Add more fields you want to extract here
+            };
+            
+            extractedEvents.push(extractedEvent);
+        };
+
+        result = await User.findOneAndUpdate({ username: userEmail }, { $set: { events: extractedEvents } });
+
+        res.status(200).json({ 'events_inserted': result });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching calendar events' });
+    }
 });
 
 
+
+
+
+/*
+Server starter code
+*/
 var port = null;
 if (isHttps) {
     port = 443; // Standard HTTPS port
@@ -286,11 +408,15 @@ if (isHttps) {
       console.log(`Server is running on https://${host}:${port}`);
     });
 } else {
+    console.log("googleAPIKey : ", googleAPIKey)
+
     // Start server
     port = process.env.PORT || 3000;
 
     server.listen(port, '0.0.0.0', () => console.log('Server started on port 3000')); // needs to be server.listen or sockets stop working
 
+    const host = "localhost"
+    console.log(`\nServer is running on http://${host}:${port}\n`);
     // const serverApp = app.listen(port, () => {
     //     const host = "localhost"
     //     const port = serverApp.address().port;

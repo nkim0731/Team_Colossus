@@ -19,8 +19,8 @@ isTest = true;
 var mongoURI = null;
 if (isTest) {
     // This URL should be the same as the db connection created in the server.js
-    // mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-    mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+    //mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
 } else {
     // For actual project deployment
     mongoURI = 'mongodb://localhost:27017/calendoDB';
@@ -33,11 +33,11 @@ class Database {
 
     async connect() {
         try {
-            console.log('mongoURL : ', mongoURI);
+            console.log('Database class mongoURL : ', mongoURI);
             await mongoose.connect(mongoURI);
-            console.log('Connected to User MongoDB');
+            console.log('Database class Connected to User MongoDB');
         } catch (err) {
-            console.error('MongoDB connection error:', err);
+            console.error('Database class MongoDB connection error:', err);
         }
     }
 
@@ -51,9 +51,9 @@ class Database {
     // }
 
     // Get data for user by username/email (unique)
-    async getUser(username) {
+    async getUser(useremail) {
         try {
-            const user = await UserModel.findOne({ username });
+            const user = await UserModel.findOne({ useremail });
 
             if (!user) {
                 return false;
