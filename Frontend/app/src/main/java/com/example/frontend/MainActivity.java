@@ -32,6 +32,11 @@ import java.net.URISyntaxException;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import okhttp3.Call;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,6 +46,8 @@ public class MainActivity extends AppCompatActivity {
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
     private Bundle bundles = new Bundle();
+    String URL = "http://10.0.2.2:3000";
+    OkHttpClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,6 +100,21 @@ public class MainActivity extends AppCompatActivity {
             bundles.putString("userid", account.getId());
             bundles.putString("userServerAuthCode", account.getServerAuthCode());
 
+            // send token and username to server
+            RequestBody postBody = new FormBody.Builder()
+                    .add("userToken", account.getId())
+                    .add("userName", account.getDisplayName())
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url(URL)
+                    .post(postBody)
+                    .build();
+
+            client = new OkHttpClient();
+            Call call = client.newCall(request);
+            //
+
             loginSuccessIntent.putExtras(bundles);
             startActivity(loginSuccessIntent);
         }
@@ -100,16 +122,6 @@ public class MainActivity extends AppCompatActivity {
 
 //    private void startLoginServerActivity() {
 //        Intent serverLoginInfoIntent = new Intent(MainActivity.this, LoginServerActivity.class);
-//        serverLoginInfoIntent.putExtra("userEmail", userEmail);
-//        serverLoginInfoIntent.putExtra("userGivenName", userGivenName);
-//        serverLoginInfoIntent.putExtra("userFamilyName", userFamilyName);
-//        serverLoginInfoIntent.putExtra("userDisplayName", displayName);
-//        serverLoginInfoIntent.putExtra("userAccountIDToken", userAccountIDToken);
-//        serverLoginInfoIntent.putExtra("serverAuthCode", serverAuthCode);
-//        serverLoginInfoIntent.putExtra("userId", userId);
-//
-//        Log.d(TAG, userEmail);
-//        Log.d(TAG, serverLoginInfoIntent.toString());
 //
 //        startActivity(serverLoginInfoIntent);
 //    }
