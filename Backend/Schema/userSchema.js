@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     username: String,
     password: String,
+    token: String,
+    refresh_token: String,
     preferences: {
         commute_method: {
             type: String

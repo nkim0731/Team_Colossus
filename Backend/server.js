@@ -57,6 +57,9 @@ app.use('/', express.static(clientApp, { extensions: ['html'] }));
 var isTest = true;
 exports.isTest = isTest;
 
+var port = 8081;
+var host = "calendo.westus2.cloudapp.azure.com";
+
 var mongoURI = null
 if (isTest) {
   mongoURI = 'mongodb://localhost:27017/test_calendoDB';
@@ -216,6 +219,32 @@ app.route('/api/calendar/day_schedule')
     }
 })
 
+// API endpoint to get calendar data for a user by email
+app.get('/api/calendar/:userEmail', async (req, res) => {
+    const userEmail = req.params.userEmail;
+
+    try {
+        // Find the user by their email
+        const user = await User.findOne({ username: userEmail });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Retrieve the calendar events from the user's data
+        const calendarEvents = user.events;
+
+        if (!calendarEvents) {
+            return res.status(404).json({ message: 'No calendar events found for this user' });
+        }
+
+        res.status(200).json({ events: calendarEvents });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching calendar events' });
+    }
+});
+
 /*
 * Group chats API calls
 */
@@ -351,12 +380,13 @@ app.get('/auth/google/redirect', async (req, res) => {
 
     userEmail = userInfo.data.email;
 
+    host = "calendo.westus2.cloudapp.azure.com"
     // You can now use 'userEmail' to save events to the user's database
-    res.redirect(`http://localhost:3000/api/calendar/test/${userEmail}`);
+    res.redirect(`https://${host}:${port}/auth/google/test/${userEmail}`);
 
 });
 
-app.get('/api/calendar/test/:userEmail', async (req, res) => {
+app.get('/auth/google/test/:userEmail', async (req, res) => {
     const userEmail = req.params.userEmail;
     try {
         const calendarEvents = await googleCalendar.events.list({
@@ -419,13 +449,12 @@ app.get('/check', (req, res) => {
     }
 });
 
-var port = null;
 if (isHttps) {
     port = 8081; // Standard HTTPS port
     
     httpsServer.listen(port, () => {
       console.log(`Server is running on port ${port}`);
-      const host = "calendo.westus2.cloudapp.azure.com"
+      host = "calendo.westus2.cloudapp.azure.com"
 
       console.log(`Server is running on https://${host}:${port}`);
     });
@@ -433,7 +462,7 @@ if (isHttps) {
     // Start server
     port = process.env.PORT || 3000;
 
-    const host = "20.64.250.110"
+    host = "20.64.250.110"
     server.listen(port, '0.0.0.0', () => console.log(`Server started on http://${host}:${port}`)); // needs to be server.listen or sockets stop working
 
     // const serverApp = app.listen(port, () => {
