@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const socketIO = require('socket.io');
 const mongoose = require('mongoose');
+// For google auth
+const { google } = require('googleapis');
 
 // Requires for defined interfaces
 const Session = require('./Interfaces/Session.js');
@@ -14,6 +16,10 @@ const Scheduler = require('./Interfaces/Scheduler.js');
 
 const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
+
+// For loading env variables
+require('dotenv').config({ path: `${__dirname}/.env` });
+
 
 const app = express();
 var isHttps = true;
@@ -65,6 +71,49 @@ const testDB = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useU
 
 // Store data in app.locals
 app.locals.mongoDB = testDB;
+
+
+
+/*
+Everything related to Google API
+*/
+const googleAPIKey = process.env.GOOGLE_API_KEY;
+const oauth2Client = new google.auth.OAuth2(
+    process.env.CLIENT_ID,
+    process.env.CLIENT_SECRET,
+    process.env.REDIRECT_URL
+)
+
+const googleCalendar = google.calendar({
+    version : "v3",
+    auth : googleAPIKey
+});
+
+
+const googleUser = google.oauth2({
+    version : "v2",
+    auth : googleAPIKey
+});
+
+
+// generate a url that asks permissions for Blogger and Google Calendar scopes
+const scopes = [
+    'https://www.googleapis.com/auth/calendar',
+    'https://www.googleapis.com/auth/userinfo.email'
+];
+
+// Generate a url that asks permissions for the two scopes defined above
+const authorizationUrl = oauth2Client.generateAuthUrl({
+    // 'online' (default) or 'offline' (gets refresh_token)
+    access_type: 'offline',
+    /** Pass in the scopes array defined above.
+         * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+    scope: scopes,
+    // Enable incremental authorization. Recommended as a best practice.
+    include_granted_scopes: true
+});
+
+
 
 
 // login check for user
@@ -284,7 +333,75 @@ Description: This module would implement google maps API and handle alarm schedu
 const smartNavigateRouter = require('./Interfaces/SmartNavigate');
 app.use('/api/smartNavigate', smartNavigateRouter);
 
-// Add your other routes and middleware here
+
+
+app.get('/auth/google', (req, res) => {
+    res.redirect(authorizationUrl);
+});
+
+
+app.get('/auth/google/redirect', async (req, res) => {
+    const code = req.query.code;
+
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
+    console.log('you have successfully logged in with email: ', userInfo.data.email);
+
+    userEmail = userInfo.data.email;
+
+    // You can now use 'userEmail' to save events to the user's database
+    res.redirect(`http://localhost:3000/api/calendar/test/${userEmail}`);
+
+});
+
+app.get('/api/calendar/test/:userEmail', async (req, res) => {
+    const userEmail = req.params.userEmail;
+    try {
+        const calendarEvents = await googleCalendar.events.list({
+            calendarId: 'primary',
+            auth: oauth2Client,
+            timeMin: new Date().toISOString(),
+            maxResults: 10,
+            singleEvents: true,
+            orderBy: 'startTime'
+        });
+
+
+        //console.log(calendarEvents);
+        const extractedEvents = [];
+        for (const event of calendarEvents.data.items) {
+            const extractedEvent = {
+                eventID: event.id,
+                summary: event.summary,
+                description: event.description,
+                creator_email: event.creator.email,
+                status: event.status,
+                kind: event.kind,
+                location: event.location,
+                start: event.start.dateTime,
+                start_timeZone: event.start.timeZone,
+                end: event.end.dateTime,
+                end_timeZone: event.end.timeZone,
+                // Add more fields you want to extract here
+            };
+
+            extractedEvents.push(extractedEvent);
+        };
+
+        result = await User.findOneAndUpdate({ username: userEmail }, { $set: { events: extractedEvents } });
+
+        res.status(200).json({ 'events_inserted': result });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching calendar events' });
+    }
+});
+
+
+
+
 
 app.get('/', (req, res) => {
     if (isHttps) {
@@ -301,7 +418,6 @@ app.get('/check', (req, res) => {
         res.send('check for http');
     }
 });
-
 
 var port = null;
 if (isHttps) {
