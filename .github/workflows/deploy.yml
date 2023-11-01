@@ -13,9 +13,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install project dependencies
-        run: npm install
-
       - name: Restart MongoDB
         run: |
           # Restart MongoDB on RHEL using systemctl
