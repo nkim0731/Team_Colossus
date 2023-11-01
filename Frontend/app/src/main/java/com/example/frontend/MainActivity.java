@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
+    private Bundle bundles = new Bundle();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,12 +85,15 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, account.getDisplayName());
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
-            Bundle userData = new Bundle();
-            userData.putString("username", account.getEmail());
-            userData.putString("token", account.getIdToken());
-            userData.putString("authCode", account.getServerAuthCode());
+            bundles.putString("userEmail", account.getEmail());
+            bundles.putString("userGivenName", account.getGivenName());
+            bundles.putString("userFamilyName", account.getFamilyName());
+            bundles.putString("userDisplayName", account.getDisplayName());
+            bundles.putString("userToken", account.getIdToken());
+            bundles.putString("userid", account.getId());
+            bundles.putString("userServerAuthCode", account.getServerAuthCode());
 
-            loginSuccessIntent.putExtras(userData);
+            loginSuccessIntent.putExtras(bundles);
             startActivity(loginSuccessIntent);
         }
     }

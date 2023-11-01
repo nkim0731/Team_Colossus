@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,6 +21,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private Button settingButton;
 
     private Bundle userData;
+    String userEmail;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,7 +29,9 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
         // get userdata from login
         userData = getIntent().getExtras();
+        userEmail = userData.getString("userEmail", "Default");
         // access data with String value1 = receivedData.getString("key1");
+        Log.d(TAG, userEmail);
 
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
