@@ -10,9 +10,23 @@
     <string name="button_signUp">sign up</string>
     <string name="button_calendar">Calendar</string>
     <string name="button_signOut">Sign out</string>
-    <string name="button_groupChat">Group Chat</string>
+    <string name="button_groupChat">My Group Chats</string>
     <string name="button_setting">Setting</string>
 
     <string name="button_activity">Activities</string>
     <string name="text_transit">Select Transit preference</string>
+
+    <string-array name="preference_entries">
+        <item>Bus</item>
+        <item>Car</item>
+        <item>Bicycle</item>
+        <!-- Add more items as needed -->
+    </string-array>
+
+    <string-array name="preference_values">
+        <item>value1</item>
+        <item>value2</item>
+        <item>value3</item>
+        <!-- Make sure these values are unique -->
+    </string-array>
 </resources>

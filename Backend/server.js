@@ -22,21 +22,19 @@ const chatSchema = require('./Schema/chatSchema');
 
 
 const app = express();
-var isHttps = false;
+var isHttps = true;
 
 if (isHttps) {
-    // Load the SSL/TLS certificate and private key
-    const privateKey = fs.readFileSync('keys/ssl/key.pem', 'utf8');
-    const certificate = fs.readFileSync('keys/ssl/cert.pem', 'utf8');
-    const credentials = { key: privateKey, cert: certificate };
+    const options = {
+        key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'), // Path to your private key
+        cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'), // Path to your certificate
+    };
 
-    const httpsServer = https.createServer(credentials, app);
+    const httpsServer = https.createServer(options, app);
 }
 const server = http.createServer(app); // HTTP server for testing 
 
 const chatManager = new ChatManager(server); // start socketio service for groupchats
-
-
 
 // For loading env variables
 require('dotenv').config({ path: `${__dirname}/.env` });
@@ -205,14 +203,36 @@ app.route('/api/calendar')
     }
 });
 
+// create day schedule on button press
+app.route('/api/calendar/day_schedule')
+.post(async (req, res) => {
+    const data = req.body; // needs username, location (origin), and preferences
+    try {
+        const calendar = db.getCalendar(data.username);
+        const schedule = await Scheduler.createDaySchedule(calendar.events, data.location, preferences);
+        await db.updateSchedule(data.username, schedule);
+        res.status(200).json({ schedule: schedule });
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+})
+.get(async (req, res) => { // ?user=username
+    try {
+        const schedule = await db.getSchedule(req.query.user);
+        res.status(200).json({ schedule: schedule });
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+})
+
 /*
 * Group chats API calls
 */
 app.get('/api/message_history', async (req, res) => {
     console.log('getting message history')
-    const chatName = req.query.chatName; // ?chatID=x 
+    const chatName = req.query.chatName; // ?chatName=x 
     try {
-        const messages = await db.getMessages(chatID);
+        const messages = await db.getMessages(chatName);
         res.status(200).send(messages);
     } catch (e) {
         res.status(500).json({ message: e });
@@ -221,8 +241,11 @@ app.get('/api/message_history', async (req, res) => {
 
 app.get('/api/chatrooms', async (req, res) => {
     try {
-        const rooms = await db.getRooms();
-        res.status(200).json({ rooms: rooms });
+        const user = req.query.user; // ?user=username
+        const calendar = await db.getCalendar(user);
+        let events = calendar.events;
+        const courses = events.filter(e => { e.hasChat })
+        res.status(200).json({ rooms: courses });
     } catch (e) {
         res.status(500).json({ message: e });
     }
@@ -319,7 +342,7 @@ Description: This module would implement google maps API and handle alarm schedu
 */
 
 // Use the smart navigation router
-const smartNavigateRouter = require('./Interfaces/smartNavigate');
+const smartNavigateRouter = require('./Interfaces/SmartNavigate');
 app.use('/api/smartNavigate', smartNavigateRouter);
 
 
@@ -398,14 +421,13 @@ Server starter code
 */
 var port = null;
 if (isHttps) {
-    port = 443; // Standard HTTPS port
+    port = 8081; // Standard HTTPS port
     
     server.listen(port, () => {
       console.log(`Server is running on port ${port}`);
-      const host = "20.64.250.110"
-      const port = serverApp.address().port;
+      const host = "calendo.westus2.cloudapp.azure.com"
 
-      console.log(`Server is running on https://${host}:${port}`);
+      console.log(`Server is running on http://${host}:${port}`);
     });
 } else {
     console.log("googleAPIKey : ", googleAPIKey)
@@ -413,9 +435,10 @@ if (isHttps) {
     // Start server
     port = process.env.PORT || 3000;
 
-    server.listen(port, '0.0.0.0', () => console.log('Server started on port 3000')); // needs to be server.listen or sockets stop working
+    const host = "20.64.250.110"
+    server.listen(port, '0.0.0.0', () => console.log(`Server started on https://${host}:${port}`)); // needs to be server.listen or sockets stop working
 
-    const host = "localhost"
+
     console.log(`\nServer is running on http://${host}:${port}\n`);
     // const serverApp = app.listen(port, () => {
     //     const host = "localhost"

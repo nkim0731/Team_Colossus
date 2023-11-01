@@ -1,0 +1,29 @@
+name: Deploy Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install PM2
+        run: npm install pm2 -g
+
+      - name: Install project dependencies
+        run: npm install
+
+      - name: Start the application with PM2
+        run: sudo systemctl start pm2-calendo.service
+      
