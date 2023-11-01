@@ -6,6 +6,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,6 +30,7 @@ import io.socket.client.Socket;
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
+    private final String CHANNEL_ID = "32";
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
 
@@ -74,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        createNotificationChannel();
 //        // initialize socket connection
 //        Socket socket = SocketManager.getSocket();
 //        socket.connect();
@@ -182,5 +186,17 @@ public class MainActivity extends AppCompatActivity {
             Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
             updateUI(null);
         }
+    }
+
+    private void createNotificationChannel() {
+        CharSequence name = "sample channel";
+        String description = "sample notification channel";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+        NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+        channel.setDescription(description);
+
+        NotificationManager notificationManager = getSystemService(NotificationManager.class);
+        notificationManager.createNotificationChannel(channel);
+
     }
 }
