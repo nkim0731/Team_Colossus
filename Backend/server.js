@@ -294,6 +294,14 @@ app.get('/', (req, res) => {
     }
 });
 
+app.get('/check', (req, res) => {
+    if (isHttps) {
+        res.send('check for https!');
+    } else {
+        res.send('check for http');
+    }
+});
+
 
 var port = null;
 if (isHttps) {
