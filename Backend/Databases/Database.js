@@ -68,9 +68,9 @@ class Database {
         try {
             // if property doesnt exist would be undefined not null
             if (user.password === undefined) {
-                user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless
+                user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless lol
             }
-            // these should be undefined anyway on create account
+            // these should be undefined anyway on create account no need for if, easier to read
             user.preferences = { commute_method: null };
             user.events = [];
             user.daySchedule = [];

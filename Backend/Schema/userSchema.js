@@ -4,7 +4,7 @@ const userSchema = new mongoose.Schema({
     username: String,
     password: String,
     userId: String, // might not need
-    token: String,
+    access_token: String,
     refresh_token: String,
     preferences: {
         commute_method: {

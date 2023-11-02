@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 postData.put("username", account.getEmail());
                 postData.put("userId", account.getId());
-                postData.put("token", account.getIdToken());
+                postData.put("access_token", account.getIdToken());
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }

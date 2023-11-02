@@ -5,6 +5,20 @@ const Joi = require('joi');
 const userSchema = require('../Schema/userSchema');
 
 // GET user preferences by username
+router.get('/:username', async (req, res) => {
+  try {
+    const User = req.app.locals.mongoDB.model('user', userSchema);
+
+    const username = req.params.username;
+    const user = await User.findOne({ username });
+
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// GET user preferences by username
 router.get('/:username/preferences', async (req, res) => {
   try {
     const User = req.app.locals.mongoDB.model('user', userSchema);
