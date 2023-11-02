@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,8 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private List<ChatRoom> chatRooms;
     private RecyclerView chatRoomRecyclerView;
     private ChatRoomAdapter chatRoomAdapter;
+    private HttpsRequest httpsRequest;
+    private String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,8 @@ public class ChatRoomsActivity extends AppCompatActivity {
         }
 
 
+        //initialize https request
+        httpsRequest = new HttpsRequest();
 
         //get value from previous intent
         userData = getIntent().getExtras();
@@ -41,10 +46,16 @@ public class ChatRoomsActivity extends AppCompatActivity {
         chatRoomRecyclerView = findViewById(R.id.chatRoomRecyclerView);
         chatRoomRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatRoomAdapter = new ChatRoomAdapter(chatRooms,this);
-//        chatRoomAdapter = new ChatRoomAdapter(chatRooms);
         chatRoomRecyclerView.setAdapter(chatRoomAdapter);
 
-        // list of all chatrooms from get request
+        if(userData.getString("userEmail") != null){
+            Log.d("ChatRoom",userData.getString("userEmail"));
+        }else {
+            Log.d("ChatRoom","pass user email is null");
+        }
+
+
+        // list of all chat rooms from get request
         findViewById(R.id.chatRoom1).setOnClickListener(view -> {
 //            String chatName = (String) view.getTag();
 //            userData.putString("chatName", chatName);
@@ -58,5 +69,10 @@ public class ChatRoomsActivity extends AppCompatActivity {
 //            groupChatIntent.putExtras(userData);
 //            startActivity(groupChatIntent);
         });
+    }
+
+    private void getChatRooms(){
+
+        url = String.format("http://10.0.2.2:3000//api/chatrooms?user=%s",userData.getString("userEmail"));
     }
 }
