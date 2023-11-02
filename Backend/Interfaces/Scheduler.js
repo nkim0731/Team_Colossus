@@ -15,11 +15,11 @@ class Scheduler {
     */
 
     // get direction to an event from position when called
-    async getDirections(origin, event, preferences) { // need to pass objects
+    async getDirections(origin, event, preferences) { // TODO if origin is in preferences can remove
         try {
             let params = {
                 origin: origin, // LatLng "lat, lng" string
-                destination: event.gpsLocation, // a LatLng string, place object can be event.address instead
+                destination: event.address, // a LatLng string, or an address
                 travelMode: preferences.mode, // DRIVING, BICYCLING, WALKING, TRANSIT (strings)
                 alternatives: true,
                 key: googleAPIKey,

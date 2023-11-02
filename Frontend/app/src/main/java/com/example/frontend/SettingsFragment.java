@@ -16,22 +16,22 @@ import org.json.JSONObject;
 
 public class SettingsFragment extends PreferenceFragmentCompat {
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
-    private String server_url;
-    private String user_email;
+    private final String server_url = "http://10.0.2.2:3000";
     private final String TAG = "Settings";
+    private Bundle userData;
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
-        user_email = "sample@gmail.com"; //TODO fetch from Intent
-        server_url = String.format("http://10.0.2.2:3000/api/users/%s/preferences",user_email);
+        userData = getArguments();
 
         //Set summary provide of each editText preference
-        EditTextPreference preparation_time= findPreference("preparation_time");
-        EditTextPreference max_missed_bus= findPreference("max_missed_bus");
-        EditTextPreference snooze_duration= findPreference("snooze_duration");
-        EditTextPreference home_location= findPreference("home_location");
-        EditTextPreference school_location= findPreference("school_location");
-        EditTextPreference work_location= findPreference("work_location");
+        EditTextPreference preparation_time = findPreference("preparation_time");
+        EditTextPreference max_missed_bus = findPreference("max_missed_bus");
+        EditTextPreference snooze_duration = findPreference("snooze_duration");
+        EditTextPreference home_location = findPreference("home_location");
+        EditTextPreference school_location = findPreference("school_location");
+        EditTextPreference work_location = findPreference("work_location");
         preparation_time.setSummaryProvider(new Preference.SummaryProvider<EditTextPreference>() {
             @Override
             public CharSequence provideSummary(EditTextPreference preference) {

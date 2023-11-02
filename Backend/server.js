@@ -145,6 +145,7 @@ app.post('/login', async (req, res) => {
     }
 })
 
+// handle signin with google account
 app.post('/login/google', async (req, res) => {
     const data = req.body;
     try {
@@ -175,6 +176,17 @@ app.post('/register', async (req, res) => {
         }
     } catch (e) {
         res.status(500).json({ message: e });
+    }
+})
+
+// endpoint set preferences and update database
+app.put('/api/preferences', async (req, res) => {
+    const data = req.body;
+    try {
+        await db.updatePreferences(data.username, data.preferences);
+        res.status(200).json({ result: 'success' });
+    } catch (e) {
+        res.status(500).json({ result: e });
     }
 })
 

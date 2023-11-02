@@ -37,15 +37,11 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
         // settings == preference setting
         settingButton = findViewById(R.id.button_setting);
-        settingButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                // move to setting page, set preference
-                Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
-                settingIntent.putExtras(userData);
-                startActivity(settingIntent);
-            }
+        settingButton.setOnClickListener(view -> {
+            // move to setting page, set preference
+            Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
+            settingIntent.putExtras(userData);
+            startActivity(settingIntent);
         });
 
         Button alarmButton = findViewById(R.id.button_alarm);

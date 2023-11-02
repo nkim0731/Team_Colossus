@@ -15,43 +15,25 @@ import com.google.android.material.textfield.TextInputLayout;
 
 public class PreferenceActivity extends AppCompatActivity {
     private final String TAG = "PreferenceActivity";
-    private String preferTransit;
+    private Bundle userData;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        userData = getIntent().getExtras();
 
+        SettingsFragment settingsFragment = new SettingsFragment();
+        settingsFragment.setArguments(userData);
 
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(android.R.id.content, new SettingsFragment())
+                .replace(android.R.id.content, settingsFragment)
                 .commit();
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
-//        TextInputLayout textInputLayout = findViewById(R.id.inputLayout);
-//        MaterialAutoCompleteTextView autoCompleteTextView = findViewById(R.id.inputTV);
-//        MaterialButton button = findViewById(R.id.btn);
-//
-//        button.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                if(autoCompleteTextView.getText().toString().isEmpty()){
-//                    textInputLayout.setError("Please select an option");
-//                }else{
-//                    preferTransit = autoCompleteTextView.getText().toString();
-//                    Toast.makeText(PreferenceActivity.this, preferTransit, Toast.LENGTH_SHORT).show();
-////                    Log.d("", preferTransit);
-//
-//                    // send preferTransit to db.
-//                }
-//            }
-//        });
-
-
-
     }
 
     @Override

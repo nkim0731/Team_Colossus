@@ -81,6 +81,15 @@
             app:entryValues="@array/preference_values"
             app:defaultValue="default_value" />
 
+        <ListPreference
+            app:key="commute_method"
+            app:title="Commute method"
+            app:dialogTitle="Choose one"
+            app:summary="%s"
+            app:entries="@array/preference_entries"
+            app:entryValues="@array/preference_values"
+            app:defaultValue="default_value" />
+
         <EditTextPreference
             app:key="max_missed_bus"
             app:title="Max missed bus"

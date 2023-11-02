@@ -82,6 +82,18 @@ class Database {
         }
     }
 
+    // update preferences for user in database
+    async updatePreferences(user, preferences) {
+        try {
+            let userDocument = await ChatModel.findOne({ username: user });
+            userDocument.preferences = preferences;
+            await userDocument.save();
+        } catch (e) {
+            console.log(e);
+            throw e;
+        }
+    }
+
     /*
     * Calendar Database calls
     */
@@ -109,8 +121,9 @@ class Database {
                     e.hasChat = false;
                 }
                 let included = false;
+                // check if event is already in database
                 for (let ue of userEvents.events) {
-                    if (ue.eventName === e.eventName) included = true; // assuming eventName is unique
+                    if (ue.eventName === e.eventName) included = true;
                 }
                 if (!included) newEvents.push(e);
             }
@@ -147,6 +160,7 @@ class Database {
     /*
     * Message database calls
     */
+
     // get all messages associated with the chatroom chatID
     async getMessages(chatName) {
         try {
@@ -181,7 +195,6 @@ class Database {
     // add a message (object) to chatroom chatID
     async addMessage(chatName, message) {
         try {
-            // const id = mongoose.Types.ObjectId(chatID);
             let chatDocument = await ChatModel.findOne({ chatName });
             // create chatroom in database if does not exist already
             if (!chatDocument) {
