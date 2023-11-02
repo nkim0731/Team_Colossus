@@ -185,16 +185,20 @@ app.post('/register', async (req, res) => {
 // This is redirected from /auth/google and /auth/google/token path so do not make CHANGES!
 app.get('/api/calendar/import', async (req, res) => {
     const useremail = req.query.useremail;
+    const now = moment();
+    const sevenDaysFromNow = moment().add(7, 'days');
+
+
     try {
         const calendarEvents = await googleCalendar.events.list({
             calendarId: 'primary',
             auth: oauth2Client,
-            timeMin: new Date().toISOString(),
-            maxResults: 10,
+            timeMin: now.toISOString(),
+            timeMax: sevenDaysFromNow.toISOString(),
+            maxResults: 30,
             singleEvents: true,
             orderBy: 'startTime'
         });
-
 
         //console.log(calendarEvents);
         const extractedEvents = [];
