@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const socketIO = require('socket.io');
 const mongoose = require('mongoose');
+const moment = require('moment');
+
 // For google auth
 const { google } = require('googleapis');
 
@@ -180,18 +182,49 @@ app.post('/register', async (req, res) => {
 * Calendar API calls
 */
 
-// import events to calendar array using oauth2.0 token
-app.post('/api/calendar/import', async (req, res) => {
-    const data = req.body; // oauth2.0 token, username
+// This is redirected from /auth/google and /auth/google/token path so do not make CHANGES!
+app.get('/api/calendar/import', async (req, res) => {
+    const useremail = req.query.useremail;
     try {
-        let events = await calendar.importCalendar(data.token);
-        await db.addEvents(data.username, events); // update database with imported events
-        events = await db.getCalendar(data.username);
-        res.status(200).json({ 'events': events }); // send updated events to reload frontend
-    } catch (e) {
-        res.status(500).json({ message: e });
+        const calendarEvents = await googleCalendar.events.list({
+            calendarId: 'primary',
+            auth: oauth2Client,
+            timeMin: new Date().toISOString(),
+            maxResults: 10,
+            singleEvents: true,
+            orderBy: 'startTime'
+        });
+
+
+        //console.log(calendarEvents);
+        const extractedEvents = [];
+        for (const event of calendarEvents.data.items) {
+            const extractedEvent = {
+                eventID: event.id,
+                summary: event.summary,
+                description: event.description,
+                creator_email: event.creator.email,
+                status: event.status,
+                kind: event.kind,
+                location: event.location,
+                start: event.start.dateTime,
+                start_timeZone: event.start.timeZone,
+                end: event.end.dateTime,
+                end_timeZone: event.end.timeZone,
+                // Add more fields you want to extract here
+            };
+
+            extractedEvents.push(extractedEvent);
+        };
+
+        result = await User.findOneAndUpdate({ username: useremail }, { $set: { events: extractedEvents } });
+
+        res.status(200).json({ 'events' : result });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error fetching calendar events' });
     }
-})
+});
 
 // get / add events to calendar
 app.route('/api/calendar')
@@ -237,12 +270,12 @@ app.route('/api/calendar/day_schedule')
 })
 
 // API endpoint to get calendar data for a user by email
-app.get('/api/calendar/:userEmail', async (req, res) => {
-    const userEmail = req.params.userEmail;
+app.get('/api/calendar', async (req, res) => {
+    const useremail = req.query.useremail;
 
     try {
         // Find the user by their email
-        const user = await User.findOne({ username: userEmail });
+        const user = await User.findOne({ username: useremail });
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -474,20 +507,20 @@ app.get('/auth/google', async (req, res) => {
         oauth2Client.setCredentials(foundUserToken);
         host = "calendo.westus2.cloudapp.azure.com"
         // You can now use 'userEmail' to save events to the user's database
-        res.redirect(`https://${host}:${port}/auth/google/test/${useremail}`);
-        console.log(`Redirecting you to https://${host}:${port}/auth/google/test/${useremail}`);
+        res.redirect(`https://${host}:${port}/api/calendar/import?useremail=${useremail}`);
+        console.log(`Redirecting you to https://${host}:${port}/api/calendar/import?useremail=${useremail}`);
     } else {
         res.redirect(authorizationUrl);
         console.log("Redirecting you to authorizationUrl : ", authorizationUrl);
     }
 });
 
-app.get('/auth/google/token/:userEmail', async (req, res) => {
+app.get('/auth/google/token', async (req, res) => {
 
-    // /auth/google/token?token=X where X you need to specify what useremail are you requesting authentication for
+    // /auth/google/token?useremail=ee where ee you need to specify what useremail are you requesting authentication for
     const access_token = req.access_token;
     const refresh_token = req.refresh_token;
-    const useremail = req.params.userEmail;
+    const useremail = req.query.useremail;
     console.log(`\nGoing to authenticate google with access_token : ${access_token}`);
     
 
@@ -507,8 +540,8 @@ app.get('/auth/google/token/:userEmail', async (req, res) => {
         });
         host = "calendo.westus2.cloudapp.azure.com"
         // You can now use 'userEmail' to save events to the user's database
-        res.redirect(`https://${host}:${port}/auth/google/test/${useremail}`);
-        console.log(`Redirecting you to https://${host}:${port}/auth/google/test/${useremail}`);
+        res.redirect(`https://${host}:${port}/api/calendar/import?useremail=${useremail}`);
+        console.log(`Redirecting you to import calendar endpoint : https://${host}:${port}/api/calendar/import?useremail=${useremail}`);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error saving the user token, check if you have registered the user' });
@@ -580,51 +613,8 @@ app.get('/auth/google/redirect', async (req, res) => {
 
     host = "calendo.westus2.cloudapp.azure.com"
     // You can now use 'userEmail' to save events to the user's database
-    res.redirect(`https://${host}:${port}/auth/google/test/${userEmail}`);
-    console.log('redirecting you again to calender importing function\n');
-});
-
-app.get('/auth/google/test/:userEmail', async (req, res) => {
-    const userEmail = req.params.userEmail;
-    try {
-        const calendarEvents = await googleCalendar.events.list({
-            calendarId: 'primary',
-            auth: oauth2Client,
-            timeMin: new Date().toISOString(),
-            maxResults: 10,
-            singleEvents: true,
-            orderBy: 'startTime'
-        });
-
-
-        //console.log(calendarEvents);
-        const extractedEvents = [];
-        for (const event of calendarEvents.data.items) {
-            const extractedEvent = {
-                eventID: event.id,
-                summary: event.summary,
-                description: event.description,
-                creator_email: event.creator.email,
-                status: event.status,
-                kind: event.kind,
-                location: event.location,
-                start: event.start.dateTime,
-                start_timeZone: event.start.timeZone,
-                end: event.end.dateTime,
-                end_timeZone: event.end.timeZone,
-                // Add more fields you want to extract here
-            };
-
-            extractedEvents.push(extractedEvent);
-        };
-
-        result = await User.findOneAndUpdate({ username: userEmail }, { $set: { events: extractedEvents } });
-
-        res.status(200).json({ 'events' : result });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching calendar events' });
-    }
+    res.redirect(`https://${host}:${port}/api/calendar/import?useremail=${userEmail}`);
+    console.log('redirecting you again to calender importing endpoint\n');
 });
 
 
