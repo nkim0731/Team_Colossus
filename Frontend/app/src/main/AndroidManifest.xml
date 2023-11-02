@@ -26,7 +26,11 @@
 
         <activity
             android:name=".ChatRoomsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:parentActivityName=".MainActivity"
+            android:label="Chat Room"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            />
         <!-- remove networkSecurityConfig once https is done -->
         <activity
             android:name=".GroupChat"

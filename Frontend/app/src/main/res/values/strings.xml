@@ -15,6 +15,7 @@
 
     <string name="button_activity">Activities</string>
     <string name="text_transit">Select Transit preference</string>
+    <string name="button_create_room">create chat room</string>
 
     <string-array name="preference_entries">
         <item>Bus</item>
