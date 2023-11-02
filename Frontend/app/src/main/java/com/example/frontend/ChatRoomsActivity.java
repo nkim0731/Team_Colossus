@@ -40,7 +40,8 @@ public class ChatRoomsActivity extends AppCompatActivity {
         //initialize recyclerView
         chatRoomRecyclerView = findViewById(R.id.chatRoomRecyclerView);
         chatRoomRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        chatRoomAdapter = new ChatRoomAdapter(chatRooms);
+        chatRoomAdapter = new ChatRoomAdapter(chatRooms,this);
+//        chatRoomAdapter = new ChatRoomAdapter(chatRooms);
         chatRoomRecyclerView.setAdapter(chatRoomAdapter);
 
         // list of all chatrooms from get request

@@ -1,5 +1,8 @@
 package com.example.frontend;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,10 +15,16 @@ import java.util.List;
 
 public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRoomViewHolder>{
     private List<ChatRoom> chatRooms; // List of ChatRooms
+    private Context context;
 
-    public ChatRoomAdapter(List<ChatRoom> chatRooms) {
+    public ChatRoomAdapter(List<ChatRoom> chatRooms, Context context) {
         this.chatRooms = chatRooms;
+        this.context = context;
     }
+//    public ChatRoomAdapter(List<ChatRoom> chatRooms){
+//        this.chatRooms = chatRooms;
+//    }
+
 
     @NonNull
     @Override
@@ -31,7 +40,7 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
 
     @Override
     public void onBindViewHolder(@NonNull ChatRoomAdapter.ChatRoomViewHolder holder, int position) {
-        // Bind message data to the views in the ViewHolder
+        // Bind chatroom data to the views in the ViewHolder
         ChatRoom room = chatRooms.get(position);
         holder.bind(room);
     }
@@ -54,6 +63,14 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
         public void bind(ChatRoom room) {
             // Bind data to the views
             roomText.setText(room.getChatName());
+            String chatName = room.getChatName();
+            Bundle userData = new Bundle();
+            userData.putString("chatName", chatName);
+            roomText.setOnClickListener(view -> {
+                Intent groupChatIntent = new Intent(context, GroupChat.class);
+                groupChatIntent.putExtras(userData);
+                context.startActivity(groupChatIntent);
+            });
         }
     }
 }
