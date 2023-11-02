@@ -13,22 +13,19 @@ const googleAPIKey = process.env.GOOGLE_API_KEY;
 
 // Schema and Model for event
 const eventSchema = new mongoose.Schema({
-    // calendarId: String,
-    eventName: String, // for frontend display what the event is
+    eventName: String,
     eventId: String,
-    // ownerUserId: String, // don't think we need since events are stored under a user
     eventType: String,
     description: String,
     start: Date,
     end: Date,
-    hasChat: Boolean, // true if its a course, false otherwise (how do we know an event is a course?)
+    hasChat: Boolean,
     address: String,
     gpsLocation: String,
 })
 
 class Calendar {  
     constructor() {
-        // this.client = new Client({});
         const oauth2Client = new google.auth.OAuth2(
             process.env.CLIENT_ID,
             process.env.CLIENT_SECRET,

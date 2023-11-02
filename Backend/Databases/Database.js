@@ -52,7 +52,7 @@ class Database {
         }
     }
 
-    // Get user data by google auth id
+    // Get user data by google auth id (not used)
     async getUserById(id) {
         try {
             return await UserModel.findOne({ userId: id });
@@ -61,7 +61,6 @@ class Database {
             throw e;
         }
     }
-
 
     // Add a user to Users Database
     async addUser(user) {
@@ -151,7 +150,6 @@ class Database {
     // get all messages associated with the chatroom chatID
     async getMessages(chatName) {
         try {
-            // const id = mongoose.Types.ObjectId(chatID);
             return await ChatModel.findOne({ chatName }).select('messages');
         } catch (e) {
 			console.log('Error: ' + e);
@@ -159,21 +157,24 @@ class Database {
     }
 
     // create room
-    async addRoom(chatName) {
+    async createRoom(chatName) {
         try {
             const newRoom = new ChatModel({ chatName: chatName, messages: [] });
-            await newRoom.save();
+            const room = await newRoom.save();
+            return room;
         } catch (e) {
 			console.log('Error: ' + e);
+            throw e;
 		}
     }
 
-    // get all chatrooms return ID and name
-    async getRooms() {
+    // get a chatroom by name
+    async getRoom(chatName) {
         try {
-            return await ChatModel.find({}, '_id chatName');
+            return await ChatModel.findOne({ chatName });
         } catch (e) {
 			console.log('Error: ' + e);
+            throw e;
 		}
     }
 

@@ -277,9 +277,19 @@ app.get('/api/message_history', async (req, res) => {
 });
 
 app.get('/api/chatrooms', async (req, res) => {
+    const username = req.query.user; // ?user=x
     try {
-        const rooms = await db.getRooms();
-        res.status(200).json({ rooms: rooms });
+        const calendar = await db.getCalendar(username);
+        const courseEvents = calendar.events.filter(e => e.hasChat); // filter for only events with chats
+        let myChatrooms = [];
+        for (let e of courseEvents) {
+            let chatroom = await db.getRoom(e.eventName);
+            if (!chatroom) { // room null, not created yet
+                chatroom = await db.createRoom(e.eventName);
+            }
+            myChatrooms.push(chatroom);
+        }
+        res.status(200).send(myChatrooms);
     } catch (e) {
         res.status(500).json({ message: e });
     }

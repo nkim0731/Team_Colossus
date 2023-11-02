@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
     private final String CHANNEL_ID = "32";
     private HttpsRequest httpsRequest;
-    private final String server_url = "http://10.0.2.2:3000";
+    private final String server_url = "http://10.0.2.2:3000"; // TODO update with actual url
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
 //            userData.putString("userFamilyName", account.getFamilyName());
 //            userData.putString("userDisplayName", account.getDisplayName());
             userData.putString("userToken", account.getIdToken());
-            userData.putString("userid", account.getId());
+            userData.putString("userId", account.getId());
 //            userData.putString("userServerAuthCode", account.getServerAuthCode());
             loginSuccessIntent.putExtras(userData);
 
@@ -87,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
             JSONObject postData = new JSONObject();
             try {
                 postData.put("username", account.getEmail());
-                postData.put("userId", account.getId());
+//                postData.put("userId", account.getId());
                 postData.put("access_token", account.getIdToken());
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
@@ -110,11 +110,11 @@ public class MainActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFailure(String error) {
-                    Log.e(TAG, "Network error");
+                    Log.e(TAG, "Network error: Server probably closed");
                 }
             });
 
-            // this should run only once user has been validated with backend
+            // uncomment if testing without server
 //            startActivity(loginSuccessIntent);
         }
     }

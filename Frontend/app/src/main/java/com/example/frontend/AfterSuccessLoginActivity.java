@@ -15,13 +15,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import java.util.Calendar;
 
 public class AfterSuccessLoginActivity extends AppCompatActivity  {
-    private final String TAG = "AfterSuccessLoginActivity";
+    private final String TAG = "MainMenuActivity";
     private Button calendarButton;
-    private Button groupChatButton;
     private Button settingButton;
-
     private Bundle userData;
-    String userEmail;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,29 +26,14 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
         // get userdata from login
         userData = getIntent().getExtras();
-        userEmail = userData.getString("userEmail", "Default");
-        // access data with String value1 = receivedData.getString("key1");
-        Log.d(TAG, userEmail);
 
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
-        calendarButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                setContentView(R.layout.activity_calendar);
-                Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
-                calendarIntent.putExtras(userData);
-                startActivity(calendarIntent);
-            }
+        calendarButton.setOnClickListener(view -> {
+            Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
+            calendarIntent.putExtras(userData);
+            startActivity(calendarIntent);
         });
-
-        // groupchat
-//        groupChatButton = findViewById(R.id.button_groupChat);
-//        groupChatButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//            }
-//        });
 
         // settings == preference setting
         settingButton = findViewById(R.id.button_setting);
@@ -61,6 +43,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
                 // move to setting page, set preference
                 Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
+                settingIntent.putExtras(userData);
                 startActivity(settingIntent);
             }
         });
@@ -85,8 +68,6 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
                         1000 * 60 * 60 * 24, pendingIntent);
 
                 Log.d("Alarm", "Alarm set");
-
-
             }
         });
     }

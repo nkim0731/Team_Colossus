@@ -32,6 +32,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        // chatrooms data get from userData.getStringArrayList("chatrooms")
 
         //initialize https request
         httpsRequest = new HttpsRequest();
