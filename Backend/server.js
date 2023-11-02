@@ -22,7 +22,7 @@ require('dotenv').config({ path: `${__dirname}/.env` });
 
 
 const app = express();
-var isHttps = true;
+var isHttps = false; // TODO revert this back to true dont forget lol
 
 var httpsServer = null
 if (isHttps) {
@@ -137,22 +137,33 @@ app.post('/login', async (req, res) => {
     }
 })
 
+app.post('/login/google', async (req, res) => {
+    const data = req.body;
+    try {
+        const checkUser = await db.getUser(data.username);
+        if (!checkUser) {
+            await db.addUser(data); // first time google auth, add to db
+            res.status(200).json({ result: 'register' });
+        } else {
+            res.status(200).json({ result: 'login' });
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ result: e });
+    }
+})
+
 // register a user (also do this with google auth except only on first time)
 app.post('/register', async (req, res) => {
-    // new account probably also need to input preferences
-    let data = req.body; // req.body.username = email if google auth
-    // if (isTest) {console.log('req.body : ', req.body);}
-    // if (isTest) {console.log('data.username : ', data.username);}
-
+    const data = req.body; // req.body.username = email if google auth
     try {
         let checkUser = await db.getUser(data.username);
         if (checkUser !== false) {
             res.status(400).json({ message: 'Username/Email already exists' });
-            console.log(checkUser);
         } else {
             console.log('/register : adding a new user');
-            result = await db.addUser(data);
-            res.status(200).json(result);
+            await db.addUser(data);
+            res.status(200).json({ result: 'register' });
         }
     } catch (e) {
         res.status(500).json({ message: e });
@@ -462,13 +473,7 @@ if (isHttps) {
     // Start server
     port = process.env.PORT || 3000;
 
-    host = "20.64.250.110"
-    server.listen(port, '0.0.0.0', () => console.log(`Server started on http://${host}:${port}`)); // needs to be server.listen or sockets stop working
-
-    // const serverApp = app.listen(port, () => {
-    //     const host = "localhost"
-    //     const port = serverApp.address().port;
-
-    //     console.log(`Server is running on http://${host}:${port}`);
-    // });
+    // host = "20.64.250.110"
+    host = 'localhost'
+    server.listen(port, '0.0.0.0', () => console.log(`Server started on http://${host}:${port}`));
 }

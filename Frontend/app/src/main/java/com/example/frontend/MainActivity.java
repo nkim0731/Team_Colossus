@@ -1,14 +1,11 @@
 package com.example.frontend;
 
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.AlertDialog;
@@ -16,7 +13,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -27,24 +23,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.lang.reflect.Type;
-import java.net.URISyntaxException;
-import java.util.List;
-
-import io.socket.client.IO;
-import io.socket.client.Socket;
-import okhttp3.Call;
-import okhttp3.FormBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -55,14 +36,15 @@ public class MainActivity extends AppCompatActivity {
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
-    private Bundle bundles = new Bundle();
-    String URL = "http://10.0.2.2:3000";
-    OkHttpClient client;
+    private Bundle userData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        userData = new Bundle();
+        httpsRequest = new HttpsRequest();
 
         // handle sign in
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -77,72 +59,65 @@ public class MainActivity extends AppCompatActivity {
         signOutButton = findViewById(R.id.button_signOut);
         signOutButton.setOnClickListener(view -> signOut());
 
-        // when opening app check if logged in and go to main menu
-        // but allow user to return to main menu for logout
+        createNotificationChannel();
+
+        // navigate to main page if previously signed in before, but allow return
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         updateUI(account);
-
-        createNotificationChannel();
     }
-
-//    @Override
-//    protected void onStart() {
-//        super.onStart();
-//        // Check for existing Google Sign In account, if the user is already signed in
-//        // the GoogleSignInAccount will be non-null.
-//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-//        updateUI(account);
-//    }
 
     private void updateUI(GoogleSignInAccount account) {
         if (account == null){
             Log.d(TAG, "There is no user signed in");
         }
         else {
-            Log.d(TAG, account.getDisplayName());
+            Log.d(TAG, account.getEmail());
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
-            bundles.putString("userEmail", account.getEmail());
-            bundles.putString("userGivenName", account.getGivenName());
-            bundles.putString("userFamilyName", account.getFamilyName());
-            bundles.putString("userDisplayName", account.getDisplayName());
-            bundles.putString("userToken", account.getIdToken());
-            bundles.putString("userid", account.getId());
-            bundles.putString("userServerAuthCode", account.getServerAuthCode());
+            userData.putString("userEmail", account.getEmail());
+//            userData.putString("userGivenName", account.getGivenName()); these data is not used anywhere
+//            userData.putString("userFamilyName", account.getFamilyName());
+//            userData.putString("userDisplayName", account.getDisplayName());
+            userData.putString("userToken", account.getIdToken());
+            userData.putString("userid", account.getId());
+//            userData.putString("userServerAuthCode", account.getServerAuthCode());
+            loginSuccessIntent.putExtras(userData);
 
-            // send token and username to server
-            JSONObject jObjectData = new JSONObject();
-            Object userToken = account.getIdToken();
-
+            // send necessary data to backend for database
+            JSONObject postData = new JSONObject();
             try {
-                jObjectData.put("id", userToken);
+                postData.put("username", account.getEmail());
+                postData.put("userId", account.getId());
+                postData.put("token", account.getIdToken());
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }
+            httpsRequest.post(server_url + "/login/google", postData, new HttpsCallback() {
+                @Override
+                public void onResponse(String response) {
+                    try {
+                        JSONObject responseObj = new JSONObject(response);
+                        String responseResult = responseObj.getString("result");
 
-//            httpsRequest.post(server_url + "/login", jObjectData, new HttpsCallback() {
-//                @Override
-//                public void onResponse(String response) {
-//                    Log.d(TAG, "success to send token");
-//                }
-//
-//                @Override
-//                public void onFailure(String error) {
-//                    Log.d(TAG, "fail to send token");
-//                }
-//            });
-//            //
+                        if (responseResult.equals("login") || responseResult.equals("register")) {
+                            startActivity(loginSuccessIntent); // show next page after user validated with backend
+                        } else {
+                            // TODO create pop up message informing user of error
+                        }
+                    } catch (JSONException e) {
+                        Log.e(TAG, "JSON Exception on response");
+                    }
+                }
+                @Override
+                public void onFailure(String error) {
+                    Log.e(TAG, "Network error");
+                }
+            });
 
-            loginSuccessIntent.putExtras(bundles);
-            startActivity(loginSuccessIntent);
+            // this should run only once user has been validated with backend
+//            startActivity(loginSuccessIntent);
         }
     }
-
-//    private void startLoginServerActivity() {
-//        Intent serverLoginInfoIntent = new Intent(MainActivity.this, LoginServerActivity.class);
-//
-//        startActivity(serverLoginInfoIntent);
-//    }
 
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
@@ -158,16 +133,7 @@ public class MainActivity extends AppCompatActivity {
             handleSignInResult(task);
         }
     }
-//    private ActivityResultLauncher<Intent> signInLauncher = registerForActivityResult(
-//            new ActivityResultContracts.StartActivityForResult(),
-//            result -> {
-//                if (result.getResultCode() == Activity.RESULT_OK) {
-//                    Intent data = result.getData();
-//                    Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-//                    handleSignInResult(task);
-//                }
-//            }
-//    );
+
     private void signOut() {
         mGoogleSignInClient.signOut()
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {

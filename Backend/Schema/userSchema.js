@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema({
     username: String,
     password: String,
+    userId: String, // might not need
     token: String,
     refresh_token: String,
     preferences: {

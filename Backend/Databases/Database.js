@@ -3,13 +3,13 @@ const mongoose = require('mongoose');
 // Schemas needed for db
 const userSchema = require('../Schema/userSchema');
 const chatSchema = require('../Schema/chatSchema');
-const { mongo } = require("mongoose");
+// const { mongo } = require("mongoose");
 
 // models to interact with database collections
 const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
-const maxMessages = 5; // set diff value for actual, low value for testing
+const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
 //isTest switch from main file
 var isTest = true;
@@ -19,8 +19,8 @@ isTest = true;
 var mongoURI = null;
 if (isTest) {
     // This URL should be the same as the db connection created in the server.js
-    mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-    //mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    // mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+    mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
 } else {
     // For actual project deployment
     mongoURI = 'mongodb://localhost:27017/calendoDB';
@@ -41,28 +41,24 @@ class Database {
         }
     }
 
-    // // Get data for user by username/email (unique)
-    // async getUser(username) {
-    //     try {
-    //         return await UserModel.findOne({ username: username });
-    //     } catch (e) {
-    //         console.log('Error: ' + e);
-    //     }
-    // }
-
     // Get data for user by username/email (unique)
     async getUser(useremail) {
         try {
-            const user = await UserModel.findOne({ username: useremail });
-
-            if (!user) {
-                return false;
-            } else {
-                return user;
-            }
+            // just return the result directly, null means no user return false redundant
+            return await UserModel.findOne({ username: useremail });
         } catch (error) {
             console.error('Error while fetching user:', error);
             throw error; // Re-throw the error to handle it further up the call stack
+        }
+    }
+
+    // Get user data by google auth id
+    async getUserById(id) {
+        try {
+            return await UserModel.findOne({ userId: id });
+        } catch (e) {
+            console.log(e);
+            throw e;
         }
     }
 
@@ -70,21 +66,20 @@ class Database {
     // Add a user to Users Database
     async addUser(user) {
         try {
-            if (user.preferences == null) {
-                user.preferences = {
-                    commute_method: null
-                };
+            // if property doesnt exist would be undefined not null
+            if (user.password === undefined) {
+                user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless
             }
-            if (user.events == null) {
-                user.events = [];
-            }
+            // these should be undefined anyway on create account
+            user.preferences = { commute_method: null };
+            user.events = [];
             user.daySchedule = [];
-            console.log('user before mongodb add : ', user);
+
             const newUser = new UserModel(user);
-            let result = await newUser.save();
-            return result;
+            await newUser.save();
         } catch (e) {
             console.log('addUser error -> ' + e);
+            throw e;
         }
     }
 
@@ -105,11 +100,15 @@ class Database {
     async addEvents(username, events) {
 		try {
             const userEvents = await UserModel.findOne({ username }).select('events');
+            const coursePattern = /^[A-za-z]{4}\d{3}/;
             let newEvents = [];
             for (let e of events) {
-                // TODO maybe do something here to determine if event is a course
-                // if (condition isCourse) e.hasChat = true;
-                // else e.hasChat = false;
+                // test against regex for format xxxx111 (course)
+                if (coursePattern.test(e.eventName)) {
+                    e.hasChat = true;
+                } else {
+                    e.hasChat = false;
+                }
                 let included = false;
                 for (let ue of userEvents.events) {
                     if (ue.eventName === e.eventName) included = true; // assuming eventName is unique
