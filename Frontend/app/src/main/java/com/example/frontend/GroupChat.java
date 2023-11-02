@@ -57,8 +57,10 @@ public class GroupChat extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_chat);
 
+
         userData = getIntent().getExtras();
         String chatName = userData.getString("chatName");
+
         httpsRequest = new HttpsRequest();
 
         //set up socket connection to server
@@ -85,28 +87,9 @@ public class GroupChat extends AppCompatActivity {
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         messageAdapter = new MessageAdapter(messages); // 'messages' is a list of message objects
         messageRecyclerView.setAdapter(messageAdapter);
-//        int chatID = 8;
-//        getChatHistory(chatID);
-        httpsRequest.get(server_url + "/api/message_history?chatName=" + chatName, new HttpsCallback() {
-            @Override
-            public void onResponse(String response) {
-                // array
-                Type listType = new TypeToken<List<Message>>(){}.getType();
-                List<Message> msg = new Gson().fromJson(response, listType);
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        // This block of code is executed on the main UI thread
-                        messages.addAll(msg);
-                        messageAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-            @Override
-            public void onFailure(String error) {
-                Log.e(TAG, error);
-            }
-        });
+
+        //get previous messages
+        getChatHistory(chatName);
 
         //initialize message view
         messageEditText = findViewById(R.id.editTextSend);
@@ -145,7 +128,7 @@ public class GroupChat extends AppCompatActivity {
 
 
                 //upload message to database
-                postClient.post(server_url, postData, new HttpsCallback() {
+                httpsRequest.post(server_url, postData, new HttpsCallback() {
                     @Override
                     public void onResponse(String response) {
                         Log.d(TAG,response);
@@ -198,11 +181,10 @@ public class GroupChat extends AppCompatActivity {
     }
 
     //get previous messages of the room
-    private void getChatHistory(int chatID){
-        HttpsRequest getRequest = new HttpsRequest();
-        String url = String.format("%s/api/message_history/?chatID=%s", server_url, chatID);
+    private void getChatHistory(String chatName){
+        String url = String.format("%s/api/message_history/?chatID=%s", server_url, chatName);
 
-        getRequest.get("http://10.0.2.2:3000/message", new HttpsCallback() { //test locally right now
+        httpsRequest.get("http://10.0.2.2:3000/message", new HttpsCallback() { //test locally right now
             @Override
             public void onResponse(String response) {
 //                JSONObject jsonObject = new JSONObject(response);
@@ -230,43 +212,6 @@ public class GroupChat extends AppCompatActivity {
 
     }
 
-    //Send post request to server
-    private void postRequest(Message msg) throws JSONException {
-        OkHttpClient client = new OkHttpClient();
-        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
 
-        //create JSON data
-        JSONObject postData = new JSONObject();
-        postData.put("message",msg.getMessageText());
-        postData.put("sender",msg.getSender());
-        RequestBody body = RequestBody.create(postData.toString(),mediaType);
-
-        //Create request
-        Request request = new Request.Builder()
-                .url(server_url)
-                .post(body)
-                .build();
-
-        //Send request
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.d(TAG,"request err");
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if(response.isSuccessful()){
-                    Log.d("GroupChat","response success");
-                    String responseData = response.body().string();
-                    Log.d(TAG,responseData);
-                }else{
-                    Log.d(TAG,"response fail");
-                }
-            }
-        });
-
-    }
 
 }
