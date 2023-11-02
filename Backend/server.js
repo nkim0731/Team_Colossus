@@ -20,6 +20,10 @@ const db = require('./Databases/Database.js');
 // For loading env variables
 require('dotenv').config({ path: `${__dirname}/.env` });
 
+// Schemas needed for db
+const userSchema = require('./Schema/userSchema');
+const chatSchema = require('./Schema/chatSchema');
+
 
 const app = express();
 var isHttps = true;
@@ -52,7 +56,6 @@ app.use('/', express.static(clientApp, { extensions: ['html'] }));
 
 
 
-
 //Universal mongoDB instantiation and other help code (used by So)
 var isTest = true;
 exports.isTest = isTest;
@@ -71,6 +74,9 @@ if (isTest) {
 // Create connection for calendoDB
 // This URL should be the same as the db connection created in the Database.js
 const testDB = mongoose.createConnection(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// models to interact with database collections
+const User = testDB.model('user', userSchema);
 
 // Store data in app.locals
 app.locals.mongoDB = testDB;
@@ -364,26 +370,197 @@ app.use('/api/smartNavigate', smartNavigateRouter);
 
 
 
-app.get('/auth/google', (req, res) => {
-    res.redirect(authorizationUrl);
+
+
+// Middleware to extract the access token
+app.use((req, res, next) => {
+    // Log a message to indicate that the middleware is running
+    console.log('Middleware is running!');
+
+    const authHeader = req.headers['authorization'];
+    if (authHeader) {
+        console.log("middleware authHeader", authHeader);
+      const access_token = authHeader.split(' ')[1]; // Split and get the token after "Bearer"
+      const refresh_token = authHeader.split(' ')[2]; 
+      req.access_token = access_token; // Attach the token to the request object
+      req.refresh_token = refresh_token; // Attach the token to the request object
+      console.log("req.access_token", req.access_token);
+    }
+    next(); // Continue to the next middleware or route
+  });
+
+const refreshTokenIfNecessary = async (userEmail) => {
+    const user = await User.findOne({ username: userEmail });
+
+    if (user) {
+        const currentTime = Date.now() / 1000;
+        if (user.token.expiry_date < currentTime) {
+            // Access token has expired; use the refresh token to obtain a new access token
+            const { token } = await oauth2Client.refreshToken(user.refresh_token);
+            oauth2Client.setCredentials(token);
+        }
+    }
+};
+
+const getUserToken = async (userEmail) => {
+    // Define a regex pattern for a basic email format
+    // const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+
+    // // Check if the userEmail matches the email regex pattern
+    // if (!emailRegex.test(userEmail)) {
+    //     // If it doesn't match, return null
+    //     return false;
+    // }
+
+    const user = await User.findOne({ username: userEmail });
+
+    if (user.token) {
+        console.log(`\n user.token : ${user.token}, user.refresh_token : ${user.refresh_token}`);
+
+        const currentTime = Date.now() / 1000;
+        if (user.token && user.token.expiry_date >= currentTime) {
+            // Access token is still valid
+            return user.token.access_token;
+        } else if (user.refresh_token) {
+            // Access token has expired; use the refresh token to obtain a new access token
+            const { token } = await oauth2Client.refreshToken(user.refresh_token);
+            oauth2Client.setCredentials(token);
+
+            // Store the new tokens in the user's record
+            await User.updateOne({ username: userEmail }, { $set: { token } });
+
+            return token.access_token;
+        } else {
+            console.log("tokens were undefined so return false")
+            return false;
+        }
+    }
+
+    // No user or token found, return null
+    return false;
+};
+
+app.get('/auth/google', async (req, res) => {
+
+    // /auth/google?useremail=X where X you need to specify what useremail are you requesting authentication for
+    const useremail = req.query.useremail; 
+    console.log(`\nGoing to authenticate google with email : ${useremail}`);
+    
+    const foundUserToken = await getUserToken(useremail);
+    console.log(`foundUserToken : ${foundUserToken}`)
+
+    if (foundUserToken) {
+        oauth2Client.setCredentials(foundUserToken);
+        host = "calendo.westus2.cloudapp.azure.com"
+        // You can now use 'userEmail' to save events to the user's database
+        res.redirect(`https://${host}:${port}/auth/google/test/${useremail}`);
+        console.log(`Redirecting you to https://${host}:${port}/auth/google/test/${useremail}`);
+    } else {
+        res.redirect(authorizationUrl);
+        console.log("Redirecting you to authorizationUrl : ", authorizationUrl);
+    }
+});
+
+app.get('/auth/google/token/:userEmail', async (req, res) => {
+
+    // /auth/google/token?token=X where X you need to specify what useremail are you requesting authentication for
+    const access_token = req.access_token;
+    const refresh_token = req.refresh_token;
+    const useremail = req.params.userEmail;
+    console.log(`\nGoing to authenticate google with access_token : ${access_token}`);
+    
+
+    // Store the refresh token in the user's database record
+    // Assuming you have a User model and user email stored in 'userEmail'
+    const result = await User.findOneAndUpdate(
+        { username: useremail },
+        { $set: { access_token: access_token, refresh_token: req.refresh_token } },
+        { new: true } // This option returns the updated document
+    );
+    console.log('Updated user field with the given token : ', result);
+
+    try {
+        oauth2Client.setCredentials({
+            access_token: access_token,
+            refresh_token: refresh_token
+        });
+        host = "calendo.westus2.cloudapp.azure.com"
+        // You can now use 'userEmail' to save events to the user's database
+        res.redirect(`https://${host}:${port}/auth/google/test/${useremail}`);
+        console.log(`Redirecting you to https://${host}:${port}/auth/google/test/${useremail}`);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error saving the user token, check if you have registered the user' });
+    }
 });
 
 
+oauth2Client.on('tokens', async (tokens) => {
+    if (tokens.refresh_token) {
+        // store the refresh_token in my database!
+        console.log(tokens.refresh_token);
+        
+        try {
+            const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
+            userEmail = userInfo.data.email;
+
+            // Store the refresh token in the user's database record
+            // Assuming you have a User model and user email stored in 'userEmail'
+            await User.findOneAndUpdate(
+                { username: userEmail },
+                { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token } }
+            ).then(updatedUser => {
+                console.log('\nupdated user with new tokens : ', updatedUser.value);
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Error in oauth2 event lister : refersh token update failed' });
+        }
+    }
+    console.log(tokens.access_token);
+  });
+
+
+// This expects the user already registered through /register
 app.get('/auth/google/redirect', async (req, res) => {
     const code = req.query.code;
 
     const { tokens } = await oauth2Client.getToken(code);
+    console.log("google token : ", tokens)
+
+    if (tokens.expiry_date) {
+        const expirationDate = new Date(tokens.expiry_date);
+        console.log("access token expiration date: " + expirationDate.toLocaleString());
+    }
+
     oauth2Client.setCredentials(tokens);
 
     const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
-    console.log('you have successfully logged in with email: ', userInfo.data.email);
+    console.log('\nyou have successfully logged in with email: ', userInfo.data.email);
+    console.log('token from google authenticate : ', tokens.access_token);
+    console.log('refresh_token from google authenticate : ', tokens.refresh_token);
 
     userEmail = userInfo.data.email;
+
+    try {
+        // Store the refresh token in the user's database record
+        // Assuming you have a User model and user email stored in 'userEmail'
+        await User.findOneAndUpdate(
+            { username: userEmail },
+            { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token } }
+        ).then(updatedUser => {
+            console.log('updated user with new tokens : ', updatedUser);
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Error saving the user token, check if you have registered the user' });
+    }
+
 
     host = "calendo.westus2.cloudapp.azure.com"
     // You can now use 'userEmail' to save events to the user's database
     res.redirect(`https://${host}:${port}/auth/google/test/${userEmail}`);
-
+    console.log('redirecting you again to calender importing function\n');
 });
 
 app.get('/auth/google/test/:userEmail', async (req, res) => {
@@ -422,7 +599,7 @@ app.get('/auth/google/test/:userEmail', async (req, res) => {
 
         result = await User.findOneAndUpdate({ username: userEmail }, { $set: { events: extractedEvents } });
 
-        res.status(200).json({ 'events_inserted': result });
+        res.status(200).json({ 'events' : result });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error fetching calendar events' });

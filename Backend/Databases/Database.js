@@ -78,7 +78,18 @@ class Database {
             if (user.events == null) {
                 user.events = [];
             }
-            user.daySchedule = [];
+
+            if (user.daySchedule == null) {
+                user.daySchedule = [];
+            }
+
+            if (user.access_token == null) {
+                user.access_token = "";
+            }
+
+            if (user.refresh_token == null) {
+                user.refresh_token = "";
+            }
             console.log('user before mongodb add : ', user);
             const newUser = new UserModel(user);
             let result = await newUser.save();
