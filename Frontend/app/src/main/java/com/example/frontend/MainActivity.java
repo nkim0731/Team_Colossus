@@ -120,18 +120,18 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "unexpected JSON exception", e);
             }
 
-            httpsRequest.post(server_url + "/login", jObjectData, new HttpsCallback() {
-                @Override
-                public void onResponse(String response) {
-                    Log.d(TAG, "success to send token");
-                }
-
-                @Override
-                public void onFailure(String error) {
-                    Log.d(TAG, "fail to send token");
-                }
-            });
-            //
+//            httpsRequest.post(server_url + "/login", jObjectData, new HttpsCallback() {
+//                @Override
+//                public void onResponse(String response) {
+//                    Log.d(TAG, "success to send token");
+//                }
+//
+//                @Override
+//                public void onFailure(String error) {
+//                    Log.d(TAG, "fail to send token");
+//                }
+//            });
+//            //
 
             loginSuccessIntent.putExtras(bundles);
             startActivity(loginSuccessIntent);
