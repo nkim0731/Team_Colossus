@@ -17,6 +17,9 @@
     <string name="text_transit">Select Transit preference</string>
     <string name="button_create_room">create chat room</string>
 
+    <string name="server_client_id">805259873874-raavn3hag37qjfnm8qt4mhdsgqqhdeu7.apps.googleusercontent.com</string>
+    <string name="android_client_id">805259873874-3gltphbmrs7d580c3k6n071rjcspfr4f.apps.googleusercontent.com</string>
+
     <string-array name="preference_entries">
         <item>Bus</item>
         <item>Car</item>
@@ -30,4 +33,15 @@
         <item>value3</item>
         <!-- Make sure these values are unique -->
     </string-array>
+
+    <string name="track">Track Activity</string>
+    <string name="percentage">%1$d%%</string>
+    <string name="bicycle">On a bicycle</string>
+    <string name="foot">On foot</string>
+    <string name="running">Running</string>
+    <string name="still">Still</string>
+    <string name="tilting">Tilting</string>
+    <string name="unknown_activity">Unknown activity</string>
+    <string name="vehicle">In a vehicle</string>
+    <string name="walking">Walking</string>
 </resources>

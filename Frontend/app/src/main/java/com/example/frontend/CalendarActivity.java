@@ -51,7 +51,7 @@ public class CalendarActivity extends AppCompatActivity {
             Intent chatRoomsIntent = new Intent(CalendarActivity.this, ChatRoomsActivity.class);
 
             // get list of chatrooms associated with the user
-            httpsRequest.get(url + "/api/chatrooms?user=" + userData.getString("userEmail"), new HttpsCallback() {
+            httpsRequest.get(url + "/api/chatrooms?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     try {

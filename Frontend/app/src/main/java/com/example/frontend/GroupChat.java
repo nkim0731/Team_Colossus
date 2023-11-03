@@ -184,7 +184,7 @@ public class GroupChat extends AppCompatActivity {
     private void getChatHistory(String chatName){
         String url = String.format("%s/api/message_history/?chatID=%s", server_url, chatName);
 
-        httpsRequest.get(url, new HttpsCallback() { //test locally right now
+        httpsRequest.get(url, null , new HttpsCallback() { //test locally right now
             @Override
             public void onResponse(String response) {
 //                JSONObject jsonObject = new JSONObject(response);
