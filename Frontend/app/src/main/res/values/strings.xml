@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Frontend</string>
+    <string name="app_name">Calendo</string>
     <string name="head_text">Calendo</string>
     <string name="button_send">send</string>
     <string name="message_text">Enter Text Here</string>
