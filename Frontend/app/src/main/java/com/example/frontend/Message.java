@@ -53,6 +53,10 @@ public class Message {
         return timestamp;
     }
 
+    public void setIsSend(Boolean isSend) {
+        this.isSend = isSend;
+    }
+
     public void setTimestamp(long timestamp) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         this.timestamp = dateFormat.format(timestamp);

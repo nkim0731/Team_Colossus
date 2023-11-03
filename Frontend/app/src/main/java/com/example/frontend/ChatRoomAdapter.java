@@ -66,6 +66,7 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
             String chatName = room.getChatName();
             Bundle userData = new Bundle();
             userData.putString("chatName", chatName);
+            userData.putString("username", room.getUsername());
             roomText.setOnClickListener(view -> {
                 Intent groupChatIntent = new Intent(context, GroupChat.class);
                 groupChatIntent.putExtras(userData);

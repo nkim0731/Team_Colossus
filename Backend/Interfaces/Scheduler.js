@@ -10,10 +10,6 @@ class Scheduler {
         this.client = new Client({});
     }
 
-    /*
-    * Methods
-    */
-
     // get direction to an event from position when called
     async getDirections(origin, event, preferences) { // TODO if origin is in preferences can remove
         try {
@@ -27,7 +23,7 @@ class Scheduler {
             if (preferences.mode === 'TRANSIT') {
                 /*
                    {
-                    arrivalTime: Date, // use event time here
+                    arrivalTime: Date,
                     departureTime: Date,
                     modes[]: TransitMode, // BUS, RAIL, SUBWAY, TRAIN, TRAM
                     routingPreference: TransitRoutePreference // FEWER_TRANSFERS, LESS_WALKING
@@ -35,7 +31,7 @@ class Scheduler {
                 */
                 params.transitOptions = {
                     arrivalTime: new Date(event.start),
-                    routingPreference: preferences.routing,
+                    // routingPreference: preferences.routing,
                 }
             }
             if (preferences.mode === 'DRIVING') {
@@ -45,9 +41,6 @@ class Scheduler {
                     trafficModel: TrafficModel // bestguess, pessimistic, optimistic
                     }
                 */
-                // not sure how to handle this because there is no arrivalTime field
-                // i guess we can just make the departure time whenever this function is called
-                // and have a pessimistic guess for traffic
                 params.drivingOptions = {
                     departureTime: new Date(),
                     trafficModel: 'pessimistic',

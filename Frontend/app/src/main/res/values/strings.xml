@@ -44,4 +44,10 @@
     <string name="unknown_activity">Unknown activity</string>
     <string name="vehicle">In a vehicle</string>
     <string name="walking">Walking</string>
+
+    <string name="tv_startTime">Start Time</string>
+    <string name="tv_eventName">Event Name</string>
+    <string name="tv_duration">Duration</string>
+    <string name="button_eventDisplay">Schedule</string>
+
 </resources>

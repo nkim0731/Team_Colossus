@@ -103,9 +103,6 @@ public class MainActivity extends AppCompatActivity {
             // extra data for use else where
             userData.putString("userId", account.getId());
             userData.putString("userEmail", account.getEmail());
-            userData.putString("userGivenName", account.getGivenName());
-//            userData.putString("userFamilyName", account.getFamilyName()); //these data is not used anywhere
-//            userData.putString("userDisplayName", account.getDisplayName());
             userData.putString("userToken", account.getIdToken());
             if(!(account.getServerAuthCode() == null)) {
                 userData.putString("userRefreshToken", account.getServerAuthCode());
@@ -135,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
                         } else if (responseResult.equals("register")) {
                             Log.v(TAG,"The user successfully registered");
                         } else {
-                            // TODO create pop up message informing user of error
+                            Log.e(TAG, "Error");
                         }
                     } catch (JSONException e) {
                         Log.e(TAG, "JSON Exception while parsing /login/google response");

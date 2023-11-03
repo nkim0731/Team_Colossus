@@ -8,6 +8,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +24,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private ChatRoomAdapter chatRoomAdapter;
     private HttpsRequest httpsRequest;
     private String url;
+    private final String TAG = "ChatRoom";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,46 +37,89 @@ public class ChatRoomsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        // chatrooms data get from userData.getStringArrayList("chatrooms")
-
         //initialize https request
         httpsRequest = new HttpsRequest();
 
         //get value from previous intent
         userData = getIntent().getExtras();
+        String userEmail = userData.getString("userEmail");
 
         //initialize the list of chat rooms
         chatRooms = new ArrayList<>();
 
+        // chatrooms data get from userData.getStringArrayList("chatrooms")
+        ArrayList<String> roomNameList = userData.getStringArrayList("chatrooms");
+
+        if(roomNameList != null){
+            for(int i = 0; i < roomNameList.size(); i++){
+                chatRooms.add(new ChatRoom(roomNameList.get(i), userEmail));
+            }
+
+        }
+
+//        chatRooms.add(new ChatRoom("test"));
         //initialize recyclerView
         chatRoomRecyclerView = findViewById(R.id.chatRoomRecyclerView);
         chatRoomRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatRoomAdapter = new ChatRoomAdapter(chatRooms,this);
         chatRoomRecyclerView.setAdapter(chatRoomAdapter);
 
-        if(userData.getString("userEmail") != null){
-            Log.d("ChatRoom",userData.getString("userEmail"));
+        if(userEmail != null){
+            Log.d(TAG,userEmail);
         }else {
-            Log.d("ChatRoom","pass user email is null");
+            Log.d(TAG,"pass user email is null");
         }
 
 
         // list of all chat rooms from get request
-        findViewById(R.id.chatRoom1).setOnClickListener(view -> {
-//            String chatName = (String) view.getTag();
-//            userData.putString("chatName", chatName);
+        findViewById(R.id.create_room).setOnClickListener(view -> {
+
 
             int size = chatRooms.size();
-            ChatRoom newRoom = new ChatRoom("room " + size);
+            ChatRoom newRoom = new ChatRoom("room " + size, userEmail);
             chatRooms.add(newRoom);
             chatRoomRecyclerView.scrollToPosition(chatRooms.size()-1);
             chatRoomAdapter.notifyDataSetChanged();
-//            Intent groupChatIntent = new Intent(ChatRoomsActivity.this, GroupChat.class);
-//            groupChatIntent.putExtras(userData);
-//            startActivity(groupChatIntent);
+            try {
+                postChatRoom(userEmail,"room " + size);
+            } catch (JSONException e) {
+                Log.d(TAG,"JSON error");
+            }
         });
     }
 
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == android.R.id.home) {
+            // respond to back arrow
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    //post new created chat room to database
+    private void postChatRoom(String userEmail, String chatName) throws JSONException {
+        JSONObject postData = new JSONObject();
+        postData.put("chatName",chatName);
+        url = String.format("http://10.0.2.2:3000/api/chatrooms?user=%s",userEmail);
+        httpsRequest.post(url, postData, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG,response);
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Log.d(TAG,error);
+            }
+        });
+    }
     private void getChatRooms(){
 
         url = String.format("http://10.0.2.2:3000//api/chatrooms?user=%s",userData.getString("userEmail"));
