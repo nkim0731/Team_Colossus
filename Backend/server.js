@@ -179,12 +179,22 @@ app.post('/register', async (req, res) => {
     }
 })
 
-// endpoint set preferences and update database
-app.put('/api/preferences', async (req, res) => {
+// endpoint set/get preferences for user
+app.route('/api/preferences')
+.put(async (req, res) => {
     const data = req.body;
     try {
         await db.updatePreferences(data.username, data.preferences);
         res.status(200).json({ result: 'success' });
+    } catch (e) {
+        res.status(500).json({ result: e });
+    }
+})
+.get(async (req, res) => {
+    const username = req.query.user; // ?user=username
+    try {
+        const user = await db.getUser(username);
+        res.status(200).send(user.preferences);
     } catch (e) {
         res.status(500).json({ result: e });
     }

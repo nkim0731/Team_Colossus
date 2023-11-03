@@ -75,23 +75,20 @@ public class MainActivity extends AppCompatActivity {
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
             userData.putString("userEmail", account.getEmail());
-//            userData.putString("userGivenName", account.getGivenName()); these data is not used anywhere
-//            userData.putString("userFamilyName", account.getFamilyName());
-//            userData.putString("userDisplayName", account.getDisplayName());
             userData.putString("userToken", account.getIdToken());
             userData.putString("userId", account.getId());
-//            userData.putString("userServerAuthCode", account.getServerAuthCode());
             loginSuccessIntent.putExtras(userData);
 
             // send necessary data to backend for database
             JSONObject postData = new JSONObject();
             try {
                 postData.put("username", account.getEmail());
-//                postData.put("userId", account.getId());
                 postData.put("access_token", account.getIdToken());
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }
+
+            // show next page after user validated with backend
             httpsRequest.post(server_url + "/login/google", postData, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
@@ -100,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                         String responseResult = responseObj.getString("result");
 
                         if (responseResult.equals("login") || responseResult.equals("register")) {
-                            startActivity(loginSuccessIntent); // show next page after user validated with backend
+                            startActivity(loginSuccessIntent);
                         } else {
                             Log.e(TAG, "Error");
                         }
@@ -113,9 +110,6 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Network error: Server probably closed");
                 }
             });
-
-            // uncomment if testing without server
-//            startActivity(loginSuccessIntent);
         }
     }
 
