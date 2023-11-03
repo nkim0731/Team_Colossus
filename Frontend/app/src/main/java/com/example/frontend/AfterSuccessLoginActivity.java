@@ -46,7 +46,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         settingButton.setOnClickListener(view -> {
             Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
             // get users set preferences first
-            httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), new HttpsCallback() {
+            httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null ,new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     // put json string into data bundle

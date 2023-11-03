@@ -32,6 +32,9 @@ import com.google.android.gms.location.ActivityRecognitionClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
@@ -109,11 +112,12 @@ public class MainActivity extends AppCompatActivity {
             }
             loginSuccessIntent.putExtras(userData);
 
+
             // send necessary data to backend for database
             JSONObject userJSON = new JSONObject();
             try {
                 userJSON.put("username", account.getEmail());
-//                postData.put("userId", account.getId());
+                //userJSON.put("userId", account.getId());
                 userJSON.put("id_token", account.getIdToken());
                 userJSON.put("refresh_token", account.getServerAuthCode());
             } catch (JSONException e){
@@ -128,9 +132,9 @@ public class MainActivity extends AppCompatActivity {
                         String responseResult = responseObj.getString("result");
 
                         if (responseResult.equals("login")) {
-                            Log.v(TAG,"The user successfully logged in");
+                            Log.v(TAG, "The user successfully logged in");
                         } else if (responseResult.equals("register")) {
-                            Log.v(TAG,"The user successfully registered");
+                            Log.v(TAG, "The user successfully registered");
                         } else {
                             Log.e(TAG, "Error");
                         }
@@ -138,11 +142,13 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "JSON Exception while parsing /login/google response");
                     }
                 }
+
                 @Override
                 public void onFailure(String error) {
                     Log.e(TAG, "google login or register : " + error);
                 }
             });
+
 
 
             // send necessary data to backend for database
@@ -153,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }
+
 
             httpsRequest.get(serverHttps_url + "/auth/google/token?useremail=" + account.getEmail(), tokenHeader, new HttpsCallback() {
                 @Override
