@@ -34,13 +34,20 @@ var isTest = true; // Show Consent screen on browser?
 var test_calendoDB = true; // Choose testing database?
 
 
-exports.isTest = isTest;
+export const isTest = isTest;
+export const test_calendoDB = test_calendoDB;
+
 var mongoURI = null
-if (test_calendoDB) {
-  mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+if (isTest) {
+    if (test_calendoDB) {
+        mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+    } else {
+        // This URL should be the same as the db connection created in the server.js
+        mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    }
 } else {
-  // For actual project deployment
-  mongoURI = 'mongodb://localhost:27017/calendoDB';
+    // For actual project deployment
+    mongoURI = 'mongodb://localhost:27017/calendoDB';
 }
 
 
@@ -136,7 +143,8 @@ const authorizationUrl = oauth2Client.generateAuthUrl({
 const verifyIdToken = async (id_token) => {
     try {
         const ticket = await authClient.verifyIdToken({
-            idToken: id_token
+            idToken: id_token,
+            audience: process.env.CLIENT_ID
         });
         const payload = ticket.getPayload();
         return payload;
@@ -145,8 +153,6 @@ const verifyIdToken = async (id_token) => {
         return false;
     }
 }
-
-
 
 
 
@@ -307,7 +313,7 @@ app.get('/api/calendar/import', async (req, res) => {
     var refresh_token = ""
     // Assuming you have a User model and user email stored in 'userEmail'
     await User.findOne({ username: useremail }
-    ).then(user => {
+    ).then((user) => {
         id_token = user.id_token;
         refresh_token = user.refresh_token;
         access_token = access_token;
@@ -318,6 +324,11 @@ app.get('/api/calendar/import', async (req, res) => {
             access_token: access_token
         });
     });
+
+    
+    console.log('\nid_token to import calendar : ', id_token);
+    console.log('\naccess_token to import calendar : ', access_token);
+    console.log('\nrefresh_token to import calendar : ', refresh_token);
 
     
     const verifiedPayload = await verifyIdToken(id_token);
@@ -741,7 +752,8 @@ oauth2Client.on('tokens', async (tokens) => {
             // Assuming you have a User model and user email stored in 'userEmail'
             await User.findOneAndUpdate(
                 { username: userEmail },
-                { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token } }
+                { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token } },
+                { new: true }
             ).then(updatedUser => {
                 console.log('\nOAuthClient Listener updated user with new refresh_token : ', updatedUser);
             });
@@ -771,10 +783,10 @@ app.get('/auth/google/redirect', async (req, res) => {
     oauth2Client.setCredentials(tokens);
 
     const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
-    console.log('you have successfully logged in with email: ', userInfo.data.email);
-    console.log('id_token from google authenticate : ', tokens.id_token);
-    console.log('access_token from google authenticate : ', tokens.access_token);
-    console.log('refresh_token from google authenticate : ', tokens.refresh_token);
+    console.log('\nyou have successfully logged in with email: ', userInfo.data.email);
+    console.log('\nid_token from google authenticate : ', tokens.id_token);
+    console.log('\naccess_token from google authenticate : ', tokens.access_token);
+    console.log('\nrefresh_token from google authenticate : ', tokens.refresh_token);
 
     userEmail = userInfo.data.email;
 
@@ -783,8 +795,9 @@ app.get('/auth/google/redirect', async (req, res) => {
         // Assuming you have a User model and user email stored in 'userEmail'
         await User.findOneAndUpdate(
             { username: userEmail },
-            { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token, id_token: tokens.id_token ,google_token : tokens} }
-        ).then(updatedUser => {
+            { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token, id_token: tokens.id_token , google_token : tokens} },
+            { new: true }
+        ).then((updatedUser) => {
             console.log('updated user with new tokens : ', updatedUser);
         });
 

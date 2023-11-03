@@ -9,17 +9,21 @@ const chatSchema = require('../Schema/chatSchema');
 const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
-const maxMessages = 5; // TODO set diff value for actual, low value for testing
+//Import export variables from server.js
+const { isTest, test_calendoDB } = require('../server.js');
 
-var isTest = true;
+const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
 // const mongoURI = 'mongodb://localhost:27017/calendoDB';
 
 var mongoURI = null;
 if (isTest) {
-    // This URL should be the same as the db connection created in the server.js
-    // mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-    mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    if (test_calendoDB) {
+        mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+    } else {
+        // This URL should be the same as the db connection created in the server.js
+        mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    }
 } else {
     // For actual project deployment
     mongoURI = 'mongodb://localhost:27017/calendoDB';
