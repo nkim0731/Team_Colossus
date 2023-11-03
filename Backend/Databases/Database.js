@@ -9,8 +9,9 @@ const chatSchema = require('../Schema/chatSchema');
 const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
-//Import export variables from server.js
-const { isTest, test_calendoDB } = require('../server.js');
+//Import export variables from variables.js
+const { isHttps, isTest, test_calendoDB } = require('../variables.js');
+
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
@@ -35,6 +36,7 @@ class Database {
     }
 
     async connect() {
+
         try {
             console.log('Database class mongoURL : ', mongoURI);
             await mongoose.connect(mongoURI);

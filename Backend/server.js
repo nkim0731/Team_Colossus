@@ -27,15 +27,10 @@ require('dotenv').config({ path: `${__dirname}/.env` });
 const userSchema = require('./Schema/userSchema');
 const chatSchema = require('./Schema/chatSchema');
 
+//Import export variables from variables.js
+const { isHttps, isTest, test_calendoDB } = require('./variables.js');
 
 const app = express();
-var isHttps = true; // TODO revert this back to true dont forget lol
-var isTest = true; // Show Consent screen on browser?
-var test_calendoDB = true; // Choose testing database?
-
-
-export const isTest = isTest;
-export const test_calendoDB = test_calendoDB;
 
 var mongoURI = null
 if (isTest) {
@@ -49,6 +44,7 @@ if (isTest) {
     // For actual project deployment
     mongoURI = 'mongodb://localhost:27017/calendoDB';
 }
+console.log("serverjs connecting to  : " + mongoURI);
 
 
 var httpsServer = null;
@@ -781,6 +777,9 @@ app.get('/auth/google/redirect', async (req, res) => {
     }
 
     oauth2Client.setCredentials(tokens);
+    var id_token = tokens.id_token;
+    var access_token = tokens.access_token;
+    var refresh_token = tokens.refresh_token;
 
     const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
     console.log('\nyou have successfully logged in with email: ', userInfo.data.email);
@@ -793,14 +792,22 @@ app.get('/auth/google/redirect', async (req, res) => {
     try {
         // Store the refresh token in the user's database record
         // Assuming you have a User model and user email stored in 'userEmail'
-        await User.findOneAndUpdate(
-            { username: userEmail },
-            { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token, id_token: tokens.id_token , google_token : tokens} },
-            { new: true }
-        ).then((updatedUser) => {
-            console.log('updated user with new tokens : ', updatedUser);
-        });
 
+        let result = await User.findOneAndUpdate(
+            { username: userEmail },
+            { $set: { access_token: access_token, id_token: id_token, google_token : tokens } },
+            { new: true }
+        )
+
+        if (refresh_token != null) {
+            let result = await User.findOneAndUpdate(
+                { username: userEmail },
+                { $set: { refresh_token: refresh_token } },
+                { new: true }
+            )
+        }
+
+        console.log('updated user with new tokens : ', result);
         
         host = "calendo.westus2.cloudapp.azure.com"
         // You can now use 'userEmail' to save events to the user's database

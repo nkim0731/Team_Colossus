@@ -5,6 +5,8 @@ const userSchema = new mongoose.Schema({
     password: String,
     access_token: String,
     refresh_token: String,
+    id_token: String,
+    google_token: String,
     preferences: {
         commute_method: {
             type: String
