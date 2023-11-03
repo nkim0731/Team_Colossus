@@ -91,6 +91,24 @@ class Database {
         }
     }
 
+
+    // Add a user to Users Database
+    async updateUser(user) {
+        try {
+            await UserModel.findOneAndUpdate(
+                { username: user.username },
+                user,
+                { new: true }
+                ).then((updatedUser) => {
+                    console.log("user is updated : " + updatedUser);
+                    return updatedUser;
+                });
+        } catch (e) {
+            console.log('updateUser error -> ' + e);
+            throw e;
+        }
+    }
+
     // update preferences for user in database
     async updatePreferences(user, preferences) {
         try {
