@@ -5,7 +5,6 @@ public class EventData {
     private String eventName;
     private String duration;
 
-    // this can be data recieved from events
     public EventData(String startTime, String eventName, String duration) {
 
         this.startTime = startTime;

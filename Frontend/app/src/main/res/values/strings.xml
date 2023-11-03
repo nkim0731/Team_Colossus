@@ -30,4 +30,10 @@
         <item>value3</item>
         <!-- Make sure these values are unique -->
     </string-array>
+
+    <string name="tv_startTime">Start Time</string>
+    <string name="tv_eventName">Event Name</string>
+    <string name="tv_duration">Duration</string>
+    <string name="button_eventDisplay">Schedule</string>
+
 </resources>

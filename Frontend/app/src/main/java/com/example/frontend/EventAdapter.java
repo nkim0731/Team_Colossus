@@ -26,7 +26,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Inflate the ChatRoom layout
         View view;
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_events, parent, false);
 

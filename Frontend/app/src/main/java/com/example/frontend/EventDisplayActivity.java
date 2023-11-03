@@ -15,8 +15,7 @@ import java.util.List;
 public class EventDisplayActivity extends AppCompatActivity implements LocationListener {
     private final String TAG = "EventDisplayActivity";
     EventAdapter eventAdapter;
-    List<EventData> dataArrayList = new ArrayList<>(); // list of recieved events
-//    EventData eventData;
+    List<EventData> dataArrayList = new ArrayList<>(); // replace to list of recieved events
 
     private RecyclerView rv_eventList;
 
@@ -36,25 +35,21 @@ public class EventDisplayActivity extends AppCompatActivity implements LocationL
 //        String latLong = userData.getString("", "default Latitude and Longitude");
 
 
-
-
-
-        //initialize recyclerView
         rv_eventList = findViewById(R.id.rv_eventList);
         rv_eventList.setLayoutManager(new LinearLayoutManager(this));
         eventAdapter = new EventAdapter(dataArrayList,this);
         rv_eventList.setAdapter(eventAdapter);
 
 
+        // POST : {user email, location, preference}
+        // GET : dataArrayList = response(events[]);
+
+
+        // replace list of array to replaced
         EventData newEvent1 = new EventData("startTime", "eventName", "duration");
         EventData newEvent2 = new EventData("3:30pm", "CPEN321", "1.5 hour");
         dataArrayList.add(newEvent1);
         dataArrayList.add(newEvent2);
-
-
-        // don't need upper part. just recieve an array of events from server.
-        // POST : {user email, location, preference}
-        // GET : dataArrayList = response(events[]);
 
 
     }
