@@ -266,10 +266,10 @@ app.route('/api/calendar')
 // create day schedule on button press
 app.route('/api/calendar/day_schedule')
 .post(async (req, res) => {
-    const data = req.body; // needs username, location (origin), and preferences
+    const data = req.body; // needs username, location (origin)
     try {
-        const calendar = db.getCalendar(data.username);
-        const schedule = await Scheduler.createDaySchedule(calendar.events, data.location, preferences);
+        const user = db.getUser(data.username);
+        const schedule = await Scheduler.createDaySchedule(user.events, data.location, user.preferences);
         await db.updateSchedule(data.username, schedule);
         res.status(200).json({ schedule: schedule });
     } catch (e) {

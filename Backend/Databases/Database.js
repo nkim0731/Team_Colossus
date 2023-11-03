@@ -109,7 +109,7 @@ class Database {
     * Calendar Database calls
     */
 
-    // get calendar events
+    // get calendar events (this might not be needed anyway since we can get events from user in getUser)
 	async getCalendar(username) {
 		try {
 			return await UserModel.findOne({ username }).select('events');

@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
                         if (responseResult.equals("login") || responseResult.equals("register")) {
                             startActivity(loginSuccessIntent); // show next page after user validated with backend
                         } else {
-                            // TODO create pop up message informing user of error
+                            Log.e(TAG, "Error");
                         }
                     } catch (JSONException e) {
                         Log.e(TAG, "JSON Exception on response");
