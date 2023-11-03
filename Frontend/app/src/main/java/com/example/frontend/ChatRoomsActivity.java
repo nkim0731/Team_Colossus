@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MenuItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +32,8 @@ public class ChatRoomsActivity extends AppCompatActivity {
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+
 
         // chatrooms data get from userData.getStringArrayList("chatrooms")
 
@@ -58,18 +61,29 @@ public class ChatRoomsActivity extends AppCompatActivity {
 
         // list of all chat rooms from get request
         findViewById(R.id.chatRoom1).setOnClickListener(view -> {
-//            String chatName = (String) view.getTag();
-//            userData.putString("chatName", chatName);
+
 
             int size = chatRooms.size();
             ChatRoom newRoom = new ChatRoom("room " + size);
             chatRooms.add(newRoom);
             chatRoomRecyclerView.scrollToPosition(chatRooms.size()-1);
             chatRoomAdapter.notifyDataSetChanged();
-//            Intent groupChatIntent = new Intent(ChatRoomsActivity.this, GroupChat.class);
-//            groupChatIntent.putExtras(userData);
-//            startActivity(groupChatIntent);
+
         });
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == android.R.id.home) {
+            // respond to back arrow
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void getChatRooms(){
