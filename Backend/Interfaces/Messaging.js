@@ -54,7 +54,6 @@ class ChatManager {
                         message: message,
                         timestamp: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
                     }
-                    console.log(messageObj.timestamp)
                     // Broadcast the message to all sockets in the chatroom except the sender
                     socket.to(socket.chatName).except(socket.id).emit('message', messageObj);
                     db.addMessage(socket.chatName, messageObj); // store message in database

@@ -162,9 +162,9 @@ app.post('/login/google', async (req, res) => {
     }
 })
 
-// register a user (also do this with google auth except only on first time)
+// register a user 
 app.post('/register', async (req, res) => {
-    const data = req.body; // req.body.username = email if google auth
+    const data = req.body;
     try {
         let checkUser = await db.getUser(data.username);
         if (checkUser !== false) {
@@ -315,11 +315,10 @@ app.get('/api/calendar', async (req, res) => {
 * Group chats API calls
 */
 app.get('/api/message_history', async (req, res) => {
-    console.log('getting message history')
     const chatName = req.query.chatName; // ?chatName=x 
     try {
         const messages = await db.getMessages(chatName);
-        res.status(200).send(messages);
+        res.status(200).send(messages.messages);
     } catch (e) {
         res.status(500).json({ message: e });
     }

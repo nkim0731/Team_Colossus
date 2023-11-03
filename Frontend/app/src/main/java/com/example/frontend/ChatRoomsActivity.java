@@ -37,16 +37,11 @@ public class ChatRoomsActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-
-
-
-
         //initialize https request
         httpsRequest = new HttpsRequest();
 
         //get value from previous intent
         userData = getIntent().getExtras();
-        assert userData != null;
         String userEmail = userData.getString("userEmail");
 
         //initialize the list of chat rooms
@@ -57,7 +52,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
 
         if(roomNameList != null){
             for(int i = 0; i < roomNameList.size(); i++){
-                chatRooms.add(new ChatRoom(roomNameList.get(i)));
+                chatRooms.add(new ChatRoom(roomNameList.get(i), userEmail));
             }
 
         }
@@ -81,7 +76,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
 
 
             int size = chatRooms.size();
-            ChatRoom newRoom = new ChatRoom("room " + size);
+            ChatRoom newRoom = new ChatRoom("room " + size, userEmail);
             chatRooms.add(newRoom);
             chatRoomRecyclerView.scrollToPosition(chatRooms.size()-1);
             chatRoomAdapter.notifyDataSetChanged();
@@ -90,7 +85,6 @@ public class ChatRoomsActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 Log.d(TAG,"JSON error");
             }
-
         });
     }
 

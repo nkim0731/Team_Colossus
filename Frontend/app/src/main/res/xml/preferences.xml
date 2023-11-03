@@ -4,6 +4,7 @@
         app:key="notifications"
         app:title="Notifications"/>
 
+<!--    Alarms Preferences-->
     <PreferenceCategory
         app:key="alarms_category"
         app:title="Alarms">
@@ -19,9 +20,10 @@
 
     </PreferenceCategory>
 
+<!--    Alerts Preferences-->
     <PreferenceCategory
         app:key="alerts_category"
-        app:title="Alarms">
+        app:title="Alerts">
 
         <SwitchPreferenceCompat
             app:key="traffic_alerts"
@@ -35,9 +37,7 @@
             app:title="Vibration alert"/>
     </PreferenceCategory>
 
-
-
-
+<!--    Location Preferences-->
     <PreferenceCategory
         app:key="location_category"
         app:title="Location">
@@ -62,6 +62,7 @@
 
     </PreferenceCategory>
 
+<!--    Other Preferences-->
     <PreferenceCategory
         app:key="others"
         app:title="Others">
@@ -77,18 +78,9 @@
             app:title="Commute method"
             app:dialogTitle="Choose one"
             app:summary="%s"
-            app:entries="@array/preference_entries"
-            app:entryValues="@array/preference_values"
-            app:defaultValue="default_value" />
-
-        <ListPreference
-            app:key="commute_method"
-            app:title="Commute method"
-            app:dialogTitle="Choose one"
-            app:summary="%s"
-            app:entries="@array/preference_entries"
-            app:entryValues="@array/preference_values"
-            app:defaultValue="default_value" />
+            app:entries="@array/options_list"
+            app:entryValues="@array/options_list"
+            app:defaultValue="0" /> <!-- Set default to driving -->
 
         <EditTextPreference
             app:key="max_missed_bus"

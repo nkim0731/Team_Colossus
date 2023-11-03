@@ -11,10 +11,9 @@ const ChatModel = mongoose.model('chat', chatSchema);
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
-//isTest switch from main file
 var isTest = true;
-isTest = require('../server.js').isTest;
-isTest = true;
+
+// const mongoURI = 'mongodb://localhost:27017/calendoDB';
 
 var mongoURI = null;
 if (isTest) {
@@ -62,15 +61,25 @@ class Database {
         }
     }
 
-    // Add a user to Users Database
+    // Add a new user to Users Database
     async addUser(user) {
         try {
-            // if property doesnt exist would be undefined not null
             if (user.password === undefined) {
                 user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless lol
             }
-            // these should be undefined anyway on create account no need for if, easier to read
-            user.preferences = { commute_method: null };
+            // default user preferences on account creation
+            user.preferences = { 
+                commute_method: 'Driving', // default for navigation
+                preparation_time: '0',
+                notification_preferences: { // all default true
+                    morning_alarm: true,
+                    event_alarm: true,
+                    event_notification: true,
+                    traffic_alerts: true,
+                    weather_alerts: true,
+                },
+                maxMissedBus: '1',
+            };
             user.events = [];
             user.daySchedule = [];
 
@@ -85,8 +94,10 @@ class Database {
     // update preferences for user in database
     async updatePreferences(user, preferences) {
         try {
-            let userDocument = await ChatModel.findOne({ username: user });
-            userDocument.preferences = preferences;
+            let userDocument = await UserModel.findOne({ username: user });
+            if (!userDocument) throw new Error("No user found");
+            userDocument.preferences = Object.assign(userDocument.preferences, preferences);
+
             await userDocument.save();
         } catch (e) {
             console.log(e);
