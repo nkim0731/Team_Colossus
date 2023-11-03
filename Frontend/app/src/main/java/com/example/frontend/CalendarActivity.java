@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
 import android.widget.TextView;
@@ -31,6 +32,7 @@ public class CalendarActivity extends AppCompatActivity {
     private Button chatButton;
 
     private Bundle userData;
+    private Button eventDisplay;
     private HttpsRequest httpsRequest;
     private final String url = "http://10.0.2.2:3000"; // TODO update with actual url
 
@@ -94,6 +96,18 @@ public class CalendarActivity extends AppCompatActivity {
             }
 
         });
+
+        eventDisplay = findViewById(R.id.button_eventDisplay);
+        eventDisplay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent eventIntent = new Intent(CalendarActivity.this, EventDisplayActivity.class);
+                eventIntent.putExtras(userData);
+                startActivity(eventIntent);
+
+            }
+        });
+
     }
 
     public void getDate(){
@@ -103,8 +117,5 @@ public class CalendarActivity extends AppCompatActivity {
         String selected_date = simpleDateFormat.format(calendar.getTime());
         Toast.makeText(getApplicationContext(), selected_date, Toast.LENGTH_SHORT).show();
 
-        // selected_data load its events and show them under the calendar.
-        // GET
-        tv_schedule = findViewById(R.id.textView_schedule);
     }
 }
