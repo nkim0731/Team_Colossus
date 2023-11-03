@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +24,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private ChatRoomAdapter chatRoomAdapter;
     private HttpsRequest httpsRequest;
     private String url;
+    private final String TAG = "ChatRoom";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,32 +39,45 @@ public class ChatRoomsActivity extends AppCompatActivity {
 
 
 
-        // chatrooms data get from userData.getStringArrayList("chatrooms")
+
 
         //initialize https request
         httpsRequest = new HttpsRequest();
 
         //get value from previous intent
         userData = getIntent().getExtras();
+        assert userData != null;
+        String userEmail = userData.getString("userEmail");
 
         //initialize the list of chat rooms
         chatRooms = new ArrayList<>();
 
+        // chatrooms data get from userData.getStringArrayList("chatrooms")
+        ArrayList<String> roomNameList = userData.getStringArrayList("chatrooms");
+
+        if(roomNameList != null){
+            for(int i = 0; i < roomNameList.size(); i++){
+                chatRooms.add(new ChatRoom(roomNameList.get(i)));
+            }
+
+        }
+
+//        chatRooms.add(new ChatRoom("test"));
         //initialize recyclerView
         chatRoomRecyclerView = findViewById(R.id.chatRoomRecyclerView);
         chatRoomRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatRoomAdapter = new ChatRoomAdapter(chatRooms,this);
         chatRoomRecyclerView.setAdapter(chatRoomAdapter);
 
-        if(userData.getString("userEmail") != null){
-            Log.d("ChatRoom",userData.getString("userEmail"));
+        if(userEmail != null){
+            Log.d(TAG,userEmail);
         }else {
-            Log.d("ChatRoom","pass user email is null");
+            Log.d(TAG,"pass user email is null");
         }
 
 
         // list of all chat rooms from get request
-        findViewById(R.id.chatRoom1).setOnClickListener(view -> {
+        findViewById(R.id.create_room).setOnClickListener(view -> {
 
 
             int size = chatRooms.size();
@@ -68,6 +85,11 @@ public class ChatRoomsActivity extends AppCompatActivity {
             chatRooms.add(newRoom);
             chatRoomRecyclerView.scrollToPosition(chatRooms.size()-1);
             chatRoomAdapter.notifyDataSetChanged();
+            try {
+                postChatRoom(userEmail,"room " + size);
+            } catch (JSONException e) {
+                Log.d(TAG,"JSON error");
+            }
 
         });
     }
@@ -86,6 +108,24 @@ public class ChatRoomsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
+    //post new created chat room to database
+    private void postChatRoom(String userEmail, String chatName) throws JSONException {
+        JSONObject postData = new JSONObject();
+        postData.put("chatName",chatName);
+        url = String.format("http://10.0.2.2:3000/api/chatrooms?user=%s",userEmail);
+        httpsRequest.post(url, postData, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG,response);
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Log.d(TAG,error);
+            }
+        });
+    }
     private void getChatRooms(){
 
         url = String.format("http://10.0.2.2:3000//api/chatrooms?user=%s",userData.getString("userEmail"));

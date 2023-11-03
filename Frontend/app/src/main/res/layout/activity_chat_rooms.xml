@@ -7,7 +7,7 @@
     tools:context=".ChatRoomsActivity">
 
     <Button
-        android:id="@+id/chatRoom1"
+        android:id="@+id/create_room"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/button_create_room"
