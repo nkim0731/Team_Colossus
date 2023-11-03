@@ -1,16 +1,22 @@
 package com.example.frontend;
 
+import android.Manifest;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.util.Calendar;
 
@@ -24,8 +30,16 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_after_successful_login);
 
+
         // get userdata from login
         userData = getIntent().getExtras();
+
+        findViewById(R.id.Rg).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                checkPermission();
+            }
+        });
 
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
@@ -34,6 +48,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             calendarIntent.putExtras(userData);
             startActivity(calendarIntent);
         });
+
 
         // settings == preference setting
         settingButton = findViewById(R.id.button_setting);
@@ -66,5 +81,23 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
                 Log.d("Alarm", "Alarm set");
             }
         });
+
+
+
+
+    }
+
+
+    private void checkPermission(){
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+
+            Intent serviceIntent = new Intent(this, ActivityRecognitionService.class);
+            ContextCompat.startForegroundService(this, serviceIntent);
+            Log.d("Alarm", "permission allowed");
+        }else{
+            Log.d("Alarm", "no permission");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1);
+
+        }
     }
 }
