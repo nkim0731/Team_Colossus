@@ -1,5 +1,7 @@
 package com.example.frontend;
 
+import static com.google.android.gms.common.internal.safeparcel.SafeParcelable.NULL;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -11,7 +13,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -40,6 +45,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import kotlin.jvm.internal.TypeReference;
+
 public class EventDisplayActivity extends AppCompatActivity {
     private final String TAG = "EventDisplayActivity";
     private final String server_url = "http://10.0.2.2:3000"; // TODO update with actual url
@@ -50,6 +57,16 @@ public class EventDisplayActivity extends AppCompatActivity {
 
     Bundle userData;
     String latLong;
+
+    Button submit;
+    EditText eventName;
+    EditText location;
+    EditText startTime;
+    EditText endTime;
+    String sEventName;
+    String sLocation;
+    String sStartTime;
+    String sEndTime;
     private HttpsRequest httpsRequest = new HttpsRequest();
 
     private LocationRequest locationRequest;
@@ -58,192 +75,87 @@ public class EventDisplayActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_schedule);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+
+        // button to take user inputs to create an event
+        setContentView(R.layout.test_create_event);
+        eventName = findViewById(R.id.et_eName);
+        location = findViewById(R.id.et_location);
+        startTime = findViewById(R.id.et_sTime);
+        endTime = findViewById(R.id.et_eTime);
 
 
-        // current location
-        locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 100)
-                .setWaitForAccurateLocation(false)
-                .setMinUpdateIntervalMillis(2000)
-                .setMaxUpdateDelayMillis(100)
-                .build();
 
-        getCurrentLocation();
+        submit = findViewById(R.id.button_submit);
+        submit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // can use these strings
+                sEventName = eventName.getText().toString();
+                sLocation = location.getText().toString();
+                sStartTime = startTime.getText().toString();
+                sEndTime = endTime.getText().toString();
+
+                // all the original codes should be inside here.
+                setContentView(R.layout.activity_schedule);
+                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
 
-        userData = getIntent().getExtras();
-        String userEmail = userData.getString("userEmail", "default User Email");
-        userData.putString("location", latLong);
+                userData = getIntent().getExtras();
+                String userEmail = userData.getString("userEmail", "default User Email");
+                userData.putString("location", latLong);
 //        String latLong = userData.getString("", "default Latitude and Longitude");
 
-        Log.d(TAG, "Lat and Long: "+ latLong);
+                Log.d(TAG, "Lat and Long: "+ latLong);
 
 
+                //initialize recyclerView
+                rv_eventList = findViewById(R.id.rv_eventList);
+                rv_eventList.setLayoutManager(new LinearLayoutManager(this));
+                eventAdapter = new EventAdapter(dataArrayList,this);
+                rv_eventList.setAdapter(eventAdapter);
 
-        //initialize recyclerView
-        rv_eventList = findViewById(R.id.rv_eventList);
-        rv_eventList.setLayoutManager(new LinearLayoutManager(this));
-        eventAdapter = new EventAdapter(dataArrayList,this);
-        rv_eventList.setAdapter(eventAdapter);
+                // don't need upper part. just receive an array of events from server.
+                // POST : {user email, location, preference}
+                // GET : dataArrayList = response(events[]);
+                // send necessary data to backend for database
+                if(latLong == NULL){
+                    Log.d(TAG, "Latitude and Longitude value is null.");
+                } else{
+                    JSONObject postData = new JSONObject();
+                    try {
+                        postData.put("username", userEmail);
+                        postData.put("access_token", latLong);
+                    } catch (JSONException e){
+                        Log.e(TAG, "unexpected JSON exception", e);
+                    }
 
-        // don't need upper part. just recieve an array of events from server.
-        // POST : {user email, location, preference}
-        // GET : dataArrayList = response(events[]);
-        // send necessary data to backend for database
-        JSONObject postData = new JSONObject();
-        try {
-            postData.put("username", userEmail);
-            postData.put("access_token", latLong);
-        } catch (JSONException e){
-            Log.e(TAG, "unexpected JSON exception", e);
-        }
+                    httpsRequest.post(server_url + "/api/calendar/day_schedule", postData, new HttpsCallback() {
+                        @Override
+                        public void onResponse(String response) {
+                            try{
+                                JSONObject responseObj = new JSONObject(response);
+                                ObjectMapper mapper = new ObjectMapper();
+                                dataArrayList = responseObj.mapper(response, new TypeReference<List<EventData>>(){});
 
-        httpsRequest.post(server_url + "/api/calendar/day_schedule", postData, new HttpsCallback() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONObject responseObj = new JSONObject(response);
-                    dataArrayList = responseObj.getJSONArray();
+                            }catch (JSONException e){}
+                        }
 
-                } catch (JSONException e) {
-                    Log.e(TAG, "JSON Exception on response");
-                }
-            }
-            @Override
-            public void onFailure(String error) {
-                Log.e(TAG, "Network error: Server probably closed");
-            }
-        });
+                        @Override
+                        public void onFailure(String error) {
+
+                        }
+                    });
 
 //        EventData newEvent1 = new EventData("startTime", "eventName", "duration");
 //        EventData newEvent2 = new EventData("3:30pm", "CPEN321", "1.5 hour");
 //        dataArrayList.add(newEvent1);
 //        dataArrayList.add(newEvent2);
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == 1){
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED){
-
-                if (isGPSEnabled()) {
-
-                    getCurrentLocation();
-
-                }else {
-                    turnOnGPS();
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 2) {
-            if (resultCode == Activity.RESULT_OK) {
-
-                getCurrentLocation();
-            }
-        }
-    }
-
-    private void getCurrentLocation() {
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (ActivityCompat.checkSelfPermission(EventDisplayActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                if (isGPSEnabled()) {
-
-                    LocationServices.getFusedLocationProviderClient(EventDisplayActivity.this)
-                            .requestLocationUpdates(locationRequest, new LocationCallback() {
-                                @Override
-                                public void onLocationResult(@NonNull LocationResult locationResult) {
-                                    super.onLocationResult(locationResult);
-
-                                    LocationServices.getFusedLocationProviderClient(EventDisplayActivity.this)
-                                            .removeLocationUpdates(this);
-
-                                    if (locationResult != null && locationResult.getLocations().size() >0){
-
-                                        int index = locationResult.getLocations().size() - 1;
-                                        double latitude = locationResult.getLocations().get(index).getLatitude();
-                                        double longitude = locationResult.getLocations().get(index).getLongitude();
-
-                                        latLong = "" + latitude + ", " + longitude;
-
-
-                                    }
-                                }
-                            }, Looper.getMainLooper());
-
-                } else {
-                    turnOnGPS();
                 }
 
-            } else {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+
             }
-        }
-    }
 
-    private void turnOnGPS() {
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest);
-        builder.setAlwaysShow(true);
 
-        Task<LocationSettingsResponse> result = LocationServices.getSettingsClient(getApplicationContext())
-                .checkLocationSettings(builder.build());
-
-        result.addOnCompleteListener(new OnCompleteListener<LocationSettingsResponse>() {
-            @Override
-            public void onComplete(@NonNull Task<LocationSettingsResponse> task) {
-
-                try {
-                    LocationSettingsResponse response = task.getResult(ApiException.class);
-                    Toast.makeText(EventDisplayActivity.this, "GPS is already tured on", Toast.LENGTH_SHORT).show();
-
-                } catch (ApiException e) {
-
-                    switch (e.getStatusCode()) {
-                        case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-
-                            try {
-                                ResolvableApiException resolvableApiException = (ResolvableApiException) e;
-                                resolvableApiException.startResolutionForResult(EventDisplayActivity.this, 2);
-                            } catch (IntentSender.SendIntentException ex) {
-                                ex.printStackTrace();
-                            }
-                            break;
-
-                        case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                            //Device does not have location
-                            break;
-                    }
-                }
-            }
         });
-
     }
-
-    private boolean isGPSEnabled() {
-        LocationManager locationManager = null;
-        boolean isEnabled = false;
-
-        if (locationManager == null) {
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        }
-
-        isEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        return isEnabled;
-
-    }
-
-
-
 }
