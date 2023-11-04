@@ -12,6 +12,9 @@ class Scheduler {
 
     // get direction to an event from position when called
     async getDirections(origin, event, preferences) { // TODO if origin is in preferences can remove
+        equalStrings = (s1, s2) => { // helper ignore case test strings equal
+            return s1.toLowerCase() === s2.toLowerCase();
+        }
         try {
             let params = {
                 origin: origin, // LatLng "lat, lng" string
@@ -20,7 +23,7 @@ class Scheduler {
                 alternatives: true,
                 key: googleAPIKey,
             }
-            if (preferences.mode === 'TRANSIT') {
+            if (equalStrings(preferences.mode, 'transit')) {
                 /*
                    {
                     arrivalTime: Date,
@@ -34,7 +37,7 @@ class Scheduler {
                     // routingPreference: preferences.routing,
                 }
             }
-            if (preferences.mode === 'DRIVING') {
+            if (equalStrings(preferences.mode, 'driving')) {
                 /*
                     {
                     departureTime: Date,
