@@ -24,7 +24,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "32")
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Alarm")
-                .setContentText("sample alarm notification")
+                .setContentText("Event will happen soon")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);

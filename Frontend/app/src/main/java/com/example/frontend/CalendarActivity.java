@@ -2,9 +2,13 @@ package com.example.frontend;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.icu.util.Calendar;
@@ -13,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +45,9 @@ public class CalendarActivity extends AppCompatActivity {
     private String selectedDate;
     private final String url = "http://10.0.2.2:3000"; // TODO update with actual url
     private TextView scheduleDisplay;
-
+    private SwitchCompat switch_alarm;
+    private AlarmManager alarmManager;
+    private PendingIntent pendingIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +61,41 @@ public class CalendarActivity extends AppCompatActivity {
         Socket socket = SocketManager.getSocket();
         socket.connect();
 
+        //set alarm
+        switch_alarm = findViewById(R.id.sw_alarm);
+        alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(CalendarActivity.this, AlarmReceiver.class);
+        pendingIntent = PendingIntent.getBroadcast(CalendarActivity.this, 0, intent, 0);
+        switch_alarm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b){
+                    Log.d("alarm","switch on");
+
+                    long triggerTime = System.currentTimeMillis() + (10 * 1000);
+
+                    // Set the alarm to start at a specific time.
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(System.currentTimeMillis());
+                    calendar.set(Calendar.HOUR_OF_DAY, 14);
+                    calendar.set(Calendar.MINUTE, 30);
+
+                    //calendar.getTimeInMillis()
+                    //triggerTime is the time that alarm will be triggered
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime,
+                            1000 * 60 * 60 * 24, pendingIntent);
+
+                }else{
+                    Log.d("alarm","switch off");
+                    if(alarmManager!=null){
+                        alarmManager.cancel(pendingIntent);
+                    }
+                }
+            }
+        });
+
+
+        //chat room button
         chatButton = findViewById(R.id.button_chat);
         chatButton.setOnClickListener(view -> {
             Intent chatRoomsIntent = new Intent(CalendarActivity.this, ChatRoomsActivity.class);
