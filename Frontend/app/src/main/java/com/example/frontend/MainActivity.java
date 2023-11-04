@@ -62,18 +62,23 @@ public class MainActivity extends AppCompatActivity {
         httpsRequest = new HttpsRequest();
 
         // handle sign in
-        // This asks for scopes to get refresh_token for user calendar access
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestProfile()
                 .requestEmail()
-                .requestIdToken(getString(R.string.server_client_id))
-                .requestServerAuthCode(getString(R.string.server_client_id))
-                .requestScopes(
-                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
-                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
-                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
-                )
+                .requestProfile()
                 .build();
+        // This asks for scopes to get refresh_token for user calendar access
+        // this does not have the necessary permissions to run
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestProfile()
+//                .requestEmail()
+//                .requestIdToken(getString(R.string.server_client_id))
+//                .requestServerAuthCode(getString(R.string.server_client_id))
+//                .requestScopes(
+//                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
+//                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
+//                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
+//                )
+//                .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         findViewById(R.id.button_googleSignIn).setOnClickListener(view -> {
@@ -97,16 +102,12 @@ public class MainActivity extends AppCompatActivity {
             Log.e(TAG, "There is no user signed in");
         }
         else {
-            Log.v(TAG, account.getId());
-            Log.v(TAG, account.getDisplayName());
-            Log.v(TAG, account.getEmail());
-            Log.v(TAG, "access_token : " + account.getIdToken());
-            Log.v(TAG, "refresh_token : " + account.getServerAuthCode());
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
             userData.putString("userId", account.getId());
             userData.putString("userEmail", account.getEmail());
             userData.putString("userToken", account.getIdToken());
+//            userData.putString("userRefreshToken", account.getServerAuthCode());
             if(!(account.getServerAuthCode() == null)) {
                 userData.putString("userRefreshToken", account.getServerAuthCode());
             }
@@ -117,24 +118,22 @@ public class MainActivity extends AppCompatActivity {
             JSONObject userJSON = new JSONObject();
             try {
                 userJSON.put("username", account.getEmail());
-                //userJSON.put("userId", account.getId());
                 userJSON.put("id_token", account.getIdToken());
                 userJSON.put("refresh_token", account.getServerAuthCode());
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }
 
-            httpsRequest.post(serverHttps_url + "/login/google", userJSON, new HttpsCallback() {
+            httpsRequest.post(server_url + "/login/google", userJSON, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     try {
                         JSONObject responseObj = new JSONObject(response);
                         String responseResult = responseObj.getString("result");
 
-                        if (responseResult.equals("login")) {
-                            Log.v(TAG, "The user successfully logged in");
-                        } else if (responseResult.equals("register")) {
-                            Log.v(TAG, "The user successfully registered");
+                        if (responseResult.equals("login") || responseResult.equals("register")) { // stop touching this
+                            // if you want to add things to the signin sequence do it here and before startActivity
+                            startActivity(loginSuccessIntent); // show next page after user is validated with backend
                         } else {
                             Log.e(TAG, "Error");
                         }
@@ -148,62 +147,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "google login or register : " + error);
                 }
             });
-
-
-
-            // send necessary data to backend for database
-            JSONObject tokenHeader = new JSONObject();
-            try {
-                tokenHeader.put("id_token", account.getIdToken());
-                tokenHeader.put("refresh_token", account.getServerAuthCode());
-            } catch (JSONException e){
-                Log.e(TAG, "unexpected JSON exception", e);
-            }
-
-
-            httpsRequest.get(serverHttps_url + "/auth/google/token?useremail=" + account.getEmail(), tokenHeader, new HttpsCallback() {
-                @Override
-                public void onResponse(String response) {
-                    try {
-                        JSONObject responseObj = new JSONObject(response);
-                        String eventsForAWeek = responseObj.getString("events");
-                        Log.i(TAG,"eventsForAWeek : " + eventsForAWeek);
-                        startActivity(loginSuccessIntent); // show next page after user validated with backend
-                    } catch (JSONException e) {
-                        Log.e(TAG, "JSON Exception while parsing response from google token calendar import");
-                    }
-                }
-                @Override
-                public void onFailure(String error) {
-                    Log.e(TAG, "google token calendar import : " + error);
-                }
-            });
-
-            // uncomment if testing without server
-            //startActivity(loginSuccessIntent);
         }
     }
-
-//    public void signIn() {
-//        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-//        someActivityResultLauncher.launch(signInIntent);
-//    }
-//
-//    // You can do the assignment inside onAttach or onCreate, i.e, before the activity is displayed
-//    ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
-//            new ActivityResultContracts.StartActivityForResult(),
-//            new ActivityResultCallback<ActivityResult>() {
-//                @Override
-//                public void onActivityResult(ActivityResult result) {
-//                    if (result.getResultCode() == Activity.RESULT_OK) {
-//                        // There are no request codes
-//                        Intent data = result.getData();
-//                        Log.d(TAG, data.toString());
-//                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-//                        handleSignInResult(task);
-//                    }
-//                }
-//            });
 
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
@@ -215,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == RC_SIGN_IN) {
-            Log.d(TAG, data.toString());
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
         }
