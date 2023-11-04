@@ -2,7 +2,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <SwitchPreferenceCompat
         app:key="notifications"
-        app:title="Notifications"/>
+        app:title="Notifications"
+        app:defaultValue="true"/>
 
 <!--    Alarms Preferences-->
     <PreferenceCategory
@@ -16,7 +17,8 @@
 
         <SwitchPreferenceCompat
             app:key="event_alarm"
-            app:title="Enable alarms for event"/>
+            app:title="Enable alarms for event"
+            app:defaultValue="true"/>
 
     </PreferenceCategory>
 
@@ -27,7 +29,8 @@
 
         <SwitchPreferenceCompat
             app:key="traffic_alerts"
-            app:title="Traffic alerts"/>
+            app:title="Traffic alerts"
+            app:defaultValue="true"/>
         <SwitchPreferenceCompat
             app:key="weather_alerts"
             app:title="Weather alerts"/>
