@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Frontend</string>
+    <string name="app_name">Calendo</string>
     <string name="head_text">Calendo</string>
     <string name="button_send">send</string>
     <string name="message_text">Enter Text Here</string>
@@ -49,5 +49,8 @@
     <string name="tv_eventName">Event Name</string>
     <string name="tv_duration">Duration</string>
     <string name="button_eventDisplay">Schedule</string>
+
+    <string name="tv_scheduleDisplay">List of Events</string>
+    <string name="tv_createTitle">Create Event</string>
 
 </resources>

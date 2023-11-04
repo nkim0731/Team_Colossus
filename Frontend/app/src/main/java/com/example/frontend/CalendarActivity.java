@@ -2,8 +2,10 @@ package com.example.frontend;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.icu.util.Calendar;
 import android.os.Bundle;
 import android.util.Log;
@@ -34,7 +36,10 @@ public class CalendarActivity extends AppCompatActivity {
     private Bundle userData;
     private Button eventDisplay;
     private HttpsRequest httpsRequest;
+    private String selectedDate;
     private final String url = "http://10.0.2.2:3000"; // TODO update with actual url
+    private TextView scheduleDisplay;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,12 +83,7 @@ public class CalendarActivity extends AppCompatActivity {
                     Log.e(TAG, "Network error: Server probably closed");
                 }
             });
-
-            // only go to activity once backend responds with user chatrooms
-//            chatRoomsIntent.putExtras(userData);
-//            startActivity(chatRoomsIntent);
         });
-
         calendarView = findViewById(R.id.calendarView);
         calendar = Calendar.getInstance();
 
@@ -93,29 +93,45 @@ public class CalendarActivity extends AppCompatActivity {
             public void onSelectedDayChange(@NonNull CalendarView calendarView, int year, int month, int day) {
                 int nMonth = month+1;
                 Toast.makeText(CalendarActivity.this, day + "/" + nMonth + "/" + year, Toast.LENGTH_SHORT).show();
+                selectedDate = String.format("%04d-%02d-%02d", year, month + 1, day);
             }
-
         });
 
+        // go to create schedule event
         eventDisplay = findViewById(R.id.button_eventDisplay);
         eventDisplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent eventIntent = new Intent(CalendarActivity.this, EventDisplayActivity.class);
+//                userData.putString("selectedDate", selectedDate);
                 eventIntent.putExtras(userData);
-                startActivity(eventIntent);
+                // check if location permissions have been granted before
+                int fineLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION);
+                int coarseLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
 
+                if (fineLocationPermission == PackageManager.PERMISSION_GRANTED && coarseLocationPermission == PackageManager.PERMISSION_GRANTED) {
+                    startActivity(eventIntent);
+                } else {
+                    Log.w(TAG, "No location permissions");
+                    Toast.makeText(CalendarActivity.this, "Need location permissions to create schedule", Toast.LENGTH_LONG).show();
+                }
             }
         });
+
+        scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
+        // TODO https
+        String received_from_backend = "";
+        scheduleDisplay.setText(received_from_backend);
 
     }
 
     public void getDate(){
         long date = calendarView.getDate();
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yy", Locale.getDefault());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yy", Locale.getDefault());
         calendar.setTimeInMillis(date);
-        String selected_date = simpleDateFormat.format(calendar.getTime());
-        Toast.makeText(getApplicationContext(), selected_date, Toast.LENGTH_SHORT).show();
-
+        selectedDate = simpleDateFormat.format(calendar.getTime());
+        Toast.makeText(getApplicationContext(), displayDateFormat.format(calendar.getTime()), Toast.LENGTH_SHORT).show();
     }
+
 }
