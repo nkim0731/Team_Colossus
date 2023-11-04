@@ -17,12 +17,14 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -44,56 +46,60 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import kotlin.jvm.internal.TypeReference;
 
 public class EventDisplayActivity extends AppCompatActivity {
     private final String TAG = "EventDisplayActivity";
     private final String server_url = "http://10.0.2.2:3000"; // TODO update with actual url
-    EventAdapter eventAdapter;
-    List<EventData> dataArrayList = new ArrayList<>(); // list of recieved events
+    private EventAdapter eventAdapter;
+    private List<EventData> dataArrayList = new ArrayList<>(); // list of recieved events
 
     private RecyclerView rv_eventList;
 
-    Bundle userData;
-    String latLong;
-
-    Button submit;
-    EditText eventName;
-    EditText location;
-    EditText startTime;
-    EditText endTime;
-    String sEventName;
-    String sLocation;
-    String sStartTime;
-    String sEndTime;
+    private Bundle userData;
     private HttpsRequest httpsRequest = new HttpsRequest();
-
     private LocationRequest locationRequest;
-
+    private double latitude;
+    private double longitude;
+    EditText et_eName;
+    EditText et_location;
+    EditText et_sTime;
+    EditText et_eTime;
+    Button submit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // button to take user inputs to create an event
         setContentView(R.layout.test_create_event);
-        eventName = findViewById(R.id.et_eName);
-        location = findViewById(R.id.et_location);
-        startTime = findViewById(R.id.et_sTime);
-        endTime = findViewById(R.id.et_eTime);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+        userData = getIntent().getExtras();
+        httpsRequest = new HttpsRequest();
 
+//        // start tracking location
+//        getLocation();
 
+        //initialize recyclerView
+//        rv_eventList = findViewById(R.id.rv_eventList);
+//        rv_eventList.setLayoutManager(new LinearLayoutManager(this));
+//        eventAdapter = new EventAdapter(dataArrayList,this);
+//        rv_eventList.setAdapter(eventAdapter);
+
+        // temporary samples
+//        EventData newEvent1 = new EventData("startTime", "eventName", "duration");
+//        EventData newEvent2 = new EventData("3:30pm", "CPEN321", "1.5 hour");
+//        dataArrayList.add(newEvent1);
+//        dataArrayList.add(newEvent2);
         submit = findViewById(R.id.button_submit);
         submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // can use these strings
-                sEventName = eventName.getText().toString();
-                sLocation = location.getText().toString();
-                sStartTime = startTime.getText().toString();
-                sEndTime = endTime.getText().toString();
+                et_eName = findViewById(R.id.et_eName);
+                et_location = findViewById(R.id.et_location);
+                et_sTime = findViewById(R.id.et_sTime);
+                et_eTime = findViewById(R.id.et_eTime);
 
                 // TODO https connection : send the info to create a new event
 
@@ -101,8 +107,25 @@ public class EventDisplayActivity extends AppCompatActivity {
                 Intent eventIntent = new Intent(EventDisplayActivity.this, CalendarActivity.class);
                 startActivity(eventIntent);
             }
-
-
         });
+
+
     }
+
+
+
+//    private void getLocation() {
+//        LocationManager locationManager  = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+//        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+//                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            return;
+//        }
+//        android.location.LocationListener locationListener = location -> {
+//            latitude = location.getLatitude();
+//            longitude = location.getLongitude();
+//        };
+//        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, locationListener);
+//        locationListener.onLocationChanged(Objects.requireNonNull(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)));
+//    }
+
 }

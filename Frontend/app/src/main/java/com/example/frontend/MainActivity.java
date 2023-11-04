@@ -61,6 +61,9 @@ public class MainActivity extends AppCompatActivity {
         userData = new Bundle();
         httpsRequest = new HttpsRequest();
 
+        // request location permissions
+        checkPermissions();
+
         // handle sign in
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -94,12 +97,11 @@ public class MainActivity extends AppCompatActivity {
         // navigate to main page if previously signed in before, but allow return
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         updateUI(account);
-
     }
 
     private void updateUI(GoogleSignInAccount account) {
         if (account == null){
-            Log.e(TAG, "There is no user signed in");
+            Log.d(TAG, "There is no user signed in");
         }
         else {
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
@@ -200,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
                 || ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
             new AlertDialog.Builder(this)
                     .setTitle("Need location permissions")
-                    .setMessage("Need permissions to determine location")
+                    .setMessage("Need permissions to determine location and create schedules")
                     .setNegativeButton("Cancel", (dialogInterface, i) -> {
                         Toast.makeText(MainActivity.this, "Need location permissions", Toast.LENGTH_LONG).show();
                         dialogInterface.dismiss();
