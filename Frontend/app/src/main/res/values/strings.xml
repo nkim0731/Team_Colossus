@@ -50,4 +50,7 @@
     <string name="tv_duration">Duration</string>
     <string name="button_eventDisplay">Schedule</string>
 
+    <string name="tv_scheduleDisplay">List of Events</string>
+    <string name="tv_createTitle">Create Event</string>
+
 </resources>

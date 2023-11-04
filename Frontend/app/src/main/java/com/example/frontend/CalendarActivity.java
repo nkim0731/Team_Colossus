@@ -35,6 +35,8 @@ public class CalendarActivity extends AppCompatActivity {
     private Button eventDisplay;
     private HttpsRequest httpsRequest;
     private final String url = "http://10.0.2.2:3000"; // TODO update with actual url
+    private TextView scheduleDisplay;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +99,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         });
 
+        // go to create schedule event
         eventDisplay = findViewById(R.id.button_eventDisplay);
         eventDisplay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,6 +110,11 @@ public class CalendarActivity extends AppCompatActivity {
 
             }
         });
+
+        scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
+        // TODO https
+        String received_from_backend = "";
+        scheduleDisplay.setText(received_from_backend);
 
     }
 

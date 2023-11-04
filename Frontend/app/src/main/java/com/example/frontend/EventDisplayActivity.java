@@ -95,64 +95,11 @@ public class EventDisplayActivity extends AppCompatActivity {
                 sStartTime = startTime.getText().toString();
                 sEndTime = endTime.getText().toString();
 
-                // all the original codes should be inside here.
-                setContentView(R.layout.activity_schedule);
-                getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                // TODO https connection : send the info to create a new event
 
 
-                userData = getIntent().getExtras();
-                String userEmail = userData.getString("userEmail", "default User Email");
-                userData.putString("location", latLong);
-//        String latLong = userData.getString("", "default Latitude and Longitude");
-
-                Log.d(TAG, "Lat and Long: "+ latLong);
-
-
-                //initialize recyclerView
-                rv_eventList = findViewById(R.id.rv_eventList);
-                rv_eventList.setLayoutManager(new LinearLayoutManager(this));
-                eventAdapter = new EventAdapter(dataArrayList,this);
-                rv_eventList.setAdapter(eventAdapter);
-
-                // don't need upper part. just receive an array of events from server.
-                // POST : {user email, location, preference}
-                // GET : dataArrayList = response(events[]);
-                // send necessary data to backend for database
-                if(latLong == NULL){
-                    Log.d(TAG, "Latitude and Longitude value is null.");
-                } else{
-                    JSONObject postData = new JSONObject();
-                    try {
-                        postData.put("username", userEmail);
-                        postData.put("access_token", latLong);
-                    } catch (JSONException e){
-                        Log.e(TAG, "unexpected JSON exception", e);
-                    }
-
-                    httpsRequest.post(server_url + "/api/calendar/day_schedule", postData, new HttpsCallback() {
-                        @Override
-                        public void onResponse(String response) {
-                            try{
-                                JSONObject responseObj = new JSONObject(response);
-                                ObjectMapper mapper = new ObjectMapper();
-                                dataArrayList = responseObj.mapper(response, new TypeReference<List<EventData>>(){});
-
-                            }catch (JSONException e){}
-                        }
-
-                        @Override
-                        public void onFailure(String error) {
-
-                        }
-                    });
-
-//        EventData newEvent1 = new EventData("startTime", "eventName", "duration");
-//        EventData newEvent2 = new EventData("3:30pm", "CPEN321", "1.5 hour");
-//        dataArrayList.add(newEvent1);
-//        dataArrayList.add(newEvent2);
-                }
-
-
+                Intent eventIntent = new Intent(EventDisplayActivity.this, CalendarActivity.class);
+                startActivity(eventIntent);
             }
 
 
