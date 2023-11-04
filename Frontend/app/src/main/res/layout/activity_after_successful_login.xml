@@ -27,14 +27,5 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.602" />
 
-    <Button
-        android:id="@+id/button_alarm"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Alarm"
-        app:layout_constraintBottom_toTopOf="@+id/button_setting"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_calendar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

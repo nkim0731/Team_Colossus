@@ -42,7 +42,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
         calendarButton.setOnClickListener(view -> {
-            checkPermission();
+//            checkPermission();
             Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
             calendarIntent.putExtras(userData);
             startActivity(calendarIntent);
@@ -69,28 +69,28 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             });
         });
 
-        Button alarmButton = findViewById(R.id.button_alarm);
-        alarmButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                Intent intent = new Intent(AfterSuccessLoginActivity.this, AlarmReceiver.class);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(AfterSuccessLoginActivity.this, 0, intent, 0);
-                long triggerTime = System.currentTimeMillis() + (30 * 1000); 
-
-                // Set the alarm to start at a specific time.
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(System.currentTimeMillis());
-                calendar.set(Calendar.HOUR_OF_DAY, 14); 
-                calendar.set(Calendar.MINUTE, 30);
-
-                //calendar.getTimeInMillis()
-                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime,
-                        1000 * 60 * 60 * 24, pendingIntent);
-
-                Log.d("Alarm", "Alarm set");
-            }
-        });
+//        Button alarmButton = findViewById(R.id.button_alarm);
+//        alarmButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//                Intent intent = new Intent(AfterSuccessLoginActivity.this, AlarmReceiver.class);
+//                PendingIntent pendingIntent = PendingIntent.getBroadcast(AfterSuccessLoginActivity.this, 0, intent, 0);
+//                long triggerTime = System.currentTimeMillis() + (30 * 1000);
+//
+//                // Set the alarm to start at a specific time.
+//                Calendar calendar = Calendar.getInstance();
+//                calendar.setTimeInMillis(System.currentTimeMillis());
+//                calendar.set(Calendar.HOUR_OF_DAY, 14);
+//                calendar.set(Calendar.MINUTE, 30);
+//
+//                //calendar.getTimeInMillis()
+//                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime,
+//                        1000 * 60 * 60 * 24, pendingIntent);
+//
+//                Log.d("Alarm", "Alarm set");
+//            }
+//        });
 
 
 
