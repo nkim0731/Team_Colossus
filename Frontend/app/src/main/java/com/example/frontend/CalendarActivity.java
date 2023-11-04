@@ -43,7 +43,7 @@ public class CalendarActivity extends AppCompatActivity {
     private Button eventDisplay;
     private HttpsRequest httpsRequest;
     private String selectedDate;
-    private final String url = "http://10.0.2.2:3000"; // TODO update with actual url
+    private final String server_url = ServerConfig.SERVER_URL;
     private TextView scheduleDisplay;
     private SwitchCompat switch_alarm;
     private AlarmManager alarmManager;
@@ -101,7 +101,7 @@ public class CalendarActivity extends AppCompatActivity {
             Intent chatRoomsIntent = new Intent(CalendarActivity.this, ChatRoomsActivity.class);
 
             // get list of chatrooms associated with the user
-            httpsRequest.get(url + "/api/chatrooms?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
+            httpsRequest.get(server_url + "/api/chatrooms?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     try {

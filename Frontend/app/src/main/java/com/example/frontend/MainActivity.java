@@ -35,13 +35,15 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
+import com.example.frontend.ServerConfig;
+
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
     private final String CHANNEL_ID = "32";
     private HttpsRequest httpsRequest;
-    private final String server_url = "http://10.0.2.2:3000"; // TODO update with actual url
-    private final String serverHttps_url = "https://calendo.westus2.cloudapp.azure.com:8081";
+
+    private final String server_url = ServerConfig.SERVER_URL;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;

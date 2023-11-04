@@ -52,7 +52,7 @@ import kotlin.jvm.internal.TypeReference;
 
 public class EventDisplayActivity extends AppCompatActivity {
     private final String TAG = "EventDisplayActivity";
-    private final String server_url = "http://10.0.2.2:3000"; // TODO update with actual url
+    private final String server_url = ServerConfig.SERVER_URL;
     private EventAdapter eventAdapter;
     private List<EventData> dataArrayList = new ArrayList<>(); // list of recieved events
 

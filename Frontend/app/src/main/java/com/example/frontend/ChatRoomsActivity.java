@@ -23,6 +23,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private RecyclerView chatRoomRecyclerView;
     private ChatRoomAdapter chatRoomAdapter;
     private HttpsRequest httpsRequest;
+    private final String server_url = ServerConfig.SERVER_URL;
     private String url;
     private final String TAG = "ChatRoom";
 
@@ -107,7 +108,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private void postChatRoom(String userEmail, String chatName) throws JSONException {
         JSONObject postData = new JSONObject();
         postData.put("chatName",chatName);
-        url = String.format("http://10.0.2.2:3000/api/chatrooms?user=%s",userEmail);
+        url = String.format(server_url + "/api/chatrooms?user=%s",userEmail);
         httpsRequest.post(url, postData, new HttpsCallback() {
             @Override
             public void onResponse(String response) {
@@ -122,6 +123,6 @@ public class ChatRoomsActivity extends AppCompatActivity {
     }
     private void getChatRooms(){
 
-        url = String.format("http://10.0.2.2:3000//api/chatrooms?user=%s",userData.getString("userEmail"));
+        url = String.format(server_url + "/api/chatrooms?user=%s",userData.getString("userEmail"));
     }
 }

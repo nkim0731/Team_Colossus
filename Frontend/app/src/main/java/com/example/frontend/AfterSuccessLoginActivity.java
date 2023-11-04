@@ -29,7 +29,8 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private Button settingButton;
     private Bundle userData;
     private HttpsRequest httpsRequest;
-    private final String server_url = "http://10.0.2.2:3000"; // TODO update with VM
+
+    private final String server_url = ServerConfig.SERVER_URL;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +55,9 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             // move to setting page, set preference
             Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
             // get users set preferences first
+            //httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
             httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
+
                 @Override
                 public void onResponse(String response) {
                     Log.d(TAG, response);

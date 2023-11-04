@@ -50,8 +50,7 @@ public class GroupChat extends AppCompatActivity {
     private HttpsRequest httpsRequest;
     private String username;
 
-    private final String server_url = "http://10.0.2.2:3000";
-    // https://calendo.westus2.cloudapp.azure.com:8081
+    private final String server_url = ServerConfig.SERVER_URL;
     final  static String TAG = "GroupChat";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
