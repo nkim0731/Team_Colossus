@@ -1,38 +1,40 @@
-name: Deploy Workflow
 
-on:
-  push:
-    branches:
-      - main
+# name: Deploy Workflow
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# on:
+#   push:
+#     branches:
+#       - main
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
 
-      - name: Restart MongoDB
-        run: |
-          # Restart MongoDB on RHEL using systemctl
-          sudo systemctl restart mongod
-        shell: bash
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Restart MongoDB
+#         run: |
+#           # Restart MongoDB on RHEL using systemctl
+#           sudo systemctl restart mongod
+#         shell: bash
         
-      - name : Reload pm2-calendo.service
-        run: |
-          sudo systemctl daemon-reload
-        shell: bash
+#       - name : Reload pm2-calendo.service
+#         run: |
+#           sudo systemctl daemon-reload
+#         shell: bash
 
-      - name: Check the application status with PM2
-        run: |
-          # Start the application with PM2 on RHEL using systemctl
-          sudo systemctl status pm2-calendo.service
-        shell: bash
+#       - name: Check the application status with PM2
+#         run: |
+#           # Start the application with PM2 on RHEL using systemctl
+#           sudo systemctl status pm2-calendo.service
+#         shell: bash
 
-      - name: Start the application with PM2
-        run: |
-          # Start the application with PM2 on RHEL using systemctl
-          sudo systemctl start pm2-calendo.service
-        shell: bash
+#       - name: Start the application with PM2
+#         run: |
+#           # Start the application with PM2 on RHEL using systemctl
+#           sudo systemctl start pm2-calendo.service
+#         shell: bash
+
         
