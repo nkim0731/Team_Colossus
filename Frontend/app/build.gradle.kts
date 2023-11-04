@@ -43,4 +43,13 @@ dependencies {
     implementation ("com.google.code.gson:gson:2.8.6")
     implementation ("com.googlecode.json-simple:json-simple:1.1")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation ("com.jakewharton.timber:timber:4.7.1")
+    implementation ("pub.devrel:easypermissions:3.0.0")
+    implementation ("com.google.android.material:material:1.5.0-alpha02")
+    implementation ("io.karn:notify:develop-SNAPSHOT")
+    implementation ("com.google.gms:google-services:4.3.3")
+    implementation ("com.google.android.gms:play-services-location:17.0.0")
+
+    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
 }

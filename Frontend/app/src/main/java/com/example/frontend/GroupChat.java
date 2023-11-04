@@ -129,7 +129,7 @@ public class GroupChat extends AppCompatActivity {
     private void getChatHistory(String chatName){
         String url = String.format("%s/api/message_history/?chatName=%s", server_url, chatName);
 
-        httpsRequest.get(url, new HttpsCallback() {
+        httpsRequest.get(url, null , new HttpsCallback() { //test locally right now
             @Override
             public void onResponse(String response) {
                 try {

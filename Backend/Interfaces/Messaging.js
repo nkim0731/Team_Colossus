@@ -1,5 +1,5 @@
 /*
-* Socket logic interface for Group Chats or anything else if need
+* Socket logic interface for Group Chats
 */
 const socketIo = require('socket.io');
 const db = require('../Databases/Database.js');
@@ -26,7 +26,6 @@ class ChatManager {
             console.log('A user connected');
 
             socket.on('joinChatroom', (chatName) => {
-                console.log('Joining chatroom ' + chatName);
                 socket.join(chatName);
                 socket.chatName = chatName;
             });

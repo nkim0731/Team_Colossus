@@ -27,6 +27,8 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         userData = getArguments();
         httpsRequest = new HttpsRequest();
 
+//        Log.d(TAG, userData.getString("preferences"));
+
         //Set summary provide of each editText preference
         EditTextPreference preparation_time = findPreference("preparation_time");
         EditTextPreference max_missed_bus = findPreference("max_missed_bus");
@@ -117,6 +119,4 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
-
-
 }

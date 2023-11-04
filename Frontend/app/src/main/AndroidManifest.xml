@@ -35,6 +35,11 @@
             android:label="Chat Room"
             android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
             />
+
+        <service
+            android:name=".ActivityIntentService"
+            android:exported="false" />
+
         <!-- remove networkSecurityConfig once https is done -->
         <activity
             android:name=".GroupChat"
@@ -64,6 +69,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+
     </application>
 
 </manifest>

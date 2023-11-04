@@ -9,17 +9,22 @@ const chatSchema = require('../Schema/chatSchema');
 const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
-const maxMessages = 5; // TODO set diff value for actual, low value for testing
+//Import export variables from variables.js
+const { isHttps, isTest, test_calendoDB } = require('../variables.js');
 
-var isTest = true;
+
+const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
 // const mongoURI = 'mongodb://localhost:27017/calendoDB';
 
 var mongoURI = null;
 if (isTest) {
-    // This URL should be the same as the db connection created in the server.js
-    // mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-    mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    if (test_calendoDB) {
+        mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+    } else {
+        // This URL should be the same as the db connection created in the server.js
+        mongoURI = 'mongodb://localhost:27017/cpen321'; // charles db name
+    }
 } else {
     // For actual project deployment
     mongoURI = 'mongodb://localhost:27017/calendoDB';
@@ -31,6 +36,7 @@ class Database {
     }
 
     async connect() {
+
         try {
             console.log('Database class mongoURL : ', mongoURI);
             await mongoose.connect(mongoURI);
@@ -91,6 +97,24 @@ class Database {
         }
     }
 
+
+    // Add a user to Users Database
+    async updateUser(user) {
+        try {
+            await UserModel.findOneAndUpdate(
+                { username: user.username },
+                user,
+                { new: true }
+                ).then((updatedUser) => {
+                    console.log("user is updated : " + updatedUser);
+                    return updatedUser;
+                });
+        } catch (e) {
+            console.log('updateUser error -> ' + e);
+            throw e;
+        }
+    }
+
     // update preferences for user in database
     async updatePreferences(user, preferences) {
         try {
@@ -109,7 +133,7 @@ class Database {
     * Calendar Database calls
     */
 
-    // get calendar events
+    // get calendar events (this might not be needed anyway since we can get events from user in getUser)
 	async getCalendar(username) {
 		try {
 			return await UserModel.findOne({ username }).select('events');
