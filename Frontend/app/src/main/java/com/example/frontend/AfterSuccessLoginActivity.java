@@ -39,16 +39,10 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
 
-        findViewById(R.id.Rg).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                checkPermission();
-            }
-        });
-
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
         calendarButton.setOnClickListener(view -> {
+            checkPermission();
             Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
             calendarIntent.putExtras(userData);
             startActivity(calendarIntent);
