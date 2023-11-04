@@ -12,7 +12,7 @@
     <string name="button_signOut">Sign out</string>
     <string name="button_groupChat">My Group Chats</string>
     <string name="button_setting">Setting</string>
-
+    <string name="button_alarm">Set alarm</string>
     <string name="button_activity">Activities</string>
     <string name="text_transit">Select Transit preference</string>
     <string name="button_create_room">create chat room</string>
