@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const deepMerge = require('deepmerge');
 
 // Schemas needed for db
 const userSchema = require('../Schema/userSchema');
@@ -120,7 +121,7 @@ class Database {
         try {
             let userDocument = await UserModel.findOne({ username: user });
             if (!userDocument) throw new Error("No user found");
-            userDocument.preferences = Object.assign(userDocument.preferences, preferences);
+            userDocument.preferences = deepMerge(userDocument.preferences, preferences);
 
             await userDocument.save();
         } catch (e) {

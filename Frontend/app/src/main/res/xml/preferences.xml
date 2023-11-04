@@ -86,7 +86,7 @@
             app:defaultValue="0" /> <!-- Set default to driving -->
 
         <EditTextPreference
-            app:key="max_missed_bus"
+            app:key="maxMissedBus"
             app:title="Max missed bus"
             app:summary="%s"
             app:dialogTitle="Enter bus"
