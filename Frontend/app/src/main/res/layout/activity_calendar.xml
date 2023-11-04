@@ -69,4 +69,14 @@
         android:layout_marginBottom="-260dp"
         android:text="@string/tv_createTitle" />
 
+    <Button
+        android:id="@+id/button_simple"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_eventDisplay"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="21dp"
+        android:layout_marginBottom="0dp"
+        android:text="Button" />
+
 </RelativeLayout>
