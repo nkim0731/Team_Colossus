@@ -40,6 +40,7 @@ public class CalendarActivity extends AppCompatActivity {
     private TextView scheduleDisplay;
 
     Button createEvent;
+    Button btn;
 
 
     @Override
@@ -132,6 +133,14 @@ public class CalendarActivity extends AppCompatActivity {
                 //
                 Intent createEventIntent = new Intent(CalendarActivity.this, CreateNewEvent.class);
                 startActivity(createEventIntent);
+            }
+        });
+
+        btn = findViewById(R.id.button_simple);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Todo
             }
         });
 
