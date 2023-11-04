@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -20,26 +21,32 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 
-
 public class HttpsRequest {
 
     private OkHttpClient client;
     private final String TAG = "getRequest";
-    public HttpsRequest(){
-        HttpLoggingInterceptor requestInterceptor = new HttpLoggingInterceptor(message -> Log.d(TAG,"Request : " + message));
+
+    public HttpsRequest() {
+        HttpLoggingInterceptor requestInterceptor = new HttpLoggingInterceptor(message -> {
+            Log.d(TAG, "Request: " + message);
+        });
         requestInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
-        HttpLoggingInterceptor responseInterceptor = new HttpLoggingInterceptor(message -> Log.d(TAG,"Response : " + message));
+        HttpLoggingInterceptor responseInterceptor = new HttpLoggingInterceptor(message -> {
+            Log.d(TAG, "Response: " + message);
+        });
         responseInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
 
         OkHttpClient client = new OkHttpClient.Builder()
                 .addInterceptor(requestInterceptor)
                 .addInterceptor(responseInterceptor)
+                .connectTimeout(10, TimeUnit.SECONDS) // Adjust the timeout value as needed
+                .readTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
                 .build();
 
         this.client = client;
     }
-
 
     /*
      * Send GET request to the server with custom headers.
@@ -73,27 +80,32 @@ public class HttpsRequest {
 
         client.newCall(request).enqueue(new Callback() {
             @Override
-            public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.d(TAG,"request err");
+            public void onFailure(Call call, IOException e) {
+                Log.e(TAG, "request err: " + e.getMessage());
                 callback.onFailure(e.getMessage());
             }
 
             @Override
-            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if(response.isSuccessful()){
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.v(TAG, "Request URL: " + request.url());
+                Log.v(TAG, "Response URL: " + response.request().url());
+                Log.v(TAG,"POST Response : " + response);
+
+                if (response.isSuccessful()) {
                     String responseData = response.body().string();
-                    if(responseData != null){
+                    if (responseData != null) {
                         callback.onResponse(responseData);
-                    }else{
+                    } else {
                         callback.onFailure("response is null");
                     }
-                }else{
-                    Log.d(TAG,"response fail");
+                } else {
+                    Log.e(TAG, "response fail");
                     callback.onFailure("response fail");
                 }
             }
         });
     }
+
 
 
     /*
@@ -113,12 +125,13 @@ public class HttpsRequest {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                Log.d(TAG,"request err");
+                Log.e(TAG,"request err");
                 callback.onFailure(e.getMessage());
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                Log.v(TAG,"POST Response : " + response);
                 if(response.isSuccessful()){
                     String responseData = response.body().string();
                     if(responseData != null){
@@ -127,7 +140,7 @@ public class HttpsRequest {
                         callback.onFailure("response is null");
                     }
                 }else{
-                    Log.d(TAG,"response fail");
+                    Log.e(TAG,"response fail");
                     callback.onFailure("response fail");
                 }
             }
