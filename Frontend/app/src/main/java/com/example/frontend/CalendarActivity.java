@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.icu.util.Calendar;
@@ -83,6 +84,7 @@ public class CalendarActivity extends AppCompatActivity {
                     Log.e(TAG, "Network error: Server probably closed");
                 }
             });
+
         });
         calendarView = findViewById(R.id.calendarView);
         calendar = Calendar.getInstance();
@@ -114,6 +116,7 @@ public class CalendarActivity extends AppCompatActivity {
                 } else {
                     Log.w(TAG, "No location permissions");
                     Toast.makeText(CalendarActivity.this, "Need location permissions to create schedule", Toast.LENGTH_LONG).show();
+                    ActivityCompat.requestPermissions(CalendarActivity.this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
                 }
             }
         });
