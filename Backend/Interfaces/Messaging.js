@@ -16,7 +16,7 @@ class ChatManager {
     
     // ChatGPT usage: Partial
     initSocketIo(server) {
-        // ChatGPT usage: All
+        // ChatGPT usage: Yes
         const io = socketIo(server, {
             cors: {
                 origin: allowedOrigins,
@@ -28,13 +28,13 @@ class ChatManager {
         io.on('connection', (socket) => {
             console.log('A user connected');
 
-            // ChatGPT usage: Partial
+            // ChatGPT usage: Yes
             socket.on('joinChatroom', (chatName) => {
                 socket.join(chatName);
                 socket.chatName = chatName;
             });
-            
-            // ChatGPT usage: Partial
+
+            // ChatGPT usage: Yes
             socket.on('leaveChatroom', () => {
                 if (socket.chatName) {
                     socket.leave(socket.chatName);
@@ -65,7 +65,7 @@ class ChatManager {
                 }
             });
 
-            // ChatGPT usage: All
+            // ChatGPT usage: Yes
             socket.on('disconnect', () => {
                 console.log('A user disconnected');
                 if (socket.chatName) {
