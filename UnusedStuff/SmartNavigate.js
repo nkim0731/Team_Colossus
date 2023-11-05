@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
-const userSchema = require('../Schema/transitHistory');
+const userSchema = require('../Backend/Schema/transitHistory');
 
 // GET user preferences by username
 router.get('/:username/:eventID', async (req, res) => {

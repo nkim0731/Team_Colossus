@@ -1,0 +1,34 @@
+/*
+    leg object {
+        distance: distance.value
+        duration: duration.value // in seconds
+        arrival_time: Time object: {value: Date, text: String, time_zone}
+        departure_time.value: Date
+        steps: array objects
+    }
+    step object { // steps amout of turns to make / transit changes
+        distance
+        duration
+        start_location/end_location
+        travel_mode: mode used for each step
+        transit: arrival/departure times
+    }
+    Schedule Object {
+        event: event
+        route: route
+    }
+*/
+/*
+   transitOptions {
+    arrivalTime: Date,
+    departureTime: Date,
+    modes[]: TransitMode, // BUS, RAIL, SUBWAY, TRAIN, TRAM
+    routingPreference: TransitRoutePreference // FEWER_TRANSFERS, LESS_WALKING
+}
+*/
+/*
+    drivingOptions {
+    departureTime: Date,
+    trafficModel: TrafficModel // bestguess, pessimistic, optimistic
+    }
+*/

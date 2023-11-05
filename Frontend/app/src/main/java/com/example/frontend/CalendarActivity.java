@@ -1,8 +1,10 @@
 package com.example.frontend;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.icu.util.Calendar;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -21,7 +24,9 @@ import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import io.socket.client.Socket;
 
@@ -36,11 +41,13 @@ public class CalendarActivity extends AppCompatActivity {
     private Button eventDisplay;
     private HttpsRequest httpsRequest;
     private String selectedDate;
-    private final String server_url = ServerConfig.SERVER_URL;
+    private final String server_url = "http://10.0.2.2:3000";
     private TextView scheduleDisplay;
-
-    Button createEvent;
-    Button btn;
+    private Button createEvent;
+    private Button createDaySchedule;
+    private double latitude;
+    private double longitude;
+    private ArrayList<EventData> schedule;
 
 
     @Override
@@ -50,6 +57,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
+        schedule = new ArrayList<>();
 
         // initialize socket connection
         Socket socket = SocketManager.getSocket();
@@ -90,6 +98,7 @@ public class CalendarActivity extends AppCompatActivity {
         calendar = Calendar.getInstance();
 
         getDate();
+        getLocation();
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView calendarView, int year, int month, int day) {
@@ -127,32 +136,64 @@ public class CalendarActivity extends AppCompatActivity {
 
         // move to CreateNewEvent.java to create new event
         createEvent = findViewById(R.id.button_createEvent);
-        createEvent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //
-                Intent createEventIntent = new Intent(CalendarActivity.this, CreateNewEvent.class);
-                startActivity(createEventIntent);
-            }
+        createEvent.setOnClickListener(view -> {
+            Intent createEventIntent = new Intent(CalendarActivity.this, CreateNewEvent.class);
+            createEventIntent.putExtras(userData);
+            startActivity(createEventIntent);
         });
 
-        btn = findViewById(R.id.button_simple);
-        btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Todo
+        // button to create day schedule
+        createDaySchedule = findViewById(R.id.button_create_schedule);
+        createDaySchedule.setOnClickListener(view -> {
+            Toast.makeText(CalendarActivity.this, "Started generating schedule for today, please be patient", Toast.LENGTH_LONG).show();
+            JSONObject data = new JSONObject();
+            // needs username, location (origin)
+            try {
+                data.put("username", userData.getString("userEmail"));
+                data.put("latitude", latitude);
+                data.put("longitude", longitude);
+            } catch (JSONException e) {
+                Log.e(TAG, "Error");
             }
+
+            httpsRequest.post(server_url + "/api/calendar/day_schedule", data, new HttpsCallback() {
+                @Override
+                public void onResponse(String response) {
+                    Log.d(TAG, "Scheduler done");
+                    userData.putString("scheduleJSON", response);
+//                    Toast.makeText(CalendarActivity.this, "Schedule has been successfully generated!", Toast.LENGTH_LONG).show();
+                }
+                @Override
+                public void onFailure(String error) {
+                    Log.e(TAG, "Error: Server error");
+//                    Toast.makeText(CalendarActivity.this, "Started generation failed", Toast.LENGTH_LONG).show();
+                }
+            });
         });
 
     }
 
-    public void getDate(){
+    private void getDate(){
         long date = calendarView.getDate();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         SimpleDateFormat displayDateFormat = new SimpleDateFormat("dd/MM/yy", Locale.getDefault());
         calendar.setTimeInMillis(date);
         selectedDate = simpleDateFormat.format(calendar.getTime());
         Toast.makeText(getApplicationContext(), displayDateFormat.format(calendar.getTime()), Toast.LENGTH_SHORT).show();
+    }
+
+    private void getLocation() {
+        LocationManager locationManager  = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        android.location.LocationListener locationListener = location -> {
+            latitude = location.getLatitude();
+            longitude = location.getLongitude();
+        };
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, locationListener);
+        locationListener.onLocationChanged(Objects.requireNonNull(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)));
     }
 
 }

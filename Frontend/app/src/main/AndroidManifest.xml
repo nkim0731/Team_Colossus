@@ -53,6 +53,9 @@
         <activity
             android:name=".EventDisplayActivity"
             android:exported="false" />
+        <activity
+            android:name=".CreateNewEvent"
+            android:exported="false" />
 
         <activity
             android:name=".PreferenceActivity"

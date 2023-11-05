@@ -42,8 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private final String TAG = "MainActivity";
     private final String CHANNEL_ID = "32";
     private HttpsRequest httpsRequest;
-
-    private final String server_url = ServerConfig.SERVER_URL;
+    private final String server_url = "http://10.0.2.2:3000"; // TODO update with actual url
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
@@ -147,10 +146,9 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "JSON Exception while parsing /login/google response");
                     }
                 }
-
                 @Override
                 public void onFailure(String error) {
-                    Log.e(TAG, "google login or register : " + error);
+                    Log.e(TAG, "Error: Server error");
                 }
             });
         }

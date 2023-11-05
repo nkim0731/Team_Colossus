@@ -20,7 +20,7 @@ import org.json.JSONObject;
 public class SettingsFragment extends PreferenceFragmentCompat {
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
-    private final String server_url = ServerConfig.SERVER_URL;
+    private final String server_url = "http://10.0.2.2:3000";
     private final String TAG = "Settings";
     private Bundle userData;
     private HttpsRequest httpsRequest;

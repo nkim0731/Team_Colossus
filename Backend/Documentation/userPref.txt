@@ -1,0 +1,41 @@
+/*
+User preferences
+
+GET /api/users/:email/preferences
+Description : allows the frontend to manage the preferences data of the user. (we shouldnt put email in the URL, so we can use user ID instead)
+Return : returns json with fields
+    "user_email": "CPEN321@gmail.com",
+    - This identifies the user
+
+    "commute_method": ["bus", "car"],
+    - options are only bus, car, and bicycle, user can choose one or more
+
+    "traffic_alerts": true,
+    - If the user choses bus and car, this would give them notification about the traffic with/without alarm
+
+    "preparation_time": "30 minutes",
+
+    "notification_preferences": {
+        "morning_alarm": true,
+        - alarm for the first event in calendar in the morning until 12PM, if there is only an event in the evening, it will not alarm
+        "event_alarm": true,
+        - If this is off, we will not use adaptive alarm system
+        "event_notification": true,
+        - this is for notification that will be deployed prior to the event such that user arrive to the event on time
+        "traffic_alerts": true,
+        "weather_alerts": true
+        - This will let user know of delays and the condition of the weather for all the day, like if its rainy need an umbrella etc
+    },
+    - 
+
+    "maxMissedBus" : "1",
+    - default number of buses that can be missed, and still arrive destination on time, if the user sets an event as important, then this will be increased by 1
+
+    "home_location": "123 Main St, Your City",
+    "school_location": "4566 Main Mall, Vancouver",
+    "work_location": "456 Business Ave, Your City",
+    "snooze_duration": "10 minutes",
+    - We do this for users who cannot wake up to a single alarm,
+    "vibration_alert": true
+    - option for vibration for alarm and notification
+*/

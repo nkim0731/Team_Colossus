@@ -14,30 +14,30 @@
 
     <Button
         android:id="@+id/button_chat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="119dp"
+        android:layout_height="101dp"
         android:layout_below="@id/calendarView"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="280dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginStart="306dp"
+        android:layout_marginTop="300dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="10dp"
         android:text="@string/button_groupChat" />
 
     <Button
         android:id="@+id/button_eventDisplay"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/button_chat"
         android:layout_below="@+id/calendarView"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="130dp"
-        android:layout_marginTop="130dp"
-        android:layout_marginEnd="130dp"
-        android:layout_marginBottom="-190dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="110dp"
+        android:layout_marginTop="300dp"
+        android:layout_marginEnd="200dp"
+        android:layout_marginBottom="10dp"
         android:text="@string/button_eventDisplay" />
 
     <TextView
@@ -48,35 +48,54 @@
         android:layout_below="@+id/calendarView"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="100dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginBottom="-100dp"
-        android:text="@string/tv_scheduleDisplay"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="200dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="-300dp"
+        android:text="List of events on selected day"
         android:textSize="16sp" />
 
     <Button
         android:id="@+id/button_createEvent"
-        android:layout_width="wrap_content"
+        android:layout_width="86dp"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/button_chat"
-        android:layout_below="@+id/button_eventDisplay"
+        android:layout_below="@+id/calendarView"
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginStart="130dp"
-        android:layout_marginTop="210dp"
-        android:layout_marginEnd="130dp"
-        android:layout_marginBottom="-260dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="213dp"
+        android:layout_marginTop="300dp"
+        android:layout_marginEnd="107dp"
+        android:layout_marginBottom="10dp"
         android:text="@string/tv_createTitle" />
 
     <Button
-        android:id="@+id/button_simple"
+        android:id="@+id/button_create_schedule"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/button_eventDisplay"
+        android:layout_below="@+id/calendarView"
+        android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"
-        android:layout_marginEnd="21dp"
-        android:layout_marginBottom="0dp"
-        android:text="Button" />
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginTop="300dp"
+        android:layout_marginEnd="310dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/button_create_schedule" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_eventList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/tv_scheduleDisplay"
+        android:layout_below="@+id/calendarView"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="-200dp"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:listitem="@layout/list_item" />
 
 </RelativeLayout>

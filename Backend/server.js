@@ -13,10 +13,8 @@ const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
 
 // Requires for defined interfaces
-const Session = require('./Interfaces/Session.js');
 const Calendar = require('./Interfaces/Calendar.js');
 const Scheduler = require('./Interfaces/Scheduler.js');
-
 const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
 
@@ -31,6 +29,7 @@ const chatSchema = require('./Schema/chatSchema');
 const { isHttps, isTest, test_calendoDB } = require('./variables.js');
 
 const app = express();
+app.use(express.json());
 
 var mongoURI = null
 if (isTest) {
@@ -50,36 +49,23 @@ console.log("serverjs connecting to  : " + mongoURI);
 var httpsServer = null;
 if (isHttps) {
     const options = {
-        key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'), // Path to your private key
-        cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'), // Path to your certificate
+        key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
+        cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
     };
-
     httpsServer = https.createServer(options, app);
 }
 
 const server = http.createServer(app); // HTTP server for testing 
 
-const chatManager = new ChatManager(server); // start socketio service for groupchats change this to HTTPS once implemented
+const chatManager = new ChatManager(server); // start socketio service for groupchats (change this to HTTPS server TODO)
 
 /*
 * API calls and calls to/from frontend go here
 */
-let login = new Session();
-let calendar = new Calendar();
-
-// Testing purposes only, delete later
-const clientApp = path.join(__dirname, 'Client');
-app.use(express.json())
-app.use('/', express.static(clientApp, { extensions: ['html'] }));
-// --------------------------------------
-
-
 
 //Universal mongoDB instantiation and other help code (used by So)
-
 var port = 8081;
 var host = "calendo.westus2.cloudapp.azure.com";
-
 
 // Create connection for calendoDB
 // This URL should be the same as the db connection created in the Database.js
@@ -90,9 +76,6 @@ const User = testDB.model('user', userSchema);
 
 // Store data in app.locals
 app.locals.mongoDB = testDB;
-
-
-
 
 /*
 Everything related to Google API
@@ -150,68 +133,7 @@ const verifyIdToken = async (id_token) => {
     }
 }
 
-
-
-// login check for user
-app.post('/login', async (req, res) => {
-    let data = req.body;
-    try {
-        let user = await db.getUser(data.username);
-        // password check logic
-        if (user.password === data.password) {
-            // proceed to main calendar application
-            login.createSession(res, req.body.username); // create cookie session, might not need
-            res.status(200).json({ message: 'Login successful' });
-        } else {
-            res.status(400).json({ message: 'Invalid credentials' });
-        } 
-    } catch (e) {
-        res.status(500).json({ message: e });
-    }
-})
-
-// update the user data, if id_token can be verified
-app.put('/login', async (req, res) => {
-    let data = req.body;
-    var id_token = data.id_token;
-    const verifiedPayload = await verifyIdToken(id_token);
-    //console.log(verifiedPayload);
-
-
-    if (verifiedPayload) {
-        // Check the criteria you mentioned
-        const { aud, iss, exp, hd, email } = verifiedPayload;
-
-        if (aud === process.env.CLIENT_ID 
-            && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
-            && exp > Math.floor(Date.now() / 1000)
-            && data.username == email) {
-            // The ID token is valid and satisfies the criteria
-            console.log("\nuser id_token is verified! \nMoving onto updating the user data");
-
-            // Now you can update the user data
-            try {
-                let user = await db.getUser(data.username);
-                if (user) {
-                    await db.updateUser(data).then((updatedUser) => {
-                        console.log( updatedUser );
-                        return res.status(200).json({ updatedUser });
-                    }); // Update user data in the database
-                } else {
-                    res.status(500).json({ message: 'User was not found, so cannot update user data' });
-                }
-            } catch (e) {
-                res.status(500).json({ message: e });
-            }
-        } else {
-            res.status(400).json({ message: 'Invalid ID token' });
-        }
-    } else {
-        res.status(400).json({ message: 'Error with verifyIdToken() function' });
-    }
-})
-
-// handle signin with google account
+// handle signin (and register if first time login) with google account
 app.post('/login/google', async (req, res) => {
     const data = req.body;
     try {
@@ -225,23 +147,6 @@ app.post('/login/google', async (req, res) => {
     } catch (e) {
         console.log(e);
         res.status(500).json({ result: e });
-    }
-})
-
-// register a user 
-app.post('/register', async (req, res) => {
-    const data = req.body;
-    try {
-        let checkUser = await db.getUser(data.username);
-        if (checkUser !== false) {
-            res.status(400).json({ message: 'Username/Email already exists' });
-        } else {
-            console.log('/register : adding a new user');
-            await db.addUser(data);
-            res.status(200).json({ result: 'register' });
-        }
-    } catch (e) {
-        res.status(500).json({ message: e });
     }
 })
 
@@ -425,7 +330,7 @@ app.get('/api/calendar/import', async (req, res) => {
 // get / add events to calendar
 app.route('/api/calendar')
 .get(async (req, res) => { // /api/calendar?user=username (or some sort of id, stored as session in frontend)
-    const user = req.query.user; // or can use login.getUser(login.parseCookies(req)['cpen321-session'])
+    const user = req.query.user;
     try {
         const events = await db.getCalendar(user);
         res.status(200).json({ 'events': events }); // send events array
@@ -446,13 +351,16 @@ app.route('/api/calendar')
 // create day schedule on button press
 app.route('/api/calendar/day_schedule')
 .post(async (req, res) => {
-    const data = req.body; // needs username, location (origin)
+    const data = req.body; // username, latitude, longitude
     try {
-        const user = db.getUser(data.username);
-        const schedule = await Scheduler.createDaySchedule(user.events, data.location, user.preferences);
-        await db.updateSchedule(data.username, schedule);
-        res.status(200).json({ schedule: schedule });
+        const user = await db.getUser(data.username);
+        const LatLng = `${data.latitude}, ${data.longitude}`;
+
+        const schedule = await Scheduler.createDaySchedule(user.events, LatLng, user.preferences);
+        await db.addSchedule(data.username, schedule);
+        res.status(200).send(schedule);
     } catch (e) {
+        console.log(e);
         res.status(500).json({ message: e });
     }
 })
@@ -464,32 +372,6 @@ app.route('/api/calendar/day_schedule')
         res.status(500).json({ message: e });
     }
 })
-
-// API endpoint to get calendar data for a user by email
-app.get('/api/calendar', async (req, res) => {
-    const useremail = req.query.useremail;
-
-    try {
-        // Find the user by their email
-        const user = await User.findOne({ username: useremail });
-
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Retrieve the calendar events from the user's data
-        const calendarEvents = user.events;
-
-        if (!calendarEvents) {
-            return res.status(404).json({ message: 'No calendar events found for this user' });
-        }
-
-        res.status(200).json({ events: calendarEvents });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching calendar events' });
-    }
-});
 
 /*
 * Group chats API calls
@@ -523,101 +405,9 @@ app.get('/api/chatrooms', async (req, res) => {
     }
 })
 
-
-
-/*
-User preferences
-
-GET /api/users/:email/preferences
-Description : allows the frontend to manage the preferences data of the user. (we shouldnt put email in the URL, so we can use user ID instead)
-Return : returns json with fields
-    "user_email": "CPEN321@gmail.com",
-    - This identifies the user
-
-    "commute_method": ["bus", "car"],
-    - options are only bus, car, and bicycle, user can choose one or more
-
-    "traffic_alerts": true,
-    - If the user choses bus and car, this would give them notification about the traffic with/without alarm
-
-    "preparation_time": "30 minutes",
-
-    "notification_preferences": {
-        "morning_alarm": true,
-        - alarm for the first event in calendar in the morning until 12PM, if there is only an event in the evening, it will not alarm
-        "event_alarm": true,
-        - If this is off, we will not use adaptive alarm system
-        "event_notification": true,
-        - this is for notification that will be deployed prior to the event such that user arrive to the event on time
-        "traffic_alerts": true,
-        "weather_alerts": true
-        - This will let user know of delays and the condition of the weather for all the day, like if its rainy need an umbrella etc
-    },
-    - 
-
-    "maxMissedBus" : "1",
-    - default number of buses that can be missed, and still arrive destination on time, if the user sets an event as important, then this will be increased by 1
-
-    "home_location": "123 Main St, Your City",
-    "school_location": "4566 Main Mall, Vancouver",
-    "work_location": "456 Business Ave, Your City",
-    "snooze_duration": "10 minutes",
-    - We do this for users who cannot wake up to a single alarm,
-    "vibration_alert": true
-    - option for vibration for alarm and notification
-*/
-
 // Use the API routes from User.js
 const userRoutes = require('./Interfaces/User'); // Replace with your actual path
 app.use('/api/users', userRoutes);
-
-
-/*
-Adaptive Alarm system related API calls
-
-POST /api/users/:email/adalarm/trigger
-Description: this returns boolean to let the app know if we should trigger alarm or not
-Input: 
-    "GPS_location": [
-        "latitude": 37.7749, // The latitude of the user's current location
-        "longitude": -122.4194 // The longitude of the user's current location
-    ]   
-    "noise_level": 5
-    - measure noise level from the audio from level 1 to 10
-    "phone_in_use": true,
-Returns: 
-    "trigger": true
-    "feedback_ID": 1234
-    - if the backend thinks its suitable for alarm, trigger alarm
-
-
-PUT /api/users/:email/adalarm/trigger
-Description: this returns boolean to let the app know if we should trigger alarm or not
-Input: 
-    "feedback_ID" : 1234
-    - this links to the return of POST request of the trigger, use the same ID so that backend can learn if it was a good decision or not
-    "feedback": true
-    - true or false, false means user disliked the alarm
-Returns: 
-    "sucess": feedback successfully registered.
-
-*/
-
-
-/*
-Smart Navigation system
-Description: This module would implement google maps API and handle alarm schedules for each event. It needs to have following features
-1) ask the user what transit is preferred for the every first even in the upcoming week after importing the google calendar data.
-2) ask the user what mode of transportation would be used for getting inbetween every other event in a upcoming week.
-3) Optimize API calls to google maps or other external API services when calculating transit time, nevigation, and routes
-4) NOT YET : Store and cache the past history of all google maps API calls, past history of time taken for getting ready in the morning, and GPS_location travel data to create a smart navigation time prediction.
-*/
-
-// Use the smart navigation router
-const smartNavigateRouter = require('./Interfaces/SmartNavigate');
-app.use('/api/smartNavigate', smartNavigateRouter);
-
-
 
 // Middleware to extract the access token
 app.use((req, res, next) => {
@@ -644,8 +434,6 @@ app.use((req, res, next) => {
     // }
     next(); // Continue to the next middleware or route
   });
-
-
 
 // This function will return false if there is no valid access_token, otherwise it returns a valid access_token
 const getUserAccessToken = async (userEmail) => {
@@ -834,26 +622,6 @@ app.get('/auth/google/redirect', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error saving the user token, check if you have registered the user' });
-    }
-});
-
-
-
-
-
-app.get('/', (req, res) => {
-    if (isHttps) {
-        res.send('Hello, Welcome to Calendo using HTTPS on port 8081!');
-    } else {
-        res.send('Hello, Welcome to Calendo using HTTP on port 3000!');
-    }
-});
-
-app.get('/check', (req, res) => {
-    if (isHttps) {
-        res.send('check for https!');
-    } else {
-        res.send('check for http');
     }
 });
 

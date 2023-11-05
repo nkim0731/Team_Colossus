@@ -16,6 +16,11 @@
     <string name="button_activity">Activities</string>
     <string name="text_transit">Select Transit preference</string>
     <string name="button_create_room">create chat room</string>
+    <string name="button_create_schedule">Create Schedule for Today</string>
+    <string name="submit_button">Submit</string>
+
+    <string name="address_hint">Address: e.g., 123 Main St, City</string>
+    <string name="time_hint">YYYY-MM-DD HH:mm</string>
 
     <string name="server_client_id">805259873874-raavn3hag37qjfnm8qt4mhdsgqqhdeu7.apps.googleusercontent.com</string>
     <string name="android_client_id">805259873874-3gltphbmrs7d580c3k6n071rjcspfr4f.apps.googleusercontent.com</string>
@@ -48,7 +53,7 @@
     <string name="tv_startTime">Start Time</string>
     <string name="tv_eventName">Event Name</string>
     <string name="tv_duration">Duration</string>
-    <string name="button_eventDisplay">Schedule</string>
+    <string name="button_eventDisplay">Today\'s Schedule</string>
 
     <string name="tv_scheduleDisplay">List of Events</string>
     <string name="tv_createTitle">Create Event</string>

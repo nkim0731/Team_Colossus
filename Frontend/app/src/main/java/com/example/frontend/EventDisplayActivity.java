@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -20,30 +21,25 @@ import java.util.Objects;
 
 public class EventDisplayActivity extends AppCompatActivity {
     private final String TAG = "EventDisplayActivity";
-    private final String server_url = ServerConfig.SERVER_URL;
+    private final String server_url = "http://10.0.2.2:3000";
     private EventAdapter eventAdapter;
     private List<EventData> dataArrayList = new ArrayList<>(); // list of recieved events
 
     private RecyclerView rv_eventList;
 
     private Bundle userData;
-    private HttpsRequest httpsRequest = new HttpsRequest();
-    private LocationRequest locationRequest;
-    private double latitude;
-    private double longitude;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_schedule);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.activity_calendar);
+//        setContentView(R.layout.activity_schedule);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         userData = getIntent().getExtras();
-        httpsRequest = new HttpsRequest();
-
-        // start tracking location
-        getLocation();
+        if (userData.getString("scheduleJSON") == null) {
+            Toast.makeText(getApplicationContext(), "No schedule was generated, Please go and generate", Toast.LENGTH_LONG).show();
+        }
 
         // initialize recyclerView
         rv_eventList = findViewById(R.id.rv_eventList);
@@ -59,21 +55,4 @@ public class EventDisplayActivity extends AppCompatActivity {
 
 
     }
-
-
-
-    private void getLocation() {
-        LocationManager locationManager  = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            return;
-        }
-        android.location.LocationListener locationListener = location -> {
-            latitude = location.getLatitude();
-            longitude = location.getLongitude();
-        };
-        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, locationListener);
-        locationListener.onLocationChanged(Objects.requireNonNull(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)));
-    }
-
 }

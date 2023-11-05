@@ -4,7 +4,6 @@ const deepMerge = require('deepmerge');
 // Schemas needed for db
 const userSchema = require('../Schema/userSchema');
 const chatSchema = require('../Schema/chatSchema');
-// const { mongo } = require("mongoose");
 
 // models to interact with database collections
 const UserModel = mongoose.model('user', userSchema);
@@ -12,7 +11,6 @@ const ChatModel = mongoose.model('chat', chatSchema);
 
 //Import export variables from variables.js
 const { isHttps, isTest, test_calendoDB } = require('../variables.js');
-
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
