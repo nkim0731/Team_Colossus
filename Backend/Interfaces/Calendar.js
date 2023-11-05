@@ -13,14 +13,14 @@ const googleAPIKey = process.env.GOOGLE_API_KEY;
 
 // Schema and Model for event
 const eventSchema = new mongoose.Schema({
-    eventName: String,
+    eventName: String, //must
     eventId: String,
     eventType: String,
     description: String,
-    start: Date,
-    end: Date,
+    start: Date, //must
+    end: Date, //must
     hasChat: Boolean,
-    address: String,
+    address: String, //must
     gpsLocation: String,
 })
 

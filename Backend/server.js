@@ -122,8 +122,7 @@ const authorizationUrl = oauth2Client.generateAuthUrl({
 const verifyIdToken = async (id_token) => {
     try {
         const ticket = await authClient.verifyIdToken({
-            idToken: id_token,
-            audience: process.env.CLIENT_ID
+            idToken: id_token
         });
         const payload = ticket.getPayload();
         return payload;
@@ -207,17 +206,23 @@ app.get('/api/calendar/import', async (req, res) => {
     
     oauth2Client._clientId = process.env.FRONT_CLIENT_ID;
 
-    await refreshTokenIfNecessary(useremail).then(
-        new_access_token => {
-            access_token = new_access_token
-            console.log("/api/calendar/import new_access_token : ", new_access_token);
-        });
+    // await refreshTokenIfNecessary(useremail).then(
+    //     new_access_token => {
+    //         access_token = new_access_token
+    //         console.log("/api/calendar/import new_access_token : ", new_access_token);
+    //     });
+
+    User.find({useremail}).then(user => {
+        if (user.access_token != null && user.access_token != "") {
+            access_token = user.access_token;
+        }
+    });
 
     var id_token = "";
     var refresh_token = ""
     // Assuming you have a User model and user email stored in 'userEmail'
     await User.findOne({ username: useremail }
-    ).then((user) => {
+    ).then(user => {
         id_token = user.id_token;
         refresh_token = user.refresh_token;
         access_token = access_token;
@@ -236,7 +241,7 @@ app.get('/api/calendar/import', async (req, res) => {
 
     
     const verifiedPayload = await verifyIdToken(id_token);
-    //console.log(verifiedPayload);
+    console.log(verifiedPayload);
 
 
 
