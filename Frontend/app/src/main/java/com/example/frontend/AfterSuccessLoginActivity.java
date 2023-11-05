@@ -180,7 +180,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             mGoogleSignInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
                 @Override
                 public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
-                    Log.i(TAG,"eventsForAWeek : " + eventsForAWeek);
+                    Log.i(TAG,"silent sign in successful");
                 }
             });
         } else {
