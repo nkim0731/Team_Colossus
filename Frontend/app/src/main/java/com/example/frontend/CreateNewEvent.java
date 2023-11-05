@@ -61,14 +61,14 @@ public class CreateNewEvent extends AppCompatActivity {
                 @Override
                 public void onResponse(String response) {
                     Log.d(TAG, response);
+                    Intent eventIntent = new Intent(CreateNewEvent.this, CalendarActivity.class);
+                    startActivity(eventIntent);
                 }
                 @Override
                 public void onFailure(String error) {
                     Log.e(TAG, error);
                 }
             });
-            Intent eventIntent = new Intent(CreateNewEvent.this, CalendarActivity.class);
-            startActivity(eventIntent);
         });
     }
 }
