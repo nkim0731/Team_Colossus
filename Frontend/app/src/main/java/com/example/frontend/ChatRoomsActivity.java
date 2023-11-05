@@ -16,6 +16,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/*
+ * Number of methods: 4
+ * */
 public class ChatRoomsActivity extends AppCompatActivity {
 
     private Bundle userData;
@@ -27,6 +31,9 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private String url;
     private final String TAG = "ChatRoom";
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +97,9 @@ public class ChatRoomsActivity extends AppCompatActivity {
     }
 
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
@@ -103,6 +113,9 @@ public class ChatRoomsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
 
     //post new created chat room to database
     private void postChatRoom(String userEmail, String chatName) throws JSONException {
@@ -121,6 +134,10 @@ public class ChatRoomsActivity extends AppCompatActivity {
             }
         });
     }
+
+    /*
+     * ChatGPT usage: No
+     * */
     private void getChatRooms(){
 
         url = String.format(server_url + "/api/chatrooms?user=%s",userData.getString("userEmail"));

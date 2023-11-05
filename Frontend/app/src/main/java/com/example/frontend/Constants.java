@@ -1,5 +1,6 @@
 package com.example.frontend;
 
+
 public class Constants {
     public static final int REQUEST_CODE_ACTIVITY_TRANSITION = 123;
     public static final int REQUEST_CODE_INTENT_ACTIVITY_TRANSITION = 122;

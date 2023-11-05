@@ -32,6 +32,9 @@ import java.util.Objects;
 
 import io.socket.client.Socket;
 
+/*
+ * Number of methods: 5
+ * */
 public class CalendarActivity extends AppCompatActivity {
     private final String TAG = "CalendarActivity";
     private CalendarView calendarView;
@@ -54,6 +57,10 @@ public class CalendarActivity extends AppCompatActivity {
     private List<EventData> eventList;
     private EventAdapter eventAdapter;
 
+
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -211,6 +218,10 @@ public class CalendarActivity extends AppCompatActivity {
 
     }
 
+
+    /*
+     * ChatGPT usage: No
+     * */
     private void getDate(){
         long date = calendarView.getDate();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -220,6 +231,10 @@ public class CalendarActivity extends AppCompatActivity {
         Toast.makeText(getApplicationContext(), displayDateFormat.format(calendar.getTime()), Toast.LENGTH_SHORT).show();
     }
 
+
+    /*
+     * ChatGPT usage: No
+     * */
     private void getLocation() {
         LocationManager locationManager  = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
@@ -234,6 +249,9 @@ public class CalendarActivity extends AppCompatActivity {
         locationListener.onLocationChanged(Objects.requireNonNull(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)));
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
     // check if location permissions have been granted
     private boolean permissionChecker() {
         int fineLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION);
@@ -243,6 +261,10 @@ public class CalendarActivity extends AppCompatActivity {
     }
 
 
+
+    /*
+     * ChatGPT usage: Partial
+     * */
     private void getEvents(){
         httpsRequest.get(server_url + "/"+selectedDate, null, new HttpsCallback() {
             @Override

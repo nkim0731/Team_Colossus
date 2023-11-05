@@ -12,7 +12,13 @@ import com.google.android.gms.location.DetectedActivity;
 
 import timber.log.Timber;
 
+/*
+ * Number of methods: 1
+ * */
 public class TransitionReceiver extends BroadcastReceiver {
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     public void onReceive(Context context, Intent intent) {
         if (ActivityTransitionResult.hasResult(intent)) {

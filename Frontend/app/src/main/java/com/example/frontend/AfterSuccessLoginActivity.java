@@ -23,6 +23,9 @@ import org.json.JSONObject;
 
 import java.util.Calendar;
 
+/*
+ * Number of methods: 2
+ * */
 public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private final String TAG = "MainMenuActivity";
     private Button calendarButton;
@@ -31,6 +34,10 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private HttpsRequest httpsRequest;
     private final String server_url = ServerConfig.SERVER_URL;
 
+
+    /*
+     * ChatGPT usage: Partial
+     * */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_after_successful_login);
@@ -71,6 +78,9 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         });
     }
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     private void checkPermission(){
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
 

@@ -37,6 +37,9 @@ import java.net.SocketTimeoutException;
 
 import com.example.frontend.ServerConfig;
 
+/*
+ * Number of methods: 8
+ * */
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
@@ -54,6 +57,9 @@ public class MainActivity extends AppCompatActivity {
     private ActivityRecognitionClient mActivityRecognitionClient;
 
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,6 +93,9 @@ public class MainActivity extends AppCompatActivity {
         updateUI(account);
     }
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     private void updateUI(GoogleSignInAccount account) {
         if (account == null){
             Log.d(TAG, "There is no user signed in");
@@ -132,11 +141,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -147,6 +162,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
     private void signOut() {
         mGoogleSignInClient.signOut()
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {
@@ -158,6 +176,9 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
@@ -172,6 +193,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
     // check location permissions
     private void checkPermissions() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -196,6 +220,9 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
     }
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     private void createNotificationChannel() {
         CharSequence name = "sample channel";
         String description = "sample notification channel";

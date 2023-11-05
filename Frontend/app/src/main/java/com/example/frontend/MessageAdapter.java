@@ -10,6 +10,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+/*
+ * Number of methods: 6
+ * */
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageViewHolder> {
     private List<Message> messages; // List of messages
     private static final int VIEW_SENDER = 1;
@@ -19,6 +22,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     public int getItemViewType(int position){
         Message message = messages.get(position);
@@ -29,6 +35,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         }
 
     }
+    /*
+     * ChatGPT usage: Partial
+     * */
     @NonNull
     @Override
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -44,6 +53,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
     }
 
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         // Bind message data to the views in the ViewHolder
@@ -51,6 +63,9 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         holder.bind(message);
     }
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public int getItemCount() {
         return messages.size();
@@ -62,12 +77,18 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
         private TextView messageText;
         private TextView senderText;
 
+        /*
+         * ChatGPT usage: Yes
+         * */
         public MessageViewHolder(View itemView) {
             super(itemView);
             messageText = itemView.findViewById(R.id.message);
             senderText = itemView.findViewById(R.id.sender);
         }
 
+        /*
+         * ChatGPT usage: Yes
+         * */
         public void bind(Message message) {
             // Bind data to the views
             messageText.setText(message.getMessageText());

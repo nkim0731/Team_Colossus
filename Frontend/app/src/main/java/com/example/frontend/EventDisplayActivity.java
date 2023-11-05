@@ -17,7 +17,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
+/*
+ * Number of methods: 2
+ * */
 public class EventDisplayActivity extends AppCompatActivity {
     private final String TAG = "EventDisplayActivity";
     private final String server_url = ServerConfig.SERVER_URL;
@@ -29,6 +31,9 @@ public class EventDisplayActivity extends AppCompatActivity {
     private Bundle userData;
     private HttpsRequest httpsRequest;
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +56,9 @@ public class EventDisplayActivity extends AppCompatActivity {
 //        dataArrayList.add(newEvent2);
 
         httpsRequest.get(server_url + "/api/calendar/day_schedule?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
+            /*
+             * ChatGPT usage: Partial
+             * */
             @Override
             public void onResponse(String response) {
                 try {

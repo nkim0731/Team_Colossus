@@ -11,6 +11,10 @@ import androidx.core.app.NotificationManagerCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
     private final String CHANNEL_ID = "32";
+
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     public void onReceive(Context context, Intent intent) {
         // Handle the alarm here. For instance, you can show a notification.

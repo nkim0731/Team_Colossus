@@ -11,7 +11,15 @@ import android.content.res.Resources;
 import com.google.gson.reflect.TypeToken;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
+
+/*
+* Number of methods: 5
+ * */
 //Extend IntentService//
+
+/*
+* ChatGPT usage: Partial
+* */
 public class ActivityIntentService extends IntentService {
     protected static final String TAG = "Activity";
     //Call the super IntentService constructor with the name for the worker thread//
@@ -25,6 +33,9 @@ public class ActivityIntentService extends IntentService {
     }
 //Define an onHandleIntent() method, which will be called whenever an activity detection update is available//
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onHandleIntent(Intent intent) {
 //Check whether the Intent contains activity recognition data//
@@ -45,6 +56,9 @@ public class ActivityIntentService extends IntentService {
     }
 //Convert the code for the detected activity type, into the corresponding string//
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     static String getActivityString(Context context, int detectedActivityType) {
         Resources resources = context.getResources();
         switch(detectedActivityType) {
@@ -77,10 +91,17 @@ public class ActivityIntentService extends IntentService {
             DetectedActivity.TILTING,
             DetectedActivity.UNKNOWN
     };
+    /*
+     * ChatGPT usage: Yes
+     * */
     static String detectedActivitiesToJson(ArrayList<DetectedActivity> detectedActivitiesList) {
         Type type = new TypeToken<ArrayList<DetectedActivity>>() {}.getType();
         return new Gson().toJson(detectedActivitiesList, type);
     }
+
+    /*
+     * ChatGPT usage: Partial
+     * */
     static ArrayList<DetectedActivity> detectedActivitiesFromJson(String jsonArray) {
         Type listType = new TypeToken<ArrayList<DetectedActivity>>(){}.getType();
         ArrayList<DetectedActivity> detectedActivities = new Gson().fromJson(jsonArray, listType);
