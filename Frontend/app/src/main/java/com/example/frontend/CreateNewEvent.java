@@ -20,8 +20,11 @@ public class CreateNewEvent extends AppCompatActivity {
     private Button submit;
     private Bundle userData;
     private HttpsRequest httpsRequest;
-    private final String server_url = "http://10.0.2.2:3000";
+    private final String server_url = ServerConfig.SERVER_URL;
     private final String TAG = "CreateEvent";
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

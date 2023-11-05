@@ -13,10 +13,16 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputLayout;
 
+/*
+ * Number of methods: 2
+ * */
 public class PreferenceActivity extends AppCompatActivity {
     private final String TAG = "PreferenceActivity";
     private Bundle userData;
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +42,9 @@ public class PreferenceActivity extends AppCompatActivity {
         }
     }
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();

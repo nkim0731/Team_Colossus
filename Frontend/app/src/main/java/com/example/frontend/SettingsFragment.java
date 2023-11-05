@@ -17,6 +17,9 @@ import androidx.preference.SwitchPreferenceCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/*
+ * Number of methods: 2
+ * */
 public class SettingsFragment extends PreferenceFragmentCompat {
     private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
@@ -25,6 +28,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
     private Bundle userData;
     private HttpsRequest httpsRequest;
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.preferences, rootKey);
@@ -144,6 +150,9 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
     }
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

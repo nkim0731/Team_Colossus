@@ -21,11 +21,17 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
 
+/*
+ * Number of methods: 4
+ * */
 public class HttpsRequest {
 
     private OkHttpClient client;
     private final String TAG = "getRequest";
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     public HttpsRequest() {
         HttpLoggingInterceptor requestInterceptor = new HttpLoggingInterceptor(message -> {
             Log.d(TAG, "Request: " + message);
@@ -48,6 +54,9 @@ public class HttpsRequest {
         this.client = client;
     }
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     /*
      * Send GET request to the server with custom headers.
      * Parameters:
@@ -109,6 +118,9 @@ public class HttpsRequest {
 
 
     /*
+     * ChatGPT usage: Partial
+     * */
+    /*
     * Send POST request to server
     * Parameters: url: the url of server
     *             postData: JSON object that would be send to server
@@ -150,6 +162,9 @@ public class HttpsRequest {
     }
 
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     /*
      * Send PUT request to server
      * Parameters: url: the url of server

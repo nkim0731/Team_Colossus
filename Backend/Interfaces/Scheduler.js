@@ -9,6 +9,7 @@ class Scheduler {
     }
 
     // get direction to an event from position when called
+    // ChatGPT usage: Partial
     async getDirections(origin, event, preferences) {
         try {
             let params = {
@@ -39,6 +40,7 @@ class Scheduler {
     }
 
     // create schedule with routes for events taking place today
+    // ChatGPT usage: Partial
     async createDaySchedule(events, origin, preferences) { // origin is user home location
         const today = new Date();
         const dayEvents = events.filter(e => {
@@ -78,9 +80,15 @@ class Scheduler {
                     }
                     return 0; // route a and b are equal in duration and steps
                 }
-                // routes sorted by lowest duration/steps, optimal is routes[0]
+                // routes sorted by lowest duration, then steps and time of arrival, optimal is routes[0]
                 routes.sort(compareRoutes); 
-                const eventRoute = { event: dayEvents[i], route: routes[0] };
+                const route = {
+                    distance: routes[0].legs[0].distance,
+                    duration: routes[0].legs[0].duration,
+                    end_address: routes[0].legs[0].end_address,
+                    start_address: routes[0].legs[0].start_address,
+                }
+                const eventRoute = { event: dayEvents[i], route: route };
                 schedule.push(eventRoute);
             } catch (e) {
                 console.log('Error generating routes: ' + e);

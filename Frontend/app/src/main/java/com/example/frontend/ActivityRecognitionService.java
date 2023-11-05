@@ -24,6 +24,10 @@ import com.google.android.gms.location.DetectedActivity;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/*
+ * Number of methods: 4
+ * */
 public class ActivityRecognitionService extends Service {
     private ActivityRecognitionClient activityRecognitionClient;
     private List<ActivityTransition> transitions;
@@ -38,6 +42,10 @@ public class ActivityRecognitionService extends Service {
         createNotificationChannel();
 
     }
+
+    /*
+     * ChatGPT usage: Partial
+     * */
 
     public int onStartCommand(Intent intent, int flags, int startId) {
         Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -63,6 +71,9 @@ public class ActivityRecognitionService extends Service {
         return null;
     }
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     private void setActivityRecognition() {
         Intent intent = new Intent(this, TransitionReceiver.class);
         PendingIntent transitionPendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
@@ -80,6 +91,9 @@ public class ActivityRecognitionService extends Service {
     }
 
     //create activity transitions lists
+    /*
+     * ChatGPT usage: No
+     * */
     private void createActivityTransitions(){
 
         transitions = new ArrayList<>();
@@ -118,6 +132,9 @@ public class ActivityRecognitionService extends Service {
 
 
     //create notification channels
+    /*
+     * ChatGPT usage: Partial
+     * */
     private void createNotificationChannel() {
         CharSequence name = "Service channel";
         String description = "activity recognition service channel";

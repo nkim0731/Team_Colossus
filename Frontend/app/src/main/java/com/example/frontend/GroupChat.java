@@ -34,7 +34,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import okhttp3.Request;
 import okhttp3.Response;
-
+/*
+ * Number of methods: 3
+ * */
 public class GroupChat extends AppCompatActivity {
 
     private Button sendButton;
@@ -52,6 +54,9 @@ public class GroupChat extends AppCompatActivity {
 
     private final String server_url = ServerConfig.SERVER_URL;
     final  static String TAG = "GroupChat";
+    /*
+     * ChatGPT usage: Partial
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -118,17 +123,24 @@ public class GroupChat extends AppCompatActivity {
 
     }
 
+    /*
+     * ChatGPT usage: No
+     * */
     private void updateMessages(Message m) {
         messages.add(m);
         messageRecyclerView.scrollToPosition(messages.size() - 1);
         messageAdapter.notifyDataSetChanged();
     }
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     //get previous messages of the room
     private void getChatHistory(String chatName){
         String url = String.format("%s/api/message_history/?chatName=%s", server_url, chatName);
 
         httpsRequest.get(url, null , new HttpsCallback() { //test locally right now
+
             @Override
             public void onResponse(String response) {
                 try {

@@ -31,16 +31,22 @@ import org.json.JSONObject;
 
 import java.util.Calendar;
 
+/*
+ * Number of methods: 2
+ * */
 public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private final String TAG = "MainMenuActivity";
     private Button calendarButton;
     private Button settingButton;
     private Bundle userData;
     private HttpsRequest httpsRequest;
-    private GoogleSignInClient mGoogleSignInClient;
 
     private final String server_url = ServerConfig.SERVER_URL;
 
+
+    /*
+     * ChatGPT usage: Partial
+     * */
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_after_successful_login);
@@ -72,54 +78,10 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
         calendarButton.setOnClickListener(view -> {
-            //            checkPermission();
+//            checkPermission();
             Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
-
-            // userData contains, Id, Email, IdToken, RefreshToken
-            String user_id = userData.getString("userId");
-            String user_id_token = userData.getString("userIdToken");
-            String user_email = userData.getString("userEmail");
-            String user_refresh_token = userData.getString("userRefreshToken");
-
-
-
-            //Go to calendar after importing the calendar data
             calendarIntent.putExtras(userData);
             startActivity(calendarIntent);
-
-
-//            // send necessary data to backend for database
-//            JSONObject tokenHeader = new JSONObject();
-//            try {
-//                tokenHeader.put("id_token", user_id_token);
-//                tokenHeader.put("refresh_token", user_refresh_token);
-//            } catch (JSONException e){
-//                Log.e(TAG, "unexpected JSON exception", e);
-//            }
-//
-//            httpsRequest.get(server_url + "/auth/google/token?useremail=" + user_email, tokenHeader, new HttpsCallback() {
-//                @Override
-//                public void onResponse(String response) {
-//                    try {
-//                        JSONObject responseObj = new JSONObject(response);
-//                        String eventsForAWeek = responseObj.getString("events");
-//                        Log.i(TAG,"eventsForAWeek : " + eventsForAWeek);
-//
-//                        userData.putString("events", eventsForAWeek); // put json string into data bundle
-//
-//                        //Go to calendar after importing the calendar data
-//                        calendarIntent.putExtras(userData);
-//                        startActivity(calendarIntent);
-//                    } catch (JSONException e) {
-//                        Log.e(TAG, "JSON Exception while parsing response from google token calendar import");
-//                    }
-//                }
-//                @Override
-//                public void onFailure(String error) {
-//                    Log.e(TAG, "google token calendar import : " + error);
-//                }
-//            });
-
         });
 
         // settings == preference setting
@@ -128,7 +90,6 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             // move to setting page, set preference
             Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
             // get users set preferences first
-            //httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
             httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
 
                 @Override
@@ -140,54 +101,16 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
                 }
                 @Override
                 public void onFailure(String error) {
-                    Log.e(TAG, "Network error: Server probably closed");
+                    Log.e(TAG, "Server error: " + error);
                 }
             });
         });
 
-
-//        Button alarmButton = findViewById(R.id.button_alarm);
-//        alarmButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//                Intent intent = new Intent(AfterSuccessLoginActivity.this, AlarmReceiver.class);
-//                PendingIntent pendingIntent = PendingIntent.getBroadcast(AfterSuccessLoginActivity.this, 0, intent, 0);
-//                long triggerTime = System.currentTimeMillis() + (30 * 1000);
-//
-//                // Set the alarm to start at a specific time.
-//                Calendar calendar = Calendar.getInstance();
-//                calendar.setTimeInMillis(System.currentTimeMillis());
-//                calendar.set(Calendar.HOUR_OF_DAY, 14);
-//                calendar.set(Calendar.MINUTE, 30);
-//
-//                //calendar.getTimeInMillis()
-//                alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, triggerTime,
-//                        1000 * 60 * 60 * 24, pendingIntent);
-//
-//                Log.d("Alarm", "Alarm set");
-//            }
-//        });
-
-
-
-
     }
 
-    private void performSilentSignIn() {
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        if (account != null) {
-            mGoogleSignInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
-                @Override
-                public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
-                    Log.i(TAG,"silent sign in successful");
-                }
-            });
-        } else {
-            // No user is signed in. Handle this case as needed.
-            Toast.makeText(this, "Please sign in", Toast.LENGTH_SHORT).show();
-        }
-    }
+    /*
+     * ChatGPT usage: Partial
+     * */
 
     private void checkPermission(){
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
@@ -203,3 +126,4 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     }
 
 }
+

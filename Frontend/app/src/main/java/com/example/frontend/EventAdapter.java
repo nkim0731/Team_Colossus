@@ -14,15 +14,24 @@ import com.example.frontend.R;
 
 import java.util.List;
 
+/*
+ * Number of methods: 6
+ * */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private List<EventData> eventList;
     private Context context;
+    /*
+     * ChatGPT usage: No
+     * */
     public EventAdapter(List<EventData> eventList, Context context) {
         this.eventList = eventList;
         this.context = context;
     }
 
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -34,16 +43,24 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
         EventData events = eventList.get(position);
         holder.bind(events);
     }
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public int getItemCount() {
         return eventList.size();
     }
+
+
 
 
     public class EventViewHolder extends RecyclerView.ViewHolder {
@@ -52,6 +69,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         private TextView duration;
 
 
+        /*
+         * ChatGPT usage: Partial
+         * */
         public EventViewHolder(View itemView) {
             super(itemView);
             startTime = itemView.findViewById(R.id.tv_startTime);
@@ -59,6 +79,9 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
             duration = itemView.findViewById(R.id.tv_duration);
         }
 
+        /*
+         * ChatGPT usage: Partial
+         * */
         public void bind(EventData events) {
             // Bind data to the views
             startTime.setText(events.getStartTime());

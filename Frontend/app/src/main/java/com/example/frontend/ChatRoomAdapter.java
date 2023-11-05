@@ -13,10 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+/*
+ * Number of methods： 6
+ * */
 public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRoomViewHolder>{
     private List<ChatRoom> chatRooms; // List of ChatRooms
     private Context context;
 
+    /*
+     * ChatGPT usage: No
+     * */
     public ChatRoomAdapter(List<ChatRoom> chatRooms, Context context) {
         this.chatRooms = chatRooms;
         this.context = context;
@@ -26,6 +32,9 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
 //    }
 
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @NonNull
     @Override
     public ChatRoomAdapter.ChatRoomViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -38,6 +47,9 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
     }
 
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public void onBindViewHolder(@NonNull ChatRoomAdapter.ChatRoomViewHolder holder, int position) {
         // Bind chatroom data to the views in the ViewHolder
@@ -45,6 +57,9 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
         holder.bind(room);
     }
 
+    /*
+     * ChatGPT usage: Yes
+     * */
     @Override
     public int getItemCount() {
         return chatRooms.size();
@@ -52,13 +67,21 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
 
 
 
+
     public class ChatRoomViewHolder extends RecyclerView.ViewHolder {
         private TextView roomText;
 
+        /*
+         * ChatGPT usage: Yes
+         * */
         public ChatRoomViewHolder(View itemView) {
             super(itemView);
             roomText = itemView.findViewById(R.id.chat_room);
         }
+
+        /*
+         * ChatGPT usage: Partial
+         * */
 
         public void bind(ChatRoom room) {
             // Bind data to the views

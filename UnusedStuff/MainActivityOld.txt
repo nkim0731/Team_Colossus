@@ -35,16 +35,12 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
-import com.example.frontend.ServerConfig;
-
-/*
- * Number of methods: 8
- * */
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
     private final String CHANNEL_ID = "32";
     private HttpsRequest httpsRequest;
+
     private final String server_url = ServerConfig.SERVER_URL;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
@@ -57,9 +53,6 @@ public class MainActivity extends AppCompatActivity {
     private ActivityRecognitionClient mActivityRecognitionClient;
 
 
-    /*
-     * ChatGPT usage: Partial
-     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,9 +65,24 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions();
 
         // handle sign in
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .requestProfile()
+//                .build();
+
+
+        // This asks for scopes to get refresh_token for user calendar access
+        // this does not have the necessary permissions to run
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
                 .requestProfile()
+                .requestEmail()
+                .requestIdToken(getString(R.string.server_client_id))
+                .requestServerAuthCode(getString(R.string.server_client_id))
+                .requestScopes(
+                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
+                )
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -82,30 +90,45 @@ public class MainActivity extends AppCompatActivity {
             signIn();
         });
 
+
+
         // handle sign out
         signOutButton = findViewById(R.id.button_signOut);
         signOutButton.setOnClickListener(view -> signOut());
 
         createNotificationChannel();
 
+        //Do silentSignIn to refresh the IdToken of the user without asking user to sign in again
+        //If there is no user, it will show toast "please sign in "
+        //if successful, it will automatically call updateUI(refreshedAccount)
+        performSilentSignIn();
+
         // navigate to main page if previously signed in before, but allow return
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        updateUI(account);
+//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+//        updateUI(account);
     }
 
-    /*
-     * ChatGPT usage: Partial
-     * */
     private void updateUI(GoogleSignInAccount account) {
         if (account == null){
             Log.d(TAG, "There is no user signed in");
         }
         else {
+            Log.v(TAG, account.getId());
+            Log.v(TAG, account.getDisplayName());
+            Log.v(TAG, account.getEmail());
+            Log.v(TAG, "id_token : " + account.getIdToken());
+            Log.v(TAG, "refresh_token : " + account.getServerAuthCode());
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
             userData.putString("userId", account.getId());
             userData.putString("userEmail", account.getEmail());
+            userData.putString("userIdToken", account.getIdToken());
+//            userData.putString("userRefreshToken", account.getServerAuthCode());
+            if(account.getServerAuthCode() != null) {
+                userData.putString("userRefreshToken", account.getServerAuthCode());
+            }
             loginSuccessIntent.putExtras(userData);
+
 
             // send necessary data to backend for database
             JSONObject userJSON = new JSONObject();
@@ -124,7 +147,8 @@ public class MainActivity extends AppCompatActivity {
                         JSONObject responseObj = new JSONObject(response);
                         String responseResult = responseObj.getString("result");
 
-                        if (responseResult.equals("login") || responseResult.equals("register")) {
+                        if (responseResult.equals("login") || responseResult.equals("register")) { // stop touching this
+                            // if you want to add things to the signin sequence do it here and before startActivity
                             startActivity(loginSuccessIntent); // show next page after user is validated with backend
                         } else {
                             Log.e(TAG, "Error");
@@ -133,25 +157,39 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "JSON Exception while parsing /login/google response");
                     }
                 }
+
                 @Override
                 public void onFailure(String error) {
-                    Log.e(TAG, "Server error: " + error);
+                    Log.e(TAG, "google login or register : " + error);
                 }
             });
         }
     }
 
-    /*
-     * ChatGPT usage: No
-     * */
     private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
-    /*
-     * ChatGPT usage: No
-     * */
+    private void performSilentSignIn() {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (account != null) {
+            mGoogleSignInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
+                @Override
+                public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
+                    handleSignInResult(task);
+                }
+            });
+        } else {
+            // No user is signed in. Handle this case as needed.
+            Toast.makeText(this, "Please sign in", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
+
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -162,9 +200,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*
-     * ChatGPT usage: No
-     * */
     private void signOut() {
         mGoogleSignInClient.signOut()
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {
@@ -176,26 +211,38 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    /*
-     * ChatGPT usage: No
-     * */
     private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
-            // Signed in successfully, show authenticated UI. Go to new page display info
-            updateUI(account);
+            // Silent sign-in was successful, and you now have an account with a refreshed ID token.
+            String refreshedIdToken = account.getIdToken();
+
+            if (refreshedIdToken != null) {
+                // The ID token was successfully refreshed, and refreshedIdToken contains the new ID token.
+                // You can update your UI or perform any necessary actions with the refreshed ID token.
+                Log.d(TAG, "Refreshed ID token: " + refreshedIdToken);
+
+                // Handle the refreshed account or token as needed here.
+                // For example, you can pass it to other methods or update the UI.
+                updateUI(account);
+            } else {
+                // The ID token is null, indicating that it was not successfully refreshed.
+                // You may want to re-sign in manually or take appropriate actions.
+                Log.e(TAG, "ID token was not refreshed");
+                // Display a toast or handle the case where the ID token was not refreshed.
+            }
         } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.e(TAG, "signInResult:failed code=" + e.getStatusCode());
-            updateUI(null);
+            // Handle exceptions that occurred during silent sign-in.
+            Log.e(TAG, "Silent sign-in failed with code: " + e.getStatusCode());
+            // You can decide how to handle the error, e.g., re-sign in manually.
+
+            // No user is signed in. Handle this case as needed.
+            Toast.makeText(this, "Please sign in", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /*
-     * ChatGPT usage: No
-     * */
+
     // check location permissions
     private void checkPermissions() {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
@@ -220,9 +267,6 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
     }
 
-    /*
-     * ChatGPT usage: Yes
-     * */
     private void createNotificationChannel() {
         CharSequence name = "sample channel";
         String description = "sample notification channel";

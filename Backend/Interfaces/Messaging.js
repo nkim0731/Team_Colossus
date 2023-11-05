@@ -14,22 +14,27 @@ class ChatManager {
         this.initSocketIo(server);
     }
     
+    // ChatGPT usage: Partial
     initSocketIo(server) {
+        // ChatGPT usage: Yes
         const io = socketIo(server, {
             cors: {
                 origin: allowedOrigins,
                 methods: ['GET', 'POST'],
             }
         });
-
+        
+        // ChatGPT usage: Partial
         io.on('connection', (socket) => {
             console.log('A user connected');
 
+            // ChatGPT usage: Yes
             socket.on('joinChatroom', (chatName) => {
                 socket.join(chatName);
                 socket.chatName = chatName;
             });
 
+            // ChatGPT usage: Yes
             socket.on('leaveChatroom', () => {
                 if (socket.chatName) {
                     socket.leave(socket.chatName);
@@ -37,6 +42,7 @@ class ChatManager {
                 }
             });
 
+            // ChatGPT usage: Partial
             socket.on('sendMessage', (message, sender) => { // message string and username
                 if (socket.chatName) {
                     // format timestamp string
@@ -59,6 +65,7 @@ class ChatManager {
                 }
             });
 
+            // ChatGPT usage: Yes
             socket.on('disconnect', () => {
                 console.log('A user disconnected');
                 if (socket.chatName) {

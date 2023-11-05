@@ -11,12 +11,15 @@ import io.socket.client.Socket;
 public class SocketManager {
     private static Socket socket;
 
+    /*
+     * ChatGPT usage: Partial
+     * */
     public static synchronized Socket getSocket() {
         if (socket == null) {
             try {
                 IO.Options options = new IO.Options();
                 options.transports = new String[]{"websocket"};
-                socket = IO.socket("http://10.0.2.2:3000", options); // TODO replace with vm uri
+                socket = IO.socket(ServerConfig.SERVER_URL, options); // TODO replace with vm uri
             } catch (URISyntaxException e) {
                 e.printStackTrace();
             }

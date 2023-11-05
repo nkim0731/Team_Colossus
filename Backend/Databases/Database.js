@@ -34,6 +34,7 @@ class Database {
         this.connect();
     }
 
+    // ChatGPT usage: No
     async connect() {
 
         try {
@@ -46,6 +47,7 @@ class Database {
     }
 
     // Get data for user by username/email (unique)
+    // ChatGPT usage: Partial
     async getUser(useremail) {
         try {
             // just return the result directly, null means no user return false redundant
@@ -57,6 +59,7 @@ class Database {
     }
 
     // Get user data by google auth id (not used)
+    // ChatGPT usage: No
     async getUserById(id) {
         try {
             return await UserModel.findOne({ userId: id });
@@ -67,6 +70,7 @@ class Database {
     }
 
     // Add a new user to Users Database
+    // ChatGPT usage: Partial
     async addUser(user) {
         try {
             if (user.password === undefined) {
@@ -98,6 +102,7 @@ class Database {
 
 
     // Add a user to Users Database
+    // ChatGPT usage: Partial
     async updateUser(user) {
         try {
             await UserModel.findOneAndUpdate(
@@ -115,6 +120,7 @@ class Database {
     }
 
     // update preferences for user in database
+    // ChatGPT usage: Partial
     async updatePreferences(user, preferences) {
         try {
             let userDocument = await UserModel.findOne({ username: user });
@@ -133,6 +139,7 @@ class Database {
     */
 
     // get calendar events (this might not be needed anyway since we can get events from user in getUser)
+    // ChatGPT usage: Partial
 	async getCalendar(username) {
 		try {
 			return await UserModel.findOne({ username }).select('events');
@@ -142,6 +149,7 @@ class Database {
 	}
 
     // add events (array) to calendar
+    // ChatGPT usage: Partial
     async addEvents(username, events) {
 		try {
             const userEvents = await UserModel.findOne({ username }).select('events');
@@ -173,6 +181,7 @@ class Database {
 	}
 
     // add day schedule to db
+    // ChatGPT usage: Partial
     async addSchedule(username, schedule) {
         try {
             let user = await UserModel.findOne({ username });
@@ -183,6 +192,7 @@ class Database {
         }
     }
 
+    // ChatGPT usage: No
     async getSchedule(username) {
         try {
             return await UserModel.findOne({ username }).select('daySchedule');
@@ -196,6 +206,7 @@ class Database {
     */
 
     // get all messages associated with the chatroom chatID
+    // ChatGPT usage: No
     async getMessages(chatName) {
         try {
             return await ChatModel.findOne({ chatName }).select('messages');
@@ -205,6 +216,7 @@ class Database {
     }
 
     // create room
+    // ChatGPT usage: Partial
     async createRoom(chatName) {
         try {
             const newRoom = new ChatModel({ chatName: chatName, messages: [] });
@@ -217,6 +229,7 @@ class Database {
     }
 
     // get a chatroom by name
+    // ChatGPT usage: No
     async getRoom(chatName) {
         try {
             return await ChatModel.findOne({ chatName });
@@ -227,6 +240,7 @@ class Database {
     }
 
     // add a message (object) to chatroom chatID
+    // ChatGPT usage: Partial
     async addMessage(chatName, message) {
         try {
             let chatDocument = await ChatModel.findOne({ chatName });
