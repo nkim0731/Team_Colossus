@@ -24,7 +24,8 @@
         android:layout_marginTop="300dp"
         android:layout_marginEnd="5dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/button_groupChat" />
+        android:text="@string/button_groupChat"
+        android:textSize="11sp" />
 
     <Button
         android:id="@+id/button_eventDisplay"
@@ -38,7 +39,8 @@
         android:layout_marginTop="300dp"
         android:layout_marginEnd="200dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/button_eventDisplay" />
+        android:text="@string/button_eventDisplay"
+        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/tv_scheduleDisplay"
@@ -67,7 +69,8 @@
         android:layout_marginTop="300dp"
         android:layout_marginEnd="107dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/tv_createTitle" />
+        android:text="@string/tv_createTitle"
+        android:textSize="12sp" />
 
     <Button
         android:id="@+id/button_create_schedule"
@@ -81,10 +84,11 @@
         android:layout_marginTop="300dp"
         android:layout_marginEnd="310dp"
         android:layout_marginBottom="10dp"
-        android:text="@string/button_create_schedule" />
+        android:text="@string/button_create_schedule"
+        android:textSize="11sp" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_eventList"
+        android:id="@+id/rv_temp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/tv_scheduleDisplay"

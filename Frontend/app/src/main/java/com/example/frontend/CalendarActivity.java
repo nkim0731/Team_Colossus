@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,12 +49,16 @@ public class CalendarActivity extends AppCompatActivity {
     private double latitude;
     private double longitude;
     private ArrayList<EventData> schedule;
+    private RecyclerView rv_temp;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
+
+        // TODO implement recycle view in the middle of activity_calendar view
+        rv_temp = findViewById(R.id.rv_temp);
 
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
