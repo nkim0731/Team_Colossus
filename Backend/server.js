@@ -299,6 +299,9 @@ app.get('/api/calendar/import', async (req, res) => {
     const sevenDaysFromNow = moment().add(7, 'days');
     var access_token = ""
 
+    
+    oauth2Client._clientId = process.env.FRONT_CLIENT_ID;
+
     await refreshTokenIfNecessary(useremail).then(
         new_access_token => {
             access_token = new_access_token
@@ -328,7 +331,8 @@ app.get('/api/calendar/import', async (req, res) => {
 
     
     const verifiedPayload = await verifyIdToken(id_token);
-    console.log(verifiedPayload);
+    //console.log(verifiedPayload);
+
 
 
     if (verifiedPayload) {
@@ -342,10 +346,22 @@ app.get('/api/calendar/import', async (req, res) => {
             // The ID token is valid and satisfies the criteria
             console.log("\nuser id_token is verified! \nGoing to Import the calendar for the user");
 
+            
+            oauth2Client.setCredentials({
+                refresh_token: refresh_token,
+                access_token: access_token,
+                id_token: id_token
+            });
 
 
-            const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
-            console.log('/api/calendar/import will import calendar from : ', userInfo.data.email);
+            try {
+                const userInfo = await googleUser.userinfo.get({ auth : oauth2Client});
+                console.log('/api/calendar/import will import calendar from : ', userInfo.data.email);
+            } catch(error) {
+                console.error(error);
+                return res.status(500).json({ message: 'Error getting userInfo' });
+            }
+
         
             console.log("/api/calendar/import oauth2client : ", oauth2Client);
         
