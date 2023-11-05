@@ -9,6 +9,7 @@ class Scheduler {
     }
 
     // get direction to an event from position when called
+    // ChatGPT usage: Partial
     async getDirections(origin, event, preferences) {
         try {
             let params = {
@@ -39,6 +40,7 @@ class Scheduler {
     }
 
     // create schedule with routes for events taking place today
+    // ChatGPT usage: Partial
     async createDaySchedule(events, origin, preferences) { // origin is user home location
         const today = new Date();
         const dayEvents = events.filter(e => {

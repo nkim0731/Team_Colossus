@@ -6,7 +6,6 @@ const fs = require('fs');
 const path = require('path');
 
 // Requires for defined interfaces
-const Calendar = require('./Interfaces/Calendar.js');
 const Scheduler = require('./Interfaces/Scheduler.js');
 const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
@@ -38,6 +37,7 @@ const chatManager = new ChatManager(server); // start socketio service for group
 */
 
 // handle signin (and register if first time login) with google account
+// ChatGPT usage: Partial
 app.post('/login/google', async (req, res) => {
     const data = req.body;
     try {
@@ -55,6 +55,7 @@ app.post('/login/google', async (req, res) => {
 })
 
 // endpoint set/get preferences for user
+// ChatGPT usage: Partial
 app.route('/api/preferences')
 .put(async (req, res) => {
     const data = req.body;
@@ -65,6 +66,7 @@ app.route('/api/preferences')
         res.status(500).json({ result: e });
     }
 })
+// ChatGPT usage: No
 .get(async (req, res) => {
     const username = req.query.user; // ?user=username
     try {
@@ -80,16 +82,18 @@ app.route('/api/preferences')
 */
 
 // get / add events to calendar
+// ChatGPT usage: Partial
 app.route('/api/calendar')
-.get(async (req, res) => { // /api/calendar?user=username (or some sort of id, stored as session in frontend)
+.get(async (req, res) => { // /api/calendar?user=username
     const user = req.query.user;
     try {
         const events = await db.getCalendar(user);
-        res.status(200).json({ 'events': events }); // send events array
+        res.status(200).send(events.events); // send events array
     } catch (e) {
         res.status(500).json({ message: e });
     }
 })
+// ChatGPT usage: No
 .post(async (req, res) => {
     const data = req.body;
     try {
@@ -100,7 +104,29 @@ app.route('/api/calendar')
     }
 });
 
+// get calendar events by a specific day
+// ChatGPT usage: Partial
+app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
+    const user = req.query.user;
+    const day = new Date(req.query.day);
+    try {
+        const calendar = await db.getCalendar(user);
+        const dayEvents = calendar.events.filter(e => {
+            const eventDate = new Date(e.start);
+            return (
+                eventDate.getDate() === day.getDate() &&
+                eventDate.getMonth() === day.getMonth() &&
+                eventDate.getFullYear() === day.getFullYear()
+            );
+        })
+        res.status(200).send(dayEvents);
+    } catch (e) {
+        res.status(500).json({ message: e });
+    }
+}) 
+
 // create day schedule on button press
+// ChatGPT usage: Partial
 app.route('/api/calendar/day_schedule')
 .post(async (req, res) => {
     const data = req.body; // username, latitude, longitude
@@ -116,6 +142,7 @@ app.route('/api/calendar/day_schedule')
         res.status(500).json({ message: e });
     }
 })
+// ChatGPT usage: No
 .get(async (req, res) => { // ?user=username
     try {
         const schedule = await db.getSchedule(req.query.user);
@@ -128,6 +155,7 @@ app.route('/api/calendar/day_schedule')
 /*
 * Group chats API calls
 */
+// ChatGPT usage: Partial
 app.get('/api/message_history', async (req, res) => {
     const chatName = req.query.chatName; // ?chatName=x 
     try {
@@ -138,6 +166,7 @@ app.get('/api/message_history', async (req, res) => {
     }
 });
 
+// ChatGPT usage: Partial
 app.get('/api/chatrooms', async (req, res) => {
     const username = req.query.user; // ?user=x
     try {
