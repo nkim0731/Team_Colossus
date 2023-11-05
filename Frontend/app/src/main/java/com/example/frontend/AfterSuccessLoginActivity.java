@@ -60,7 +60,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }
-            s
+
             httpsRequest.get(server_url + "/auth/google/token?useremail=" + user_email, tokenHeader, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
