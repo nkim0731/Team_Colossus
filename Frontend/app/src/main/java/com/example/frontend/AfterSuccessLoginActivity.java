@@ -18,6 +18,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,6 +40,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private Button settingButton;
     private Bundle userData;
     private HttpsRequest httpsRequest;
+
     private final String server_url = ServerConfig.SERVER_URL;
 
 
@@ -45,6 +54,26 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         // get userdata from login
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
+
+
+
+        // This asks for scopes to get refresh_token for user calendar access
+        // this does not have the necessary permissions to run
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestProfile()
+                .requestEmail()
+                .requestIdToken(getString(R.string.server_client_id))
+                .requestServerAuthCode(getString(R.string.server_client_id))
+                .requestScopes(
+                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
+                )
+                .build();
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+        performSilentSignIn();
+
 
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
@@ -76,11 +105,13 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
                 }
             });
         });
+
     }
 
     /*
      * ChatGPT usage: Partial
      * */
+
     private void checkPermission(){
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
 
@@ -93,4 +124,6 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
         }
     }
+
 }
+
