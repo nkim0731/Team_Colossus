@@ -66,23 +66,20 @@ public class MainActivity extends AppCompatActivity {
         checkPermissions();
 
         // handle sign in
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .requestProfile()
-                .build();
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .requestProfile()
+//                .build();
+
+
         // This asks for scopes to get refresh_token for user calendar access
         // this does not have the necessary permissions to run
-//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//                .requestProfile()
-//                .requestEmail()
-//                .requestIdToken(getString(R.string.server_client_id))
-//                .requestServerAuthCode(getString(R.string.server_client_id))
-//                .requestScopes(
-//                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
-//                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
-//                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
-//                )
-//                .build();
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestProfile()
+                .requestEmail()
+                .requestIdToken(getString(R.string.server_client_id))
+                .requestServerAuthCode(getString(R.string.server_client_id))
+                .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         findViewById(R.id.button_googleSignIn).setOnClickListener(view -> {
@@ -105,13 +102,18 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "There is no user signed in");
         }
         else {
+            Log.v(TAG, account.getId());
+            Log.v(TAG, account.getDisplayName());
+            Log.v(TAG, account.getEmail());
+            Log.v(TAG, "access_token : " + account.getIdToken());
+            Log.v(TAG, "refresh_token : " + account.getServerAuthCode());
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
             userData.putString("userId", account.getId());
             userData.putString("userEmail", account.getEmail());
             userData.putString("userToken", account.getIdToken());
 //            userData.putString("userRefreshToken", account.getServerAuthCode());
-            if(!(account.getServerAuthCode() == null)) {
+            if(account.getServerAuthCode() != null) {
                 userData.putString("userRefreshToken", account.getServerAuthCode());
             }
             loginSuccessIntent.putExtras(userData);
@@ -187,7 +189,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (ApiException e) {
             // The ApiException status code indicates the detailed failure reason.
             // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+            // Error code 7 means network error
+            Log.e(TAG, "signInResult:failed code=" + e.getStatusCode());
             updateUI(null);
         }
     }
