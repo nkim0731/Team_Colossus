@@ -55,7 +55,8 @@
         android:layout_marginEnd="10dp"
         android:layout_marginBottom="-300dp"
         android:text="List of events on selected day"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="invisible" />
 
     <Button
         android:id="@+id/button_createEvent"
@@ -90,11 +91,11 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_temp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="383dp"
         android:layout_above="@+id/tv_scheduleDisplay"
         android:layout_below="@+id/calendarView"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="-200dp"
+        android:layout_marginBottom="-193dp"
         android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

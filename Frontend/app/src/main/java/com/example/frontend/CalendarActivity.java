@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONArray;
@@ -50,15 +51,25 @@ public class CalendarActivity extends AppCompatActivity {
     private double longitude;
     private ArrayList<EventData> schedule;
     private RecyclerView rv_temp;
-
+    private List<EventData> eventList;
+    private EventAdapter eventAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calendar);
 
+        //initalize event list
+        eventList = new ArrayList<>();
+        eventList.add(new EventData("8:30","wake up",""));
         // TODO implement recycle view in the middle of activity_calendar view
         rv_temp = findViewById(R.id.rv_temp);
+        rv_temp.setLayoutManager(new LinearLayoutManager(this));
+        eventAdapter= new EventAdapter(eventList,this);
+        rv_temp.setAdapter(eventAdapter);
+
+
+
 
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
@@ -104,6 +115,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         getDate();
         getLocation();
+        getEvents();
         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView calendarView, int year, int month, int day) {
@@ -228,6 +240,39 @@ public class CalendarActivity extends AppCompatActivity {
         int coarseLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
 
         return fineLocationPermission == PackageManager.PERMISSION_GRANTED && coarseLocationPermission == PackageManager.PERMISSION_GRANTED;
+    }
+
+
+    private void getEvents(){
+        httpsRequest.get(server_url + "/"+selectedDate, null, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                try{
+                    JSONArray eventJsonArray = new JSONArray(response);
+                    for (int i=0; i<eventJsonArray.length();i++){
+                        JSONObject eventJson = eventJsonArray.getJSONObject(i);
+                        EventData newEvent = new EventData(eventJson.getString("startTime"),
+                                eventJson.getString("eventName"),
+                                eventJson.getString("duration"));
+                        eventList.add(newEvent);
+                    }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            // This block of code is executed on the main UI thread
+                            eventAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }catch (JSONException e){
+                    Log.d(TAG,"GET events JSON error");
+                }
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Log.d(TAG,"GET events fail");
+            }
+        });
     }
 
 }
