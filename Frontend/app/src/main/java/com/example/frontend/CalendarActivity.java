@@ -95,7 +95,7 @@ public class CalendarActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFailure(String error) {
-                    Log.e(TAG, "Network error: Server probably closed");
+                    Log.e(TAG, "Server error: " + error);
                 }
             });
         });
@@ -119,13 +119,9 @@ public class CalendarActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent eventIntent = new Intent(CalendarActivity.this, EventDisplayActivity.class);
-//                userData.putString("selectedDate", selectedDate);
                 eventIntent.putExtras(userData);
-                // check if location permissions have been granted before
-                int fineLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION);
-                int coarseLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
 
-                if (fineLocationPermission == PackageManager.PERMISSION_GRANTED && coarseLocationPermission == PackageManager.PERMISSION_GRANTED) {
+                if (permissionChecker()) {
                     startActivity(eventIntent);
                 } else {
                     Log.w(TAG, "No location permissions");
@@ -135,9 +131,28 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
-        // TODO https
-        String received_from_backend = "";
-        scheduleDisplay.setText(received_from_backend);
+        httpsRequest.get(server_url + "/api/calendar/day_schedule" + selectedDate, null, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONArray eventArray = new JSONArray(response);
+                    for (int i=0; i<eventArray.length();i++){
+                        JSONObject eventObj = eventArray.getJSONObject(i);
+                        EventData newEvent = new EventData(eventObj.getString("startTime"),
+                                eventObj.getString("eventName"),
+                                eventObj.getString("duration")
+                                );
+                        schedule.add(newEvent);
+                    }
+                } catch (JSONException e) {
+                    Log.e(TAG, "Error: JSONException");
+                }
+            }
+            @Override
+            public void onFailure(String error) {
+                Log.e(TAG, "Error: can't get day schedule");
+            }
+        });
 
         // move to CreateNewEvent.java to create new event
         createEvent = findViewById(R.id.button_createEvent);
@@ -160,20 +175,26 @@ public class CalendarActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 Log.e(TAG, "Error");
             }
-
-            httpsRequest.post(server_url + "/api/calendar/day_schedule", data, new HttpsCallback() {
-                @Override
-                public void onResponse(String response) {
-                    Log.d(TAG, "Scheduler done");
-                    userData.putString("scheduleJSON", response);
-//                    Toast.makeText(CalendarActivity.this, "Schedule has been successfully generated!", Toast.LENGTH_LONG).show();
-                }
-                @Override
-                public void onFailure(String error) {
-                    Log.e(TAG, "Error: Server error");
-//                    Toast.makeText(CalendarActivity.this, "Started generation failed", Toast.LENGTH_LONG).show();
-                }
-            });
+            if (permissionChecker()) {
+                httpsRequest.post(server_url + "/api/calendar/day_schedule", data, new HttpsCallback() {
+                    @Override
+                    public void onResponse(String response) {
+                        Log.d(TAG, "Scheduler done");
+                        runOnUiThread(() -> {
+                            Toast.makeText(CalendarActivity.this, "Schedule has been successfully generated!", Toast.LENGTH_LONG).show();
+                        });
+                    }
+                    @Override
+                    public void onFailure(String error) {
+                        Log.e(TAG, "Error: Server error");
+                        runOnUiThread(() -> {
+                            Toast.makeText(CalendarActivity.this, "Schedule has been successfully generated!", Toast.LENGTH_LONG).show();
+                        });
+                    }
+                });
+            } else {
+                Toast.makeText(CalendarActivity.this, "Need location permissions to create schedule", Toast.LENGTH_LONG).show();
+            }
         });
 
     }
@@ -199,6 +220,14 @@ public class CalendarActivity extends AppCompatActivity {
         };
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, locationListener);
         locationListener.onLocationChanged(Objects.requireNonNull(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)));
+    }
+
+    // check if location permissions have been granted
+    private boolean permissionChecker() {
+        int fineLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_FINE_LOCATION);
+        int coarseLocationPermission = ActivityCompat.checkSelfPermission(CalendarActivity.this, android.Manifest.permission.ACCESS_COARSE_LOCATION);
+
+        return fineLocationPermission == PackageManager.PERMISSION_GRANTED && coarseLocationPermission == PackageManager.PERMISSION_GRANTED;
     }
 
 }

@@ -13,3 +13,4 @@ my-sudo.te
 my-systemd.pp
 my-systemd.te
 nohup.out
+/backend_alt/
