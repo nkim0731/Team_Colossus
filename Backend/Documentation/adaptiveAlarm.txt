@@ -1,0 +1,30 @@
+/*
+Adaptive Alarm system related API calls
+
+POST /api/users/:email/adalarm/trigger
+Description: this returns boolean to let the app know if we should trigger alarm or not
+Input: 
+    "GPS_location": [
+        "latitude": 37.7749, // The latitude of the user's current location
+        "longitude": -122.4194 // The longitude of the user's current location
+    ]   
+    "noise_level": 5
+    - measure noise level from the audio from level 1 to 10
+    "phone_in_use": true,
+Returns: 
+    "trigger": true
+    "feedback_ID": 1234
+    - if the backend thinks its suitable for alarm, trigger alarm
+
+
+PUT /api/users/:email/adalarm/trigger
+Description: this returns boolean to let the app know if we should trigger alarm or not
+Input: 
+    "feedback_ID" : 1234
+    - this links to the return of POST request of the trigger, use the same ID so that backend can learn if it was a good decision or not
+    "feedback": true
+    - true or false, false means user disliked the alarm
+Returns: 
+    "sucess": feedback successfully registered.
+
+*/

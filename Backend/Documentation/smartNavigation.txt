@@ -1,0 +1,8 @@
+/*
+Smart Navigation system
+Description: This module would implement google maps API and handle alarm schedules for each event. It needs to have following features
+1 ask the user what transit is preferred for the every first even in the upcoming week after importing the google calendar data.
+2 ask the user what mode of transportation would be used for getting inbetween every other event in a upcoming week.
+3 Optimize API calls to google maps or other external API services when calculating transit time, nevigation, and routes
+4 NOT YET : Store and cache the past history of all google maps API calls, past history of time taken for getting ready in the morning, and GPS_location travel data to create a smart navigation time prediction.
+*/

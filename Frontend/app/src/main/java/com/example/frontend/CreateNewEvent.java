@@ -2,38 +2,70 @@ package com.example.frontend;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class CreateNewEvent extends AppCompatActivity {
-    EditText et_eName;
-    EditText et_location;
-    EditText et_sTime;
-    EditText et_eTime;
-    Button submit;
+    private EditText eventName;
+    private EditText eventLocation;
+    private EditText eventStartTime;
+    private EditText eventEndTime;
+    private Button submit;
+    private Bundle userData;
+    private HttpsRequest httpsRequest;
+    private final String server_url = "http://10.0.2.2:3000";
+    private final String TAG = "CreateEvent";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.test_create_event);
+        setContentView(R.layout.activity_create_event);
+
+        userData = getIntent().getExtras();
+        httpsRequest = new HttpsRequest();
 
         submit = findViewById(R.id.button_submit);
-        submit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                et_eName = findViewById(R.id.et_eName);
-                et_location = findViewById(R.id.et_location);
-                et_sTime = findViewById(R.id.et_sTime);
-                et_eTime = findViewById(R.id.et_eTime);
+        submit.setOnClickListener(view -> {
+            eventName = findViewById(R.id.et_eName);
+            eventLocation = findViewById(R.id.et_location);
+            eventStartTime = findViewById(R.id.et_sTime);
+            eventEndTime = findViewById(R.id.et_eTime);
 
-                // TODO https connection : send the info to create a new event
+            JSONObject data = new JSONObject();
+            JSONObject eventData = new JSONObject();
+            JSONArray events = new JSONArray();
+            try {
+                eventData.put("eventName", eventName.getText());
+                eventData.put("start", eventStartTime.getText());
+                eventData.put("end", eventEndTime.getText());
+                eventData.put("address", eventLocation.getText());
+                events.put(eventData);
 
-
-                Intent eventIntent = new Intent(CreateNewEvent.this, CalendarActivity.class);
-                startActivity(eventIntent);
+                data.put("username", userData.getString("userEmail"));
+                data.put("events", events);
+            } catch (JSONException e) {
+                Log.e(TAG, "Error");
             }
+            Log.d(TAG, eventData.toString());
+
+            httpsRequest.post(server_url + "/api/calendar", data, new HttpsCallback() {
+                @Override
+                public void onResponse(String response) {
+                    Log.d(TAG, response);
+                }
+                @Override
+                public void onFailure(String error) {
+                    Log.e(TAG, error);
+                }
+            });
+            Intent eventIntent = new Intent(CreateNewEvent.this, CalendarActivity.class);
+            startActivity(eventIntent);
         });
     }
 }

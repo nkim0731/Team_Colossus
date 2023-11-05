@@ -2,7 +2,7 @@ const express = require('express');
 const Joi = require('joi');
 const app = express();
 const router = express.Router();
-const User = require('../models/user');
+const User = require('../models/user.js');
 
 //const dbUserModel = require('../models/user.js');
 const userSchema = require('../models/user.js');

@@ -30,7 +30,8 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private Bundle userData;
     private HttpsRequest httpsRequest;
 
-    private final String server_url = ServerConfig.SERVER_URL;
+    private final String server_url = "http://10.0.2.2:3000";
+    // "https://calendo.westus2.cloudapp.azure.com:8081"
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +56,6 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             // move to setting page, set preference
             Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
             // get users set preferences first
-            //httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
             httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
 
                 @Override
