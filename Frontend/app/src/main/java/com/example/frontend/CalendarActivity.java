@@ -56,6 +56,7 @@ public class CalendarActivity extends AppCompatActivity {
     private RecyclerView rv_temp;
     private List<EventData> eventList;
     private EventAdapter eventAdapter;
+    private String userEmail="";
 
 
     /*
@@ -81,6 +82,8 @@ public class CalendarActivity extends AppCompatActivity {
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
         schedule = new ArrayList<>();
+
+        userEmail = userData.getString("userEmail");
 
         // initialize socket connection
         Socket socket = SocketManager.getSocket();
@@ -266,7 +269,7 @@ public class CalendarActivity extends AppCompatActivity {
      * ChatGPT usage: Partial
      * */
     private void getEvents(){
-        httpsRequest.get(server_url + "/"+selectedDate, null, new HttpsCallback() {
+        httpsRequest.get(server_url + "/api/calendar/by_day"+ String.format("?user=%s&day=%s",userEmail,selectedDate), null, new HttpsCallback() {
             @Override
             public void onResponse(String response) {
                 try{
