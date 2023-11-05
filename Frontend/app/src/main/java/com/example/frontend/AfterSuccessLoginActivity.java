@@ -52,37 +52,44 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             String user_email = userData.getString("userEmail");
             String user_refresh_token = userData.getString("userRefreshToken");
 
-            // send necessary data to backend for database
-            JSONObject tokenHeader = new JSONObject();
-            try {
-                tokenHeader.put("id_token", user_id_token);
-                tokenHeader.put("refresh_token", user_refresh_token);
-            } catch (JSONException e){
-                Log.e(TAG, "unexpected JSON exception", e);
-            }
 
-            httpsRequest.get(server_url + "/auth/google/token?useremail=" + user_email, tokenHeader, new HttpsCallback() {
-                @Override
-                public void onResponse(String response) {
-                    try {
-                        JSONObject responseObj = new JSONObject(response);
-                        String eventsForAWeek = responseObj.getString("events");
-                        Log.i(TAG,"eventsForAWeek : " + eventsForAWeek);
 
-                        userData.putString("events", eventsForAWeek); // put json string into data bundle
+            //Go to calendar after importing the calendar data
+            calendarIntent.putExtras(userData);
+            startActivity(calendarIntent);
 
-                        //Go to calendar after importing the calendar data
-                        calendarIntent.putExtras(userData);
-                        startActivity(calendarIntent);
-                    } catch (JSONException e) {
-                        Log.e(TAG, "JSON Exception while parsing response from google token calendar import");
-                    }
-                }
-                @Override
-                public void onFailure(String error) {
-                    Log.e(TAG, "google token calendar import : " + error);
-                }
-            });
+
+//            // send necessary data to backend for database
+//            JSONObject tokenHeader = new JSONObject();
+//            try {
+//                tokenHeader.put("id_token", user_id_token);
+//                tokenHeader.put("refresh_token", user_refresh_token);
+//            } catch (JSONException e){
+//                Log.e(TAG, "unexpected JSON exception", e);
+//            }
+//
+//            httpsRequest.get(server_url + "/auth/google/token?useremail=" + user_email, tokenHeader, new HttpsCallback() {
+//                @Override
+//                public void onResponse(String response) {
+//                    try {
+//                        JSONObject responseObj = new JSONObject(response);
+//                        String eventsForAWeek = responseObj.getString("events");
+//                        Log.i(TAG,"eventsForAWeek : " + eventsForAWeek);
+//
+//                        userData.putString("events", eventsForAWeek); // put json string into data bundle
+//
+//                        //Go to calendar after importing the calendar data
+//                        calendarIntent.putExtras(userData);
+//                        startActivity(calendarIntent);
+//                    } catch (JSONException e) {
+//                        Log.e(TAG, "JSON Exception while parsing response from google token calendar import");
+//                    }
+//                }
+//                @Override
+//                public void onFailure(String error) {
+//                    Log.e(TAG, "google token calendar import : " + error);
+//                }
+//            });
 
         });
 

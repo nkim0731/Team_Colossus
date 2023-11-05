@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "calendo-403018",
+  "private_key_id": "8fea034a31b17ca959e696acd76d6fd08863a553",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCkdU/n9meOB5EV\nZjwkAqz+JGIP51IOU3GOUAj8in8BPmhMICGXkrtbZPiyUmq3Ur37QSXafgmJiG6/\nzn2XfDDXKu0qvNFFr5OpoeJn3h2dWEoYnhYFDdA2iRLNdA8g5pECLyETHx2kgsfw\nMEvSoGzUBAPfly9h+M04Q1PDTm1KuZr8ciJ2D/AWSclIDbztLwKuY9emCgF/iQNU\npOW+kntZNKuOz4sLKadNYAJiKq5gzOGNZM9HFBVR263G5MuXD7N6rDdyjFxgj6QL\nKdIiYoRc/Mzo2Fa/dfZWmqWLVQQtt/0xUr1VBDAXwapUiua6HOC8I4t1AachaOVi\nh4vzhz2vAgMBAAECggEANGLaDT3ERs3KPVLPnXjsuhfE1OQOk1mpNnfwJOHJCxBi\nEL27dZjb7YUAY201aSgGNF7QPAUh7Jl1Dcws3XBF7oRR/+cdkmEXXFWg1Q0/ybsx\n/x18TifUR0rqnl914jkPv+5bTsf+nUS7g5sey/0mLXMJ+NMj2MV0OZPYvsHgtohd\n1WlPbyUjfWnLLMHAhCvXXKcVQXKvjkdK63TBPsW5OrdRJ/5Xvpu4dFjBDtvxLsSK\n825C1QNIxhP5kdR+3HO7SACkUAp3HuPRYInjdCZHURVBcmJ8Ow29jqAycVEQOmzV\nbx5jME8XkMqYlz+dbxTJwabYvwxzj6D2UMJxdVdJYQKBgQDfBR6PbrnSANFbIVFD\nj9trUnmB6h1AxWmxeK7I3bhCEkJQEtUjrc+gsTE9YKIC5JGdR/b7a6b5K3ssrDv8\n/4wnj2ux8qNtSPtazGhgzeq2oUvWUx9HnEwr6JWVdzWiiJKIUlurrF9I6ktNRnyB\nXSj7qCCeutWq8jGpI8iveYl/5QKBgQC8xzenVJXmuPGIBO2oO/eThudRwR//2DR+\nzketSrfjPD8sc8rs0n5JUcG187BmromIKKuBtGd/BWe4HipxFoaKvrbUdtmwb8l0\nZ/fKudYWVlgActkbVRLTvryy3LNNS4QgsvfTVIq2B4TdpTsGRKUbl/Piso3cJx2n\n19N8F8fmAwKBgQDOjZVCTtD3eR5tgqwbIO+dtKMo+cXiKXS8lAN9sixntTWJqAeT\npfU45SOvrwIeH8flnbNYJNpeyDCqrVJZ/ey27xRVmV5XZ1K1Q8AgeFa8kyMD+7Rq\nxI2f1ShFaEVapZbhfzW8CEev5p+bkH7b6YZ9nbeoi249h1cLSkMikjQRKQKBgBTO\nRBT+HpNSONSL7oGHMm8hBCefiF5TPt3m8EFqJcA2qKPGk0vsmxyLlTTvibaXb/MA\nwH5IGswGFXtWX8kc+XEbOd1KyA1JFMPunYHLX4wQshxCjCkWBEAwGm4AIwbW1tYf\nw26YN71+MKeZCVtUf3n+ElQe58Gm0f7oq5dWq6JvAoGBALAlvz21Zn+IUyjjiadX\nBgVt34xVfID+DRLPp/dV5ORCpzZUqG6GsgDFbG57hiT7KvGyYFT1VoSHUOcipE3Z\nJQ9zzGMfrqe6gHHeSVzQU6WgSWG89BLhyLHTHMPp1jkiZj3gPOeRpWz0dgCFbw/A\nSw1YiC/N3jBkXJkQmF8mgZvW\n-----END PRIVATE KEY-----\n",
+  "client_email": "calendo-sa@calendo-403018.iam.gserviceaccount.com",
+  "client_id": "116229950176038218420",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/calendo-sa%40calendo-403018.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
