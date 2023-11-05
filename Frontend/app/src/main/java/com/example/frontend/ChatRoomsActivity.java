@@ -23,7 +23,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private RecyclerView chatRoomRecyclerView;
     private ChatRoomAdapter chatRoomAdapter;
     private HttpsRequest httpsRequest;
-    private final String server_url = "http://10.0.2.2:3000";
+    private final String server_url = ServerConfig.SERVER_URL;
     private String url;
     private final String TAG = "ChatRoom";
 

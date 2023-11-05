@@ -13,7 +13,7 @@ import java.util.List;
 
 public class EventDisplayActivity extends AppCompatActivity {
     private final String TAG = "EventDisplayActivity";
-    private final String server_url = "http://10.0.2.2:3000";
+    private final String server_url = ServerConfig.SERVER_URL;
     private EventAdapter eventAdapter;
     private List<EventData> dataArrayList = new ArrayList<>(); // list of received events
 

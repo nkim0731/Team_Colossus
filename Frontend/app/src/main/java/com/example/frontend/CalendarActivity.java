@@ -42,7 +42,7 @@ public class CalendarActivity extends AppCompatActivity {
     private Button eventDisplay;
     private HttpsRequest httpsRequest;
     private String selectedDate;
-    private final String server_url = "http://10.0.2.2:3000";
+    private final String server_url = ServerConfig.SERVER_URL;
     private TextView scheduleDisplay;
     private Button createEvent;
     private Button createDaySchedule;
