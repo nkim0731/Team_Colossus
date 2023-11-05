@@ -29,9 +29,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private Button settingButton;
     private Bundle userData;
     private HttpsRequest httpsRequest;
-
-    private final String server_url = "http://10.0.2.2:3000";
-    // "https://calendo.westus2.cloudapp.azure.com:8081"
+    private final String server_url = ServerConfig.SERVER_URL;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
