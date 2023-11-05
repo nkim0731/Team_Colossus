@@ -1,9 +1,9 @@
 /*
 Whole purpose of this file is to set different variables across multiple files
 */
-const isHttps = false;
+const isHttps = true;
 const isTest = true;
-const test_calendoDB = false;
+const test_calendoDB = true;
 
 module.exports = {
     isHttps,

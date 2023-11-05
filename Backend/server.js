@@ -697,10 +697,12 @@ app.get('/auth/google', async (req, res) => {
 });
 
 app.get('/auth/google/token', async (req, res) => {
+    // This is because the middleware already extracted the id_token so no need for query.
+    const id_token = req.id_token;
+    const refresh_token = req.refresh_token;
+
 
     // /auth/google/token?useremail=ee where ee you need to specify what useremail are you requesting authentication for
-    const id_token = req.query.id_token;
-    const refresh_token = req.query.refresh_token;
     const useremail = req.query.useremail;
     console.log(`\nGoing to authenticate google with id_token : ${id_token}`);
     
