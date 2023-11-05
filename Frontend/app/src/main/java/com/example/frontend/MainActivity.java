@@ -35,14 +35,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
-import com.example.frontend.ServerConfig;
-
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = "MainActivity";
     private final String CHANNEL_ID = "32";
     private HttpsRequest httpsRequest;
-    private final String server_url = "http://10.0.2.2:3000"; // TODO update with actual url
+
+    private final String server_url = ServerConfig.SERVER_URL;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
     private Button signOutButton;
@@ -79,6 +78,11 @@ public class MainActivity extends AppCompatActivity {
                 .requestEmail()
                 .requestIdToken(getString(R.string.server_client_id))
                 .requestServerAuthCode(getString(R.string.server_client_id))
+                .requestScopes(
+                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
+                )
                 .build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -86,15 +90,22 @@ public class MainActivity extends AppCompatActivity {
             signIn();
         });
 
+
+
         // handle sign out
         signOutButton = findViewById(R.id.button_signOut);
         signOutButton.setOnClickListener(view -> signOut());
 
         createNotificationChannel();
 
+        //Do silentSignIn to refresh the IdToken of the user without asking user to sign in again
+        //If there is no user, it will show toast "please sign in "
+        //if successful, it will automatically call updateUI(refreshedAccount)
+        performSilentSignIn();
+
         // navigate to main page if previously signed in before, but allow return
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        updateUI(account);
+//        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+//        updateUI(account);
     }
 
     private void updateUI(GoogleSignInAccount account) {
@@ -105,13 +116,13 @@ public class MainActivity extends AppCompatActivity {
             Log.v(TAG, account.getId());
             Log.v(TAG, account.getDisplayName());
             Log.v(TAG, account.getEmail());
-            Log.v(TAG, "access_token : " + account.getIdToken());
+            Log.v(TAG, "id_token : " + account.getIdToken());
             Log.v(TAG, "refresh_token : " + account.getServerAuthCode());
             Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
             // extra data for use else where
             userData.putString("userId", account.getId());
             userData.putString("userEmail", account.getEmail());
-            userData.putString("userToken", account.getIdToken());
+            userData.putString("userIdToken", account.getIdToken());
 //            userData.putString("userRefreshToken", account.getServerAuthCode());
             if(account.getServerAuthCode() != null) {
                 userData.putString("userRefreshToken", account.getServerAuthCode());
@@ -146,9 +157,10 @@ public class MainActivity extends AppCompatActivity {
                         Log.e(TAG, "JSON Exception while parsing /login/google response");
                     }
                 }
+
                 @Override
                 public void onFailure(String error) {
-                    Log.e(TAG, "Error: Server error");
+                    Log.e(TAG, "google login or register : " + error);
                 }
             });
         }
@@ -158,6 +170,25 @@ public class MainActivity extends AppCompatActivity {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
+
+    private void performSilentSignIn() {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        if (account != null) {
+            mGoogleSignInClient.silentSignIn().addOnCompleteListener(this, new OnCompleteListener<GoogleSignInAccount>() {
+                @Override
+                public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
+                    handleSignInResult(task);
+                }
+            });
+        } else {
+            // No user is signed in. Handle this case as needed.
+            Toast.makeText(this, "Please sign in", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -184,16 +215,33 @@ public class MainActivity extends AppCompatActivity {
         try {
             GoogleSignInAccount account = completedTask.getResult(ApiException.class);
 
-            // Signed in successfully, show authenticated UI. Go to new page display info
-            updateUI(account);
+            // Silent sign-in was successful, and you now have an account with a refreshed ID token.
+            String refreshedIdToken = account.getIdToken();
+
+            if (refreshedIdToken != null) {
+                // The ID token was successfully refreshed, and refreshedIdToken contains the new ID token.
+                // You can update your UI or perform any necessary actions with the refreshed ID token.
+                Log.d(TAG, "Refreshed ID token: " + refreshedIdToken);
+
+                // Handle the refreshed account or token as needed here.
+                // For example, you can pass it to other methods or update the UI.
+                updateUI(account);
+            } else {
+                // The ID token is null, indicating that it was not successfully refreshed.
+                // You may want to re-sign in manually or take appropriate actions.
+                Log.e(TAG, "ID token was not refreshed");
+                // Display a toast or handle the case where the ID token was not refreshed.
+            }
         } catch (ApiException e) {
-            // The ApiException status code indicates the detailed failure reason.
-            // Please refer to the GoogleSignInStatusCodes class reference for more information.
-            // Error code 7 means network error
-            Log.e(TAG, "signInResult:failed code=" + e.getStatusCode());
-            updateUI(null);
+            // Handle exceptions that occurred during silent sign-in.
+            Log.e(TAG, "Silent sign-in failed with code: " + e.getStatusCode());
+            // You can decide how to handle the error, e.g., re-sign in manually.
+
+            // No user is signed in. Handle this case as needed.
+            Toast.makeText(this, "Please sign in", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     // check location permissions
     private void checkPermissions() {

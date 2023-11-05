@@ -30,8 +30,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private Bundle userData;
     private HttpsRequest httpsRequest;
 
-    private final String server_url = "http://10.0.2.2:3000";
-    // "https://calendo.westus2.cloudapp.azure.com:8081"
+    private final String server_url = ServerConfig.SERVER_URL;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,10 +43,47 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         // calendar
         calendarButton = findViewById(R.id.button_calendar);
         calendarButton.setOnClickListener(view -> {
-//            checkPermission();
+            //            checkPermission();
             Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
-            calendarIntent.putExtras(userData);
-            startActivity(calendarIntent);
+
+            // userData contains, Id, Email, IdToken, RefreshToken
+            String user_id = userData.getString("userId");
+            String user_id_token = userData.getString("userIdToken");
+            String user_email = userData.getString("userEmail");
+            String user_refresh_token = userData.getString("userRefreshToken");
+
+            // send necessary data to backend for database
+            JSONObject tokenHeader = new JSONObject();
+            try {
+                tokenHeader.put("id_token", user_id_token);
+                tokenHeader.put("refresh_token", user_refresh_token);
+            } catch (JSONException e){
+                Log.e(TAG, "unexpected JSON exception", e);
+            }
+            s
+            httpsRequest.get(server_url + "/auth/google/token?useremail=" + user_email, tokenHeader, new HttpsCallback() {
+                @Override
+                public void onResponse(String response) {
+                    try {
+                        JSONObject responseObj = new JSONObject(response);
+                        String eventsForAWeek = responseObj.getString("events");
+                        Log.i(TAG,"eventsForAWeek : " + eventsForAWeek);
+
+                        userData.putString("events", eventsForAWeek); // put json string into data bundle
+
+                        //Go to calendar after importing the calendar data
+                        calendarIntent.putExtras(userData);
+                        startActivity(calendarIntent);
+                    } catch (JSONException e) {
+                        Log.e(TAG, "JSON Exception while parsing response from google token calendar import");
+                    }
+                }
+                @Override
+                public void onFailure(String error) {
+                    Log.e(TAG, "google token calendar import : " + error);
+                }
+            });
+
         });
 
         // settings == preference setting
@@ -56,6 +92,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             // move to setting page, set preference
             Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);
             // get users set preferences first
+            //httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
             httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
 
                 @Override
