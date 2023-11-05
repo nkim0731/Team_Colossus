@@ -24,8 +24,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -69,8 +71,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         //initalize event list
         eventList = new ArrayList<>();
-        eventList.add(new EventData("8:30","wake up",""));
-        // TODO implement recycle view in the middle of activity_calendar view
+//        eventList.add(new EventData("8:30","wake up",""));
         rv_temp = findViewById(R.id.rv_temp);
         rv_temp.setLayoutManager(new LinearLayoutManager(this));
         eventAdapter= new EventAdapter(eventList,this);
@@ -153,28 +154,28 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
-        httpsRequest.get(server_url + "/api/calendar/day_schedule" + selectedDate, null, new HttpsCallback() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONArray eventArray = new JSONArray(response);
-                    for (int i=0; i<eventArray.length();i++){
-                        JSONObject eventObj = eventArray.getJSONObject(i);
-                        EventData newEvent = new EventData(eventObj.getString("startTime"),
-                                eventObj.getString("eventName"),
-                                eventObj.getString("duration")
-                                );
-                        schedule.add(newEvent);
-                    }
-                } catch (JSONException e) {
-                    Log.e(TAG, "Error: JSONException");
-                }
-            }
-            @Override
-            public void onFailure(String error) {
-                Log.e(TAG, "Error: can't get day schedule");
-            }
-        });
+//        httpsRequest.get(server_url + "/api/calendar/day_schedule" + selectedDate, null, new HttpsCallback() {
+//            @Override
+//            public void onResponse(String response) {
+//                try {
+//                    JSONArray eventArray = new JSONArray(response);
+//                    for (int i=0; i<eventArray.length();i++){
+//                        JSONObject eventObj = eventArray.getJSONObject(i);
+//                        EventData newEvent = new EventData(eventObj.getString("startTime"),
+//                                eventObj.getString("eventName"),
+//                                eventObj.getString("duration")
+//                                );
+//                        schedule.add(newEvent);
+//                    }
+//                } catch (JSONException e) {
+//                    Log.e(TAG, "Error: JSONException");
+//                }
+//            }
+//            @Override
+//            public void onFailure(String error) {
+//                Log.e(TAG, "Error: can't get day schedule");
+//            }
+//        });
 
         // move to CreateNewEvent.java to create new event
         createEvent = findViewById(R.id.button_createEvent);
@@ -273,12 +274,22 @@ public class CalendarActivity extends AppCompatActivity {
             @Override
             public void onResponse(String response) {
                 try{
+                    Log.d(TAG, response);
                     JSONArray eventJsonArray = new JSONArray(response);
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                    SimpleDateFormat eventTimeFormat = new SimpleDateFormat("HH:mm");
                     for (int i=0; i<eventJsonArray.length();i++){
                         JSONObject eventJson = eventJsonArray.getJSONObject(i);
-                        EventData newEvent = new EventData(eventJson.getString("startTime"),
+
+                        Date start = dateFormat.parse(eventJson.getString("start"));
+                        Date end = dateFormat.parse(eventJson.getString("end"));
+                        long durationMillis = Math.abs(start.getTime() - end.getTime());
+                        long eventDuration = durationMillis / (1000 * 60 * 60); // in hours
+
+                        EventData newEvent = new EventData(eventTimeFormat.format(start),
                                 eventJson.getString("eventName"),
-                                eventJson.getString("duration"));
+                                String.format("%d Hours", eventDuration)
+                        );
                         eventList.add(newEvent);
                     }
                     runOnUiThread(new Runnable() {
@@ -289,7 +300,9 @@ public class CalendarActivity extends AppCompatActivity {
                         }
                     });
                 }catch (JSONException e){
-                    Log.d(TAG,"GET events JSON error");
+                    Log.e(TAG,"GET events JSON error");
+                } catch (ParseException e) {
+                    Log.e(TAG, "Error formatting date");
                 }
             }
 

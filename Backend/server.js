@@ -108,7 +108,7 @@ app.route('/api/calendar')
 // ChatGPT usage: Partial
 app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
     const user = req.query.user;
-    const day = new Date(req.query.day);
+    const day = new Date(req.query.day + " 10:10:10");
     try {
         const calendar = await db.getCalendar(user);
         const dayEvents = calendar.events.filter(e => {
