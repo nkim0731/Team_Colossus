@@ -145,7 +145,7 @@ public class CalendarActivity extends AppCompatActivity {
         // button to create day schedule
         createDaySchedule = findViewById(R.id.button_create_schedule);
         createDaySchedule.setOnClickListener(view -> {
-            Toast.makeText(getApplicationContext(), "Started generating schedule for today, please be patient", Toast.LENGTH_LONG).show();
+            Toast.makeText(CalendarActivity.this, "Started generating schedule for today, please be patient", Toast.LENGTH_LONG).show();
             JSONObject data = new JSONObject();
             // needs username, location (origin)
             try {
@@ -161,12 +161,12 @@ public class CalendarActivity extends AppCompatActivity {
                 public void onResponse(String response) {
                     Log.d(TAG, "Scheduler done");
                     userData.putString("scheduleJSON", response);
-                    Toast.makeText(getApplicationContext(), "Schedule has been successfully generated!", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(CalendarActivity.this, "Schedule has been successfully generated!", Toast.LENGTH_LONG).show();
                 }
                 @Override
                 public void onFailure(String error) {
                     Log.e(TAG, "Error: Server error");
-                    Toast.makeText(getApplicationContext(), "Started generation failed", Toast.LENGTH_LONG).show();
+//                    Toast.makeText(CalendarActivity.this, "Started generation failed", Toast.LENGTH_LONG).show();
                 }
             });
         });
