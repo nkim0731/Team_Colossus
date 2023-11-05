@@ -28,9 +28,9 @@ if (isHttps) {
     httpsServer = https.createServer(options, app);
 }
 
-const server = http.createServer(app); // HTTP server for testing 
+// const server = http.createServer(app); // HTTP server for testing 
 
-const chatManager = new ChatManager(server); // start socketio service for groupchats (change this to HTTPS server TODO)
+const chatManager = new ChatManager(httpsServer); // start socketio service for groupchats
 
 /*
 * API calls and calls to/from frontend go here
