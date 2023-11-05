@@ -59,20 +59,20 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
         // This asks for scopes to get refresh_token for user calendar access
         // this does not have the necessary permissions to run
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestProfile()
-                .requestEmail()
-                .requestIdToken(getString(R.string.server_client_id))
-                .requestServerAuthCode(getString(R.string.server_client_id))
-                .requestScopes(
-                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
-                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
-                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
-                )
-                .build();
-
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
-        performSilentSignIn();
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestProfile()
+//                .requestEmail()
+//                .requestIdToken(getString(R.string.server_client_id))
+//                .requestServerAuthCode(getString(R.string.server_client_id))
+//                .requestScopes(
+//                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
+//                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
+//                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
+//                )
+//                .build();
+//
+//        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+//        performSilentSignIn();
 
 
         // calendar
