@@ -9,13 +9,6 @@ const allowedOrigins = [
     '0.0.0.0',
 ]
 
-/*
-Major Issue 2: Lack of Chat security. In Messaging.js, line 28, the ChatManager allows any user to join 
-any chat room simply by knowing or guessing the chatName. There is no mechanism in place to verify if the user 
-is a legitimate member of the chatroom they are trying to join. Anyone can send a message to the chatroom without being authenticated, 
-potentially leading to message spoofing. An intruder could impersonate another user by sending a message with their name in the sender field.
-*/
-
 class ChatManager {
     constructor(server) {
         this.initSocketIo(server);
