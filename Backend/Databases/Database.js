@@ -151,7 +151,7 @@ class Database {
     async addEvents(username, events) {
 		try {
             const userEvents = await UserModel.findOne({ username }).select('events');
-            const coursePattern = /^[A-za-z]{4}\d{3}/;
+            const coursePattern = /^[A-Za-z]{4}\d{3}/;
             let newEvents = [];
             for (let e of events) {
                 // test against regex for format xxxx111 (course)

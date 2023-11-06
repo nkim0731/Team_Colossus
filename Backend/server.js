@@ -3,11 +3,10 @@ const express = require('express');
 // const http = require('http');
 const https = require('https');
 const fs = require('fs');
-// const path = require('path');
+const path = require('path');
 
 // Requires for defined interfaces
 const Scheduler = require('./Interfaces/Scheduler.js');
-const ChatManager = require('./Interfaces/Messaging.js');
 const db = require('./Databases/Database.js');
 
 // For loading env variables
@@ -40,8 +39,8 @@ const httpsServer = https.createServer(options, app);
 
 // const server = http.createServer(app); // HTTP server for testing 
 
-// const chatManager = new ChatManager(httpsServer); // start socketio service for groupchats
-new ChatManager(httpsServer);
+// Start socket io service for group chats
+require('./Interfaces/Messaging.js')(httpsServer);
 
 /*
 * API calls and calls to/from frontend go here
