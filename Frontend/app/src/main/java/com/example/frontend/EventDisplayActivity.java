@@ -46,7 +46,7 @@ public class EventDisplayActivity extends AppCompatActivity {
         // initialize recyclerView
         RecyclerView rv_eventList = findViewById(R.id.rv_eventList);
         rv_eventList.setLayoutManager(new LinearLayoutManager(this));
-        EventAdapter eventAdapter = new EventAdapter(dataArrayList,this);
+        EventAdapter eventAdapter = new EventAdapter(dataArrayList);
         rv_eventList.setAdapter(eventAdapter);
 
         // temporary samples

@@ -74,7 +74,7 @@ public class CalendarActivity extends AppCompatActivity {
 //        eventList.add(new EventData("8:30","wake up",""));
         RecyclerView rv_temp = findViewById(R.id.rv_temp);
         rv_temp.setLayoutManager(new LinearLayoutManager(this));
-        eventAdapter= new EventAdapter(eventList,this);
+        eventAdapter= new EventAdapter(eventList);
         rv_temp.setAdapter(eventAdapter);
 
 

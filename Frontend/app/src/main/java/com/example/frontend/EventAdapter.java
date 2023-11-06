@@ -19,13 +19,13 @@ import java.util.List;
  * */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private List<EventData> eventList;
-    private Context context;
+//    private Context context;
     /*
      * ChatGPT usage: No
      * */
-    public EventAdapter(List<EventData> eventList, Context context) {
+    public EventAdapter(List<EventData> eventList) {
         this.eventList = eventList;
-        this.context = context;
+//        this.context = context;
     }
 
 
