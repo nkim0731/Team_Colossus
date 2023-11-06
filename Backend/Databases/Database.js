@@ -37,13 +37,11 @@ class Database {
     // ChatGPT usage: No
     async connect() {
 
-        try {
-            console.log('Database class mongoURL : ', mongoURI);
-            await mongoose.connect(mongoURI);
-            console.log('Database class Connected to User MongoDB');
-        } catch (err) {
-            console.error('Database class MongoDB connection error:', err);
-        }
+        
+        console.log('Database class mongoURL : ', mongoURI);
+        await mongoose.connect(mongoURI);
+        console.log('Database class Connected to User MongoDB');
+        
     }
 
     // Get data for user by username/email (unique)

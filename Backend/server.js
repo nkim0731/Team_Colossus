@@ -144,12 +144,10 @@ app.route('/api/calendar/day_schedule')
 })
 // ChatGPT usage: No
 .get(async (req, res) => { // ?user=username
-    try {
-        const schedule = await db.getSchedule(req.query.user);
-        res.status(200).send(schedule.daySchedule);
-    } catch (e) {
-        res.status(500).json({ message: e });
-    }
+    
+    const schedule = await db.getSchedule(req.query.user);
+    res.status(200).send(schedule.daySchedule);
+    
 })
 
 /*

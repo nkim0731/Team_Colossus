@@ -11,32 +11,29 @@ class Scheduler {
     // get direction to an event from position when called
     // ChatGPT usage: Partial
     async getDirections(origin, event, preferences) {
-        try {
-            let params = {
-                origin: origin,
-                destination: event.address,
-                travelMode: preferences.commute_method,
-                alternatives: true,
-                key: googleAPIKey,
-            }
-            if (preferences.commute_method.toLowerCase() === 'transit') {
-                params.transitOptions = {
-                    arrivalTime: new Date(event.start),
-                    // routingPreference: preferences.routing,
-                }
-            }
-            if (preferences.commute_method.toLowerCase() === 'driving') {
-                params.drivingOptions = {
-                    departureTime: new Date(),
-                    trafficModel: 'pessimistic',
-                }
-            }
-            const result = await this.client.directions({ params: params });
-            return result.data; // array of possible routes from origin to destination
-        } catch (e) {
-            console.log('Error: ' + e);
-            throw e;
+        
+        let params = {
+            origin: origin,
+            destination: event.address,
+            travelMode: preferences.commute_method,
+            alternatives: true,
+            key: googleAPIKey,
         }
+        if (preferences.commute_method.toLowerCase() === 'transit') {
+            params.transitOptions = {
+                arrivalTime: new Date(event.start),
+                // routingPreference: preferences.routing,
+            }
+        }
+        if (preferences.commute_method.toLowerCase() === 'driving') {
+            params.drivingOptions = {
+                departureTime: new Date(),
+                trafficModel: 'pessimistic',
+            }
+        }
+        const result = await this.client.directions({ params: params });
+        return result.data; // array of possible routes from origin to destination
+        
     }
 
     // create schedule with routes for events taking place today
