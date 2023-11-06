@@ -95,18 +95,18 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
      * ChatGPT usage: Partial
      * */
 
-    private void checkPermission(){
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
-
-            Intent serviceIntent = new Intent(this, ActivityRecognitionService.class);
-            ContextCompat.startForegroundService(this, serviceIntent);
-            Log.d("Alarm", "permission allowed");
-        }else{
-            Log.d("Alarm", "no permission");
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1);
-
-        }
-    }
+//    private void checkPermission(){
+//        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+//
+//            Intent serviceIntent = new Intent(this, ActivityRecognitionService.class);
+//            ContextCompat.startForegroundService(this, serviceIntent);
+//            Log.d("Alarm", "permission allowed");
+//        }else{
+//            Log.d("Alarm", "no permission");
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION}, 1);
+//
+//        }
+//    }
 
 }
 

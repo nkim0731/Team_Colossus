@@ -137,8 +137,8 @@ public class ChatRoomsActivity extends AppCompatActivity {
     /*
      * ChatGPT usage: No
      * */
-    private void getChatRooms(){
-
-        url = String.format(server_url + "/api/chatrooms?user=%s",userData.getString("userEmail"));
-    }
+//    private void getChatRooms(){
+//
+//        url = String.format(server_url + "/api/chatrooms?user=%s",userData.getString("userEmail"));
+//    }
 }
