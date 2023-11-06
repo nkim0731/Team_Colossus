@@ -38,8 +38,7 @@ class Database {
     async connect() {
         console.log('Database class mongoURL : ', mongoURI);
         await mongoose.connect(mongoURI);
-        console.log('Database class Connected to User MongoDB');
-        
+        console.log('Database class Connected to User MongoDB');   
     }
 
     // Get data for user by username/email (unique)
@@ -52,77 +51,53 @@ class Database {
     // ChatGPT usage: No
     async getUserById(id) {
         return await UserModel.findOne({ userId: id });
-        // try {
-        //     return await UserModel.findOne({ userId: id });
-        // } catch (e) {
-        //     console.log(e);
-        //     throw e;
-        // }
     }
 
     // Add a new user to Users Database
     // ChatGPT usage: Partial
     async addUser(user) {
-        try {
-            if (user.password === undefined) {
-                user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless lol
-            }
-            // default user preferences on account creation
-            user.preferences = { 
-                commute_method: 'Driving', // default for navigation
-                preparation_time: '0',
-                notification_preferences: { // all default true
-                    morning_alarm: true,
-                    event_alarm: true,
-                    event_notification: true,
-                    traffic_alerts: true,
-                    weather_alerts: true,
-                },
-                maxMissedBus: '1',
-            };
-            user.events = [];
-            user.daySchedule = [];
-
-            const newUser = new UserModel(user);
-            await newUser.save();
-        } catch (e) {
-            console.log('addUser error -> ' + e);
-            throw e;
+        if (user.password === undefined) {
+            user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless lol
         }
+        // default user preferences on account creation
+        user.preferences = { 
+            commute_method: 'Driving', // default for navigation
+            preparation_time: '0',
+            notification_preferences: { // all default true
+                morning_alarm: true,
+                event_alarm: true,
+                event_notification: true,
+                traffic_alerts: true,
+                weather_alerts: true,
+            },
+            maxMissedBus: '1',
+        };
+        user.events = [];
+        user.daySchedule = [];
+
+        const newUser = new UserModel(user);
+        await newUser.save();
     }
 
 
     // Add a user to Users Database
     // ChatGPT usage: Partial
     async updateUser(user) {
-        try {
-            await UserModel.findOneAndUpdate(
-                { username: user.username },
-                user,
-                { new: true }
-                ).then((updatedUser) => {
-                    console.log("user is updated : " + updatedUser);
-                    return updatedUser;
-                });
-        } catch (e) {
-            console.log('updateUser error -> ' + e);
-            throw e;
-        }
+        return await UserModel.findOneAndUpdate(
+            { username: user.username },
+            user,
+            { new: true }
+        );
     }
 
     // update preferences for user in database
     // ChatGPT usage: Partial
     async updatePreferences(user, preferences) {
-        try {
-            let userDocument = await UserModel.findOne({ username: user });
-            if (!userDocument) throw new Error("No user found");
-            userDocument.preferences = deepMerge(userDocument.preferences, preferences);
+        let userDocument = await UserModel.findOne({ username: user });
+        if (!userDocument) throw new Error("No user found");
+        userDocument.preferences = deepMerge(userDocument.preferences, preferences);
 
-            await userDocument.save();
-        } catch (e) {
-            console.log(e);
-            throw e;
-        }
+        await userDocument.save();
     }
 
     /*
@@ -133,65 +108,45 @@ class Database {
     // ChatGPT usage: Partial
 	async getCalendar(username) {
         return await UserModel.findOne({ username }).select('events');
-		// try {
-		// 	return await UserModel.findOne({ username }).select('events');
-		// } catch (e) {
-		// 	console.log('Error: ' + e);
-		// }
 	}
 
     // add events (array) to calendar
     // ChatGPT usage: Partial
     async addEvents(username, events) {
-		try {
-            const userEvents = await UserModel.findOne({ username }).select('events');
-            const coursePattern = /^[A-Za-z]{4}\d{3}/;
-            let newEvents = [];
-            for (let e of events) {
-                // test against regex for format xxxx111 (course)
-                if (coursePattern.test(e.eventName)) {
-                    e.hasChat = true;
-                } else {
-                    e.hasChat = false;
-                }
-                let included = false;
-                // check if event is already in database
-                for (let ue of userEvents.events) {
-                    if (ue.eventName === e.eventName) included = true;
-                }
-                if (!included) newEvents.push(e);
+        const userEvents = await UserModel.findOne({ username }).select('events');
+        const coursePattern = /^[A-Za-z]{4}\d{3}/;
+        let newEvents = [];
+        for (let e of events) {
+            // test against regex for format xxxx111 (course)
+            if (coursePattern.test(e.eventName)) {
+                e.hasChat = true;
+            } else {
+                e.hasChat = false;
             }
-
-			await UserModel.updateOne(
-                { username },
-                { $push: { events: { $each: newEvents } } }
-            );
-		} catch (e) {
-			console.log('Error: ' + e);
-            throw e;
-		}
+            let included = false;
+            // check if event is already in database
+            for (let ue of userEvents.events) {
+                if (ue.eventName === e.eventName) included = true;
+            }
+            if (!included) newEvents.push(e);
+        }
+		await UserModel.updateOne(
+            { username },
+            { $push: { events: { $each: newEvents } } }
+        );
 	}
 
     // add day schedule to db
     // ChatGPT usage: Partial
     async addSchedule(username, schedule) {
-        try {
-            let user = await UserModel.findOne({ username });
-            user.daySchedule = schedule;
-            await user.save();
-        } catch (e) {
-            console.log('Error: ' + e);
-        }
+        let user = await UserModel.findOne({ username });
+        user.daySchedule = schedule;
+        await user.save();
     }
 
     // ChatGPT usage: No
     async getSchedule(username) {
         return await UserModel.findOne({ username }).select('daySchedule');
-        // try {
-        //     return await UserModel.findOne({ username }).select('daySchedule');
-        // } catch (e) {
-        //     console.log('Error: ' + e);
-        // }
     }
 
     /*
@@ -202,56 +157,36 @@ class Database {
     // ChatGPT usage: No
     async getMessages(chatName) {
         return await ChatModel.findOne({ chatName }).select('messages');
-        // try {
-        //     return await ChatModel.findOne({ chatName }).select('messages');
-        // } catch (e) {
-		// 	console.log('Error: ' + e);
-		// }
     }
 
     // create room
     // ChatGPT usage: Partial
     async createRoom(chatName) {
-        try {
-            const newRoom = new ChatModel({ chatName, messages: [] });
-            const room = await newRoom.save();
-            return room;
-        } catch (e) {
-			console.log('Error: ' + e);
-            throw e;
-		}
+        const newRoom = new ChatModel({ chatName, messages: [] });
+        const room = await newRoom.save();
+        return room;
     }
 
     // get a chatroom by name
     // ChatGPT usage: No
     async getRoom(chatName) {
         return await ChatModel.findOne({ chatName });
-        // try {
-        //     return await ChatModel.findOne({ chatName });
-        // } catch (e) {
-		// 	console.log('Error: ' + e);
-        //     throw e;
-		// }
     }
 
     // add a message (object) to chatroom chatID
     // ChatGPT usage: Partial
     async addMessage(chatName, message) {
-        try {
-            let chatDocument = await ChatModel.findOne({ chatName });
-            // create chatroom in database if does not exist already
-            if (!chatDocument) {
-                const document = { chatName, messages: [] };
-                chatDocument = new ChatModel(document);
-            }
-            chatDocument.messages.unshift(message);
-            if (chatDocument.messages.length > maxMessages) {
-                chatDocument.messages.pop();
-            }
-            await chatDocument.save();
-        } catch (e) {
-			console.log('Error: ' + e);
-		}
+        let chatDocument = await ChatModel.findOne({ chatName });
+        // create chatroom in database if does not exist already
+        if (!chatDocument) {
+            const document = { chatName, messages: [] };
+            chatDocument = new ChatModel(document);
+        }
+        chatDocument.messages.unshift(message);
+        if (chatDocument.messages.length > maxMessages) {
+            chatDocument.messages.pop();
+        }
+        await chatDocument.save();
     }
 }
 
