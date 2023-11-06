@@ -46,7 +46,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         SwitchPreferenceCompat eventAlarm = findPreference("event_alarm");
         SwitchPreferenceCompat trafficAlerts = findPreference("traffic_alerts");
         SwitchPreferenceCompat weatherAlerts = findPreference("weather_alerts");
-        SwitchPreferenceCompat vibrationAlerts = findPreference("vibration_alerts");
+//        SwitchPreferenceCompat vibrationAlerts = findPreference("vibration_alerts");
         ListPreference commuteMethod = findPreference("commute_method");
 
         // set values from data obtained in database for consistency

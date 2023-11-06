@@ -82,7 +82,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
-        ArrayList<EventData> schedule = new ArrayList<>();
+//        ArrayList<EventData> schedule = new ArrayList<>();
 
         userEmail = userData.getString("userEmail");
 
@@ -153,7 +153,7 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
-        TextView scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
+//        TextView scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
 //        httpsRequest.get(server_url + "/api/calendar/day_schedule" + selectedDate, null, new HttpsCallback() {
 //            @Override
 //            public void onResponse(String response) {
