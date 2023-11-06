@@ -21,13 +21,13 @@ import java.util.List;
  * */
 public class ChatRoomsActivity extends AppCompatActivity {
 
-    private Bundle userData;
+//    private Bundle userData;
     private List<ChatRoom> chatRooms;
     private RecyclerView chatRoomRecyclerView;
     private ChatRoomAdapter chatRoomAdapter;
     private HttpsRequest httpsRequest;
     private final String server_url = ServerConfig.SERVER_URL;
-    private String url;
+//    private String url;
     private final String TAG = "ChatRoom";
 
     /*
@@ -48,7 +48,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
         httpsRequest = new HttpsRequest();
 
         //get value from previous intent
-        userData = getIntent().getExtras();
+        Bundle userData = getIntent().getExtras();
         String userEmail = userData.getString("userEmail");
 
         //initialize the list of chat rooms
@@ -120,7 +120,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
     private void postChatRoom(String userEmail, String chatName) throws JSONException {
         JSONObject postData = new JSONObject();
         postData.put("chatName",chatName);
-        url = String.format(server_url + "/api/chatrooms?user=%s",userEmail);
+        String url = String.format(server_url + "/api/chatrooms?user=%s",userEmail);
         httpsRequest.post(url, postData, new HttpsCallback() {
             @Override
             public void onResponse(String response) {

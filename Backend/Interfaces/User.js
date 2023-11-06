@@ -18,25 +18,23 @@ router.get('/:username', async (req, res) => {
 
 // GET user preferences by username
 router.get('/:username/preferences', async (req, res) => {
-  try {
-    const User = req.app.locals.mongoDB.model('user', userSchema);
 
-    const username = req.params.username;
-    const user = await User.findOne({ username });
+  const User = req.app.locals.mongoDB.model('user', userSchema);
 
-    console.log('user.preferences : ', user.preferences);
-    console.log('user.preferences.params : ', user.preferences.params);
-    if (!user.preferences === undefined) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+  const username = req.params.username;
+  const user = await User.findOne({ username });
+
+  console.log('user.preferences : ', user.preferences);
+  console.log('user.preferences.params : ', user.preferences.params);
+  if (!user.preferences === undefined) {
+    return res.status(404).json({ error: 'User not found' });
+  }
     
 
-    const preferences = user.preferences; // Use the preferences object from the schema
+  const preferences = user.preferences; // Use the preferences object from the schema
 
-    res.json(preferences);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  res.json(preferences);
+ 
 });
 
 // POST to create or update user preferences
