@@ -1,6 +1,5 @@
 package com.example.frontend;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.frontend.EventData;
-import com.example.frontend.R;
+
 
 import java.util.List;
 
