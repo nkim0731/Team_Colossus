@@ -10,24 +10,24 @@ const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
 //Import export variables from variables.js
-const { isHttps, isTest, test_calendoDB } = require('../variables.js');
+// const { isHttps, isTest, test_calendoDB } = require('../variables.js');
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
-// const mongoURI = 'mongodb://localhost:27017/calendoDB';
+const mongoURI = 'mongodb://localhost:27017/calendoDB';
 
-var mongoURI = null;
-if (isTest) {
-    if (test_calendoDB) {
-        mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-    } else {
-        // This URL should be the same as the db connection created in the server.js
-        mongoURI = 'mongodb://localhost:27017/cpen321';
-    }
-} else {
-    // For actual project deployment
-    mongoURI = 'mongodb://localhost:27017/calendoDB';
-}
+// var mongoURI = null;
+// if (isTest) {
+//     if (test_calendoDB) {
+//         mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+//     } else {
+//         // This URL should be the same as the db connection created in the server.js
+//         mongoURI = 'mongodb://localhost:27017/cpen321';
+//     }
+// } else {
+//     // For actual project deployment
+//     mongoURI = 'mongodb://localhost:27017/calendoDB';
+// }
 
 class Database {
     constructor() {
@@ -36,8 +36,6 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
-
-        
         console.log('Database class mongoURL : ', mongoURI);
         await mongoose.connect(mongoURI);
         console.log('Database class Connected to User MongoDB');
@@ -47,13 +45,7 @@ class Database {
     // Get data for user by username/email (unique)
     // ChatGPT usage: Partial
     async getUser(useremail) {
-        try {
-            // just return the result directly, null means no user return false redundant
-            return await UserModel.findOne({ username: useremail });
-        } catch (error) {
-            console.error('Error while fetching user:', error);
-            throw error; // Re-throw the error to handle it further up the call stack
-        }
+        return await UserModel.findOne({ username: useremail });
     }
 
     // Get user data by google auth id (not used)
@@ -169,7 +161,7 @@ class Database {
             }
 
 			await UserModel.updateOne(
-                { 'username': username },
+                { username },
                 { $push: { events: { $each: newEvents } } }
             );
 		} catch (e) {
@@ -244,7 +236,7 @@ class Database {
             let chatDocument = await ChatModel.findOne({ chatName });
             // create chatroom in database if does not exist already
             if (!chatDocument) {
-                const document = { chatName: chatName, messages: [] };
+                const document = { chatName, messages: [] };
                 chatDocument = new ChatModel(document);
             }
             chatDocument.messages.unshift(message);
