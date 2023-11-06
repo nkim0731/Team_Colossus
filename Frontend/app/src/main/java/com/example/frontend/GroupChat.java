@@ -26,7 +26,7 @@ import io.socket.emitter.Emitter;
  * */
 public class GroupChat extends AppCompatActivity {
 
-    private Button sendButton;
+//    private Button sendButton;
 
     private Socket mSocket;
     private Emitter.Listener onMessage;
@@ -35,7 +35,7 @@ public class GroupChat extends AppCompatActivity {
     private RecyclerView messageRecyclerView;
     private MessageAdapter messageAdapter;
     private List<Message> messages; //record the messages of chat room
-    private Bundle userData;
+//    private Bundle userData;
     private HttpsRequest httpsRequest;
     private String username;
 
@@ -49,7 +49,7 @@ public class GroupChat extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_chat);
 
-        userData = getIntent().getExtras();
+        Bundle userData = getIntent().getExtras();
         String chatName = userData.getString("chatName");
         username = userData.getString("username");
 
@@ -88,7 +88,7 @@ public class GroupChat extends AppCompatActivity {
 
         //initialize message view
         messageEditText = findViewById(R.id.editTextSend);
-        sendButton = findViewById(R.id.buttonSend);
+        Button sendButton = findViewById(R.id.buttonSend);
 
 
         //send button callback

@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
  * */
 public class PreferenceActivity extends AppCompatActivity {
     private final String TAG = "PreferenceActivity";
-    private Bundle userData;
+//    private Bundle userData;
 
     /*
      * ChatGPT usage: Partial
@@ -19,7 +19,7 @@ public class PreferenceActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        userData = getIntent().getExtras();
+        Bundle userData = getIntent().getExtras();
 
         SettingsFragment settingsFragment = new SettingsFragment();
         settingsFragment.setArguments(userData);

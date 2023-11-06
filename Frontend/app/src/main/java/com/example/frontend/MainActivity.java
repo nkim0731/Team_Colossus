@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private final String server_url = ServerConfig.SERVER_URL;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
-    private Button signOutButton;
+//    private Button signOutButton;
     private Bundle userData;
 
     //For detecting User Activity
@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // handle sign out
-        signOutButton = findViewById(R.id.button_signOut);
+        Button signOutButton = findViewById(R.id.button_signOut);
         signOutButton.setOnClickListener(view -> signOut());
 
         createNotificationChannel();

@@ -17,7 +17,7 @@ import org.json.JSONObject;
  * Number of methods: 2
  * */
 public class SettingsFragment extends PreferenceFragmentCompat {
-    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
+//    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     private final String server_url = ServerConfig.SERVER_URL;
     private final String TAG = "Settings";
@@ -110,7 +110,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         //Handle preferences changes
         SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
 
-        preferenceChangeListener = (sharedPrefs, key) -> {
+        SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = (sharedPrefs, key) -> {
             JSONObject putData = new JSONObject();
             JSONObject preferencesObj = new JSONObject();
             try {

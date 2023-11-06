@@ -29,7 +29,7 @@ import java.util.List;
  * Number of methods: 4
  * */
 public class ActivityRecognitionService extends Service {
-    private ActivityRecognitionClient activityRecognitionClient;
+//    private ActivityRecognitionClient activityRecognitionClient;
     private List<ActivityTransition> transitions;
 
     private final String CHANNEL_ID = "ActivityRecognitionChannel";
@@ -78,7 +78,7 @@ public class ActivityRecognitionService extends Service {
         Intent intent = new Intent(this, TransitionReceiver.class);
         PendingIntent transitionPendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
         createActivityTransitions();
-        activityRecognitionClient = ActivityRecognition.getClient(this);
+        ActivityRecognitionClient activityRecognitionClient = ActivityRecognition.getClient(this);
         ActivityTransitionRequest request = new ActivityTransitionRequest(transitions);
         activityRecognitionClient.requestActivityTransitionUpdates(
                         request, transitionPendingIntent)

@@ -19,8 +19,8 @@ import androidx.core.content.ContextCompat;
  * */
 public class AfterSuccessLoginActivity extends AppCompatActivity  {
     private final String TAG = "MainMenuActivity";
-    private Button calendarButton;
-    private Button settingButton;
+//    private Button calendarButton;
+//    private Button settingButton;
     private Bundle userData;
     private HttpsRequest httpsRequest;
 
@@ -59,7 +59,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
 
         // calendar
-        calendarButton = findViewById(R.id.button_calendar);
+        Button calendarButton = findViewById(R.id.button_calendar);
         calendarButton.setOnClickListener(view -> {
 //            checkPermission();
             Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
@@ -68,7 +68,7 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         });
 
         // settings == preference setting
-        settingButton = findViewById(R.id.button_setting);
+        Button settingButton = findViewById(R.id.button_setting);
         settingButton.setOnClickListener(view -> {
             // move to setting page, set preference
             Intent settingIntent = new Intent(AfterSuccessLoginActivity.this, PreferenceActivity.class);

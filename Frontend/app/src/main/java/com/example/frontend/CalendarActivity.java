@@ -42,20 +42,20 @@ public class CalendarActivity extends AppCompatActivity {
     private CalendarView calendarView;
     private Calendar calendar;
     private TextView tv_schedule;
-    private Button chatButton;
+//    private Button chatButton;
 
     private Bundle userData;
-    private Button eventDisplay;
+//    private Button eventDisplay;
     private HttpsRequest httpsRequest;
     private String selectedDate;
     private final String server_url = ServerConfig.SERVER_URL;
-    private TextView scheduleDisplay;
-    private Button createEvent;
-    private Button createDaySchedule;
+//    private TextView scheduleDisplay;
+//    private Button createEvent;
+//    private Button createDaySchedule;
     private double latitude;
     private double longitude;
-    private ArrayList<EventData> schedule;
-    private RecyclerView rv_temp;
+//    private ArrayList<EventData> schedule;
+//    private RecyclerView rv_temp;
     private List<EventData> eventList;
     private EventAdapter eventAdapter;
     private String userEmail="";
@@ -72,7 +72,7 @@ public class CalendarActivity extends AppCompatActivity {
         //initalize event list
         eventList = new ArrayList<>();
 //        eventList.add(new EventData("8:30","wake up",""));
-        rv_temp = findViewById(R.id.rv_temp);
+        RecyclerView rv_temp = findViewById(R.id.rv_temp);
         rv_temp.setLayoutManager(new LinearLayoutManager(this));
         eventAdapter= new EventAdapter(eventList,this);
         rv_temp.setAdapter(eventAdapter);
@@ -82,7 +82,7 @@ public class CalendarActivity extends AppCompatActivity {
 
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
-        schedule = new ArrayList<>();
+        ArrayList<EventData> schedule = new ArrayList<>();
 
         userEmail = userData.getString("userEmail");
 
@@ -90,7 +90,7 @@ public class CalendarActivity extends AppCompatActivity {
         Socket socket = SocketManager.getSocket();
         socket.connect();
 
-        chatButton = findViewById(R.id.button_chat);
+        Button chatButton = findViewById(R.id.button_chat);
         chatButton.setOnClickListener(view -> {
             Intent chatRoomsIntent = new Intent(CalendarActivity.this, ChatRoomsActivity.class);
 
@@ -137,7 +137,7 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         // go to create schedule event
-        eventDisplay = findViewById(R.id.button_eventDisplay);
+        Button eventDisplay = findViewById(R.id.button_eventDisplay);
         eventDisplay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -153,7 +153,7 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
-        scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
+        TextView scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
 //        httpsRequest.get(server_url + "/api/calendar/day_schedule" + selectedDate, null, new HttpsCallback() {
 //            @Override
 //            public void onResponse(String response) {
@@ -178,7 +178,7 @@ public class CalendarActivity extends AppCompatActivity {
 //        });
 
         // move to CreateNewEvent.java to create new event
-        createEvent = findViewById(R.id.button_createEvent);
+        Button createEvent = findViewById(R.id.button_createEvent);
         createEvent.setOnClickListener(view -> {
             Intent createEventIntent = new Intent(CalendarActivity.this, CreateNewEvent.class);
             createEventIntent.putExtras(userData);
@@ -186,7 +186,7 @@ public class CalendarActivity extends AppCompatActivity {
         });
 
         // button to create day schedule
-        createDaySchedule = findViewById(R.id.button_create_schedule);
+        Button createDaySchedule = findViewById(R.id.button_create_schedule);
         createDaySchedule.setOnClickListener(view -> {
             Toast.makeText(CalendarActivity.this, "Started generating schedule for today, please be patient", Toast.LENGTH_LONG).show();
             JSONObject data = new JSONObject();
