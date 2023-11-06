@@ -125,7 +125,7 @@ class Database {
             }
             let included = false;
             // check if event is already in database
-            for (let ue of userEvents.events) {
+            for (let ue of user.events) {
                 if (ue.eventName === e.eventName) included = true;
             }
             if (!included) newEvents.push(e);
