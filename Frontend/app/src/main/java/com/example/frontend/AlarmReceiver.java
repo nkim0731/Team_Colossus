@@ -10,7 +10,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 public class AlarmReceiver extends BroadcastReceiver {
-    private final String CHANNEL_ID = "32";
+//    private final String CHANNEL_ID = "32";
 
     /*
      * ChatGPT usage: Partial

@@ -29,7 +29,7 @@ public class GroupChat extends AppCompatActivity {
 //    private Button sendButton;
 
     private Socket mSocket;
-    private Emitter.Listener onMessage;
+//    private Emitter.Listener onMessage;
     private EditText messageEditText;
 
     private RecyclerView messageRecyclerView;

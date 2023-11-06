@@ -41,7 +41,7 @@ public class CalendarActivity extends AppCompatActivity {
     private final String TAG = "CalendarActivity";
     private CalendarView calendarView;
     private Calendar calendar;
-    private TextView tv_schedule;
+//    private TextView tv_schedule;
 //    private Button chatButton;
 
     private Bundle userData;

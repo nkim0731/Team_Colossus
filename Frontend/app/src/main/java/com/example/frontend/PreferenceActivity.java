@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
  * Number of methods: 2
  * */
 public class PreferenceActivity extends AppCompatActivity {
-    private final String TAG = "PreferenceActivity";
+//    private final String TAG = "PreferenceActivity";
 //    private Bundle userData;
 
     /*

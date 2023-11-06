@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
     //For detecting User Activity
     public static final String DETECTED_ACTIVITY = ".DETECTED_ACTIVITY";
     //Define an ActivityRecognitionClient//
-    private ActivityRecognitionClient mActivityRecognitionClient;
+//    private ActivityRecognitionClient mActivityRecognitionClient;
 
 
     /*
