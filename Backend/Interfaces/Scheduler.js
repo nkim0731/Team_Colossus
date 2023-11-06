@@ -1,6 +1,10 @@
 const { Client } = require("@googlemaps/google-maps-services-js");
+const path = require('path');
+const dotenv = require('dotenv');
 
-require('dotenv').config({ path: `${__dirname}/../.env` });
+const envFilePath = path.join(__dirname, '..', '.env');
+dotenv.config({ path: envFilePath });
+
 const googleAPIKey = process.env.GOOGLE_API_KEY;
 
 class Scheduler {
@@ -13,7 +17,7 @@ class Scheduler {
     async getDirections(origin, event, preferences) {
         
         let params = {
-            origin: origin,
+            origin,
             destination: event.address,
             travelMode: preferences.commute_method,
             alternatives: true,
@@ -31,7 +35,7 @@ class Scheduler {
                 trafficModel: 'pessimistic',
             }
         }
-        const result = await this.client.directions({ params: params });
+        const result = await this.client.directions({ params });
         return result.data; // array of possible routes from origin to destination
         
     }
@@ -39,6 +43,29 @@ class Scheduler {
     // create schedule with routes for events taking place today
     // ChatGPT usage: Partial
     async createDaySchedule(events, origin, preferences) { // origin is user home location
+        // callback for sort, optimize for shortest duration, least steps, earliest arrival
+        function compareRoutes(a, b) {
+            // compare by duration
+            if (a.legs[0].duration.value < b.legs[0].duration.value) {
+                return -1;
+            } else if (a.legs[0].duration.value > b.legs[0].duration.value) {
+                return 1;
+            }
+            // compare by steps, if duration is equal
+            if (a.legs[0].steps.length < b.legs[0].steps.length) {
+                return -1;
+            } else if (a.legs[0].steps.length > b.legs[0].steps.length) {
+                return 1;
+            }
+            // compare arrival time to then use earliest arrival
+            if (a.legs[0].arrival_time.value < b.legs[0].arrival_time.value) {
+                return -1;
+            } else if (a.legs[0].arrival_time.value > b.legs[0].arrival_time.value) {
+                return 1;
+            }
+            return 0; // route a and b are equal in duration and steps
+        }
+        
         const today = new Date();
         const dayEvents = events.filter(e => {
             const eventDate = new Date(e.start);
@@ -55,28 +82,6 @@ class Scheduler {
             try {
                 const directions = await this.getDirections(origin, dayEvents[i], preferences);
                 let routes = directions.routes;
-                // callback for sort, optimize for shortest duration, least steps, earliest arrival
-                function compareRoutes(a, b) {
-                    // compare by duration
-                    if (a.legs[0].duration.value < b.legs[0].duration.value) {
-                        return -1;
-                    } else if (a.legs[0].duration.value > b.legs[0].duration.value) {
-                        return 1;
-                    }
-                    // compare by steps, if duration is equal
-                    if (a.legs[0].steps.length < b.legs[0].steps.length) {
-                        return -1;
-                    } else if (a.legs[0].steps.length > b.legs[0].steps.length) {
-                        return 1;
-                    }
-                    // compare arrival time to then use earliest arrival
-                    if (a.legs[0].arrival_time.value < b.legs[0].arrival_time.value) {
-                        return -1;
-                    } else if (a.legs[0].arrival_time.value > b.legs[0].arrival_time.value) {
-                        return 1;
-                    }
-                    return 0; // route a and b are equal in duration and steps
-                }
                 // routes sorted by lowest duration, then steps and time of arrival, optimal is routes[0]
                 routes.sort(compareRoutes); 
                 const route = {

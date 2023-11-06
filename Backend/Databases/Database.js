@@ -217,7 +217,7 @@ class Database {
     // ChatGPT usage: Partial
     async createRoom(chatName) {
         try {
-            const newRoom = new ChatModel({ chatName: chatName, messages: [] });
+            const newRoom = new ChatModel({ chatName, messages: [] });
             const room = await newRoom.save();
             return room;
         } catch (e) {

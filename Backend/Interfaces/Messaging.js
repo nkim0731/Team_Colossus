@@ -55,8 +55,8 @@ class ChatManager {
                     const seconds = String(now.getSeconds()).padStart(2, '0');
 
                     let messageObj = {
-                        sender: sender,
-                        message: message,
+                        sender,
+                        message,
                         timestamp: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
                     }
                     // Broadcast the message to all sockets in the chatroom except the sender

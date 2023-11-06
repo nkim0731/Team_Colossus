@@ -7,8 +7,8 @@ const { google } = require('googleapis');
 // const { Client } = require("@googlemaps/google-maps-services-js");
 // const OAuth2 = google.auth.OAuth2;
 
-require('dotenv').config({ path: `${__dirname}/../.env` });
-const googleAPIKey = process.env.GOOGLE_API_KEY;
+// require('dotenv').config({ path: `${__dirname}/../.env` });
+// const googleAPIKey = process.env.GOOGLE_API_KEY;
 
 
 // Schema and Model for event
