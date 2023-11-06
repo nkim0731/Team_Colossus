@@ -56,7 +56,7 @@ public class GroupChat extends AppCompatActivity {
 
         //set up socket connection to server
         mSocket = SocketManager.getSocket();
-        mSocket.emit("joinChatroom", chatName);
+        mSocket.emit("joinChatroom", username, chatName);
 
         // listener for new messages from other users
         mSocket.on("message", args -> {
