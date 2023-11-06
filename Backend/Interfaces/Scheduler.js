@@ -65,7 +65,7 @@ class Scheduler {
             }
             return 0; // route a and b are equal in duration and steps
         }
-        
+
         const today = new Date();
         const dayEvents = events.filter(e => {
             const eventDate = new Date(e.start);
@@ -90,7 +90,7 @@ class Scheduler {
                     end_address: routes[0].legs[0].end_address,
                     start_address: routes[0].legs[0].start_address,
                 }
-                const eventRoute = { event: dayEvents[i], route: route };
+                const eventRoute = { event: dayEvents[i], route };
                 schedule.push(eventRoute);
             } catch (e) {
                 console.log('Error generating routes: ' + e);

@@ -51,12 +51,13 @@ class Database {
     // Get user data by google auth id (not used)
     // ChatGPT usage: No
     async getUserById(id) {
-        try {
-            return await UserModel.findOne({ userId: id });
-        } catch (e) {
-            console.log(e);
-            throw e;
-        }
+        return await UserModel.findOne({ userId: id });
+        // try {
+        //     return await UserModel.findOne({ userId: id });
+        // } catch (e) {
+        //     console.log(e);
+        //     throw e;
+        // }
     }
 
     // Add a new user to Users Database
@@ -131,11 +132,12 @@ class Database {
     // get calendar events (this might not be needed anyway since we can get events from user in getUser)
     // ChatGPT usage: Partial
 	async getCalendar(username) {
-		try {
-			return await UserModel.findOne({ username }).select('events');
-		} catch (e) {
-			console.log('Error: ' + e);
-		}
+        return await UserModel.findOne({ username }).select('events');
+		// try {
+		// 	return await UserModel.findOne({ username }).select('events');
+		// } catch (e) {
+		// 	console.log('Error: ' + e);
+		// }
 	}
 
     // add events (array) to calendar
@@ -184,11 +186,12 @@ class Database {
 
     // ChatGPT usage: No
     async getSchedule(username) {
-        try {
-            return await UserModel.findOne({ username }).select('daySchedule');
-        } catch (e) {
-            console.log('Error: ' + e);
-        }
+        return await UserModel.findOne({ username }).select('daySchedule');
+        // try {
+        //     return await UserModel.findOne({ username }).select('daySchedule');
+        // } catch (e) {
+        //     console.log('Error: ' + e);
+        // }
     }
 
     /*
@@ -198,11 +201,12 @@ class Database {
     // get all messages associated with the chatroom chatID
     // ChatGPT usage: No
     async getMessages(chatName) {
-        try {
-            return await ChatModel.findOne({ chatName }).select('messages');
-        } catch (e) {
-			console.log('Error: ' + e);
-		}
+        return await ChatModel.findOne({ chatName }).select('messages');
+        // try {
+        //     return await ChatModel.findOne({ chatName }).select('messages');
+        // } catch (e) {
+		// 	console.log('Error: ' + e);
+		// }
     }
 
     // create room
@@ -221,12 +225,13 @@ class Database {
     // get a chatroom by name
     // ChatGPT usage: No
     async getRoom(chatName) {
-        try {
-            return await ChatModel.findOne({ chatName });
-        } catch (e) {
-			console.log('Error: ' + e);
-            throw e;
-		}
+        return await ChatModel.findOne({ chatName });
+        // try {
+        //     return await ChatModel.findOne({ chatName });
+        // } catch (e) {
+		// 	console.log('Error: ' + e);
+        //     throw e;
+		// }
     }
 
     // add a message (object) to chatroom chatID
