@@ -68,7 +68,7 @@ public class GroupChat extends AppCompatActivity {
                         false);
                 updateMessages(m);
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d(TAG,"Message JSON error: "+e.getMessage());
             }
         });
 

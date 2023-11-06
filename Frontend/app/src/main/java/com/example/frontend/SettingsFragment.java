@@ -137,7 +137,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     }
                 });
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d(TAG,"Preference JSON error: "+ e.getMessage());
             }
             Log.d("Settings",key+" change");
         };
