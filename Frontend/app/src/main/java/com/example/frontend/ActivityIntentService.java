@@ -22,6 +22,17 @@ import com.google.android.gms.location.DetectedActivity;
 * */
 public class ActivityIntentService extends IntentService {
     protected static final String TAG = "Activity";
+    private static final int[] POSSIBLE_ACTIVITIES = {
+
+            DetectedActivity.STILL,
+            DetectedActivity.ON_FOOT,
+            DetectedActivity.WALKING,
+            DetectedActivity.RUNNING,
+            DetectedActivity.IN_VEHICLE,
+            DetectedActivity.ON_BICYCLE,
+            DetectedActivity.TILTING,
+            DetectedActivity.UNKNOWN
+    };
     //Call the super IntentService constructor with the name for the worker thread//
     public ActivityIntentService() {
         super(TAG);
@@ -80,17 +91,7 @@ public class ActivityIntentService extends IntentService {
                 return resources.getString(detectedActivityType);
         }
     }
-    static final int[] POSSIBLE_ACTIVITIES = {
 
-            DetectedActivity.STILL,
-            DetectedActivity.ON_FOOT,
-            DetectedActivity.WALKING,
-            DetectedActivity.RUNNING,
-            DetectedActivity.IN_VEHICLE,
-            DetectedActivity.ON_BICYCLE,
-            DetectedActivity.TILTING,
-            DetectedActivity.UNKNOWN
-    };
     /*
      * ChatGPT usage: Yes
      * */
