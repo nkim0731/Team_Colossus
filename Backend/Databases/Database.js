@@ -113,7 +113,7 @@ class Database {
     // add events (array) to calendar
     // ChatGPT usage: Partial
     async addEvents(username, events) {
-        const userEvents = await UserModel.findOne({ username }).select('events');
+        const user = await UserModel.findOne({ username });
         const coursePattern = /^[A-Za-z]{4}\d{3}/;
         let newEvents = [];
         for (let e of events) {
@@ -130,10 +130,12 @@ class Database {
             }
             if (!included) newEvents.push(e);
         }
-		await UserModel.updateOne(
-            { username },
-            { $push: { events: { $each: newEvents } } }
-        );
+        user.events = [...user.events, ...newEvents];
+        await user.save();
+		// await UserModel.updateOne(
+        //     { username },
+        //     { $push: { events: { $each: newEvents } } }
+        // );
 	}
 
     // add day schedule to db
