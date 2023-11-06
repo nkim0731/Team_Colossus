@@ -26,7 +26,7 @@ app.put('/login', async (req, res) => {
 
     if (verifiedPayload) {
         // Check the criteria you mentioned
-        const { aud, iss, exp, hd, email } = verifiedPayload;
+        // const { aud, iss, exp, hd, email } = verifiedPayload;
 
         if (aud === process.env.CLIENT_ID 
             && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 

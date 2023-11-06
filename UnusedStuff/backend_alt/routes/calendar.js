@@ -1,6 +1,6 @@
 const express = require('express');
 const Joi = require('joi');
-const app = express();
+// const app = express();
 const router = express.Router();
 
 
@@ -73,9 +73,9 @@ module.exports = (db) => {
     }
 
     if (req.body.summary == "class"){
-      const updatedRequestBody = req.body.keys({
-        isThisAClass: Joi.boolean(),
-      });
+      // const updatedRequestBody = req.body.keys({
+      //   isThisAClass: Joi.boolean(),
+      // });
     }
 
     try {

@@ -10,7 +10,7 @@ const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
 //Import export variables from variables.js
-const { isHttps, isTest, test_calendoDB } = require('../variables.js');
+// const { isHttps, isTest, test_calendoDB } = require('../variables.js');
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
 

@@ -243,11 +243,11 @@ app.get('/auth/google/redirect', async (req, res) => {
         )
 
         if (refresh_token != null) {
-            let result = await User.findOneAndUpdate(
-                { username: userEmail },
-                { $set: { refresh_token: refresh_token } },
-                { new: true }
-            )
+            // let result = await User.findOneAndUpdate(
+            //     { username: userEmail },
+            //     { $set: { refresh_token: refresh_token } },
+            //     { new: true }
+            // )
         }
 
         console.log('updated user with new tokens : ', result);
@@ -313,7 +313,7 @@ app.get('/api/calendar/import', async (req, res) => {
 
     if (verifiedPayload) {
         // Check the criteria you mentioned
-        const { aud, iss, exp, hd, email } = verifiedPayload;
+        // const { aud, iss, exp, hd, email } = verifiedPayload;
 
         if (aud === process.env.CLIENT_ID 
             && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
@@ -499,12 +499,12 @@ const refreshTokenIfNecessary = async (userEmail) => {
 
 // Schemas needed for db
 const userSchema = require('./Schema/userSchema');
-const chatSchema = require('./Schema/chatSchema');
+// const chatSchema = require('./Schema/chatSchema');
 
 // For google auth
 const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
 
-const socketIO = require('socket.io');
+// const socketIO = require('socket.io');
 const mongoose = require('mongoose');
 const moment = require('moment');

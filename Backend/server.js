@@ -1,9 +1,9 @@
 // Requires
 const express = require('express');
-const http = require('http');
+// const http = require('http');
 const https = require('https');
 const fs = require('fs');
-const path = require('path');
+// const path = require('path');
 
 // Requires for defined interfaces
 const Scheduler = require('./Interfaces/Scheduler.js');
@@ -14,7 +14,7 @@ const db = require('./Databases/Database.js');
 require('dotenv').config({ path: `${__dirname}/.env` });
 
 //Import export variables from variables.js
-const { isHttps, isTest, test_calendoDB } = require('./variables.js');
+// const { isHttps, isTest, test_calendoDB } = require('./variables.js');
 
 const app = express();
 app.use(express.json());
@@ -30,7 +30,7 @@ if (isHttps) {
 
 // const server = http.createServer(app); // HTTP server for testing 
 
-const chatManager = new ChatManager(httpsServer); // start socketio service for groupchats
+// const chatManager = new ChatManager(httpsServer); // start socketio service for groupchats
 
 /*
 * API calls and calls to/from frontend go here

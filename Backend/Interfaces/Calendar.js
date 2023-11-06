@@ -2,27 +2,27 @@
 * Calendar algorithims and computation go here
 */
 const mongoose = require('mongoose');
-const db = require('../Databases/Database.js');
+// const db = require('../Databases/Database.js');
 const { google } = require('googleapis');
-const { Client } = require("@googlemaps/google-maps-services-js");
-const OAuth2 = google.auth.OAuth2;
+// const { Client } = require("@googlemaps/google-maps-services-js");
+// const OAuth2 = google.auth.OAuth2;
 
 require('dotenv').config({ path: `${__dirname}/../.env` });
 const googleAPIKey = process.env.GOOGLE_API_KEY;
 
 
 // Schema and Model for event
-const eventSchema = new mongoose.Schema({
-    eventName: String, //must
-    eventId: String,
-    eventType: String,
-    description: String,
-    start: Date, //must
-    end: Date, //must
-    hasChat: Boolean,
-    address: String, //must
-    gpsLocation: String,
-})
+// const eventSchema = new mongoose.Schema({
+//     eventName: String, //must
+//     eventId: String,
+//     eventType: String,
+//     description: String,
+//     start: Date, //must
+//     end: Date, //must
+//     hasChat: Boolean,
+//     address: String, //must
+//     gpsLocation: String,
+// })
 
 class Calendar {  
     constructor() {
@@ -32,16 +32,16 @@ class Calendar {
             process.env.REDIRECT_URL
         )
         
-        const googleCalendar = google.calendar({
-            version : "v3",
-            auth : googleAPIKey
-        });
+        // const googleCalendar = google.calendar({
+        //     version : "v3",
+        //     auth : googleAPIKey
+        // });
         
         
-        const googleUser = google.oauth2({
-            version : "v2",
-            auth : googleAPIKey
-        });
+        // const googleUser = google.oauth2({
+        //     version : "v2",
+        //     auth : googleAPIKey
+        // });
         
         const scopes = [
             'https://www.googleapis.com/auth/calendar',
@@ -49,15 +49,15 @@ class Calendar {
         ];
         
         // Generate a url that asks permissions for the two scopes defined above
-        const authorizationUrl = oauth2Client.generateAuthUrl({
-            // 'online' (default) or 'offline' (gets refresh_token)
-            access_type: 'offline',
-            /** Pass in the scopes array defined above.
-                 * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
-            scope: scopes,
-            // Enable incremental authorization. Recommended as a best practice.
-            include_granted_scopes: true
-        });
+        // const authorizationUrl = oauth2Client.generateAuthUrl({
+        //     // 'online' (default) or 'offline' (gets refresh_token)
+        //     access_type: 'offline',
+        //     /** Pass in the scopes array defined above.
+        //          * Alternatively, if only one scope is needed, you can pass a scope URL as a string */
+        //     scope: scopes,
+        //     // Enable incremental authorization. Recommended as a best practice.
+        //     include_granted_scopes: true
+        // });
     }
 
     async importCalendar(token) {

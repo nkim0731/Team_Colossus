@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
@@ -116,7 +116,7 @@ router.delete('/:username/preferences', async (req, res) => {
     // Clear user preferences
     user.preferences = null;
 
-    const updatedUser = await user.save();
+    // const updatedUser = await user.save();
 
     res.json({ message: 'User preferences deleted' });
   } catch (error) {
