@@ -25,8 +25,6 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import com.google.android.gms.location.ActivityRecognitionClient;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
