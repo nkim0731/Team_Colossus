@@ -70,7 +70,7 @@ class Database {
 
         if (payload) {
             // Check the criteria you mentioned
-            const { aud, iss, exp, hd, email } = payload;
+            let { aud, iss, exp, hd, email } = payload;
     
             if (aud === audience
                 && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
