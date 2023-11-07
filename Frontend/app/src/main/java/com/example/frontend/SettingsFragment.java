@@ -3,15 +3,11 @@ package com.example.frontend;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Switch;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreferenceCompat;
 
 import org.json.JSONException;
@@ -21,7 +17,7 @@ import org.json.JSONObject;
  * Number of methods: 2
  * */
 public class SettingsFragment extends PreferenceFragmentCompat {
-    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
+//    private SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener;
 
     private final String server_url = ServerConfig.SERVER_URL;
     private final String TAG = "Settings";
@@ -50,7 +46,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         SwitchPreferenceCompat eventAlarm = findPreference("event_alarm");
         SwitchPreferenceCompat trafficAlerts = findPreference("traffic_alerts");
         SwitchPreferenceCompat weatherAlerts = findPreference("weather_alerts");
-        SwitchPreferenceCompat vibrationAlerts = findPreference("vibration_alerts");
+//        SwitchPreferenceCompat vibrationAlerts = findPreference("vibration_alerts");
         ListPreference commuteMethod = findPreference("commute_method");
 
         // set values from data obtained in database for consistency
@@ -114,7 +110,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
         //Handle preferences changes
         SharedPreferences sharedPreferences = getPreferenceManager().getSharedPreferences();
 
-        preferenceChangeListener = (sharedPrefs, key) -> {
+        SharedPreferences.OnSharedPreferenceChangeListener preferenceChangeListener = (sharedPrefs, key) -> {
             JSONObject putData = new JSONObject();
             JSONObject preferencesObj = new JSONObject();
             try {
@@ -141,7 +137,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
                     }
                 });
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d(TAG,"Preference JSON error: "+ e.getMessage());
             }
             Log.d("Settings",key+" change");
         };

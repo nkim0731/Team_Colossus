@@ -2,7 +2,6 @@ package com.example.frontend;
 
 import android.icu.text.SimpleDateFormat;
 
-import java.util.Date;
 /*
  * Number of methods: 11
  * */

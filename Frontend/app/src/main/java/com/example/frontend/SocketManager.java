@@ -1,7 +1,5 @@
 package com.example.frontend;
 
-import android.util.Log;
-
 import java.net.URISyntaxException;
 
 import io.socket.client.IO;

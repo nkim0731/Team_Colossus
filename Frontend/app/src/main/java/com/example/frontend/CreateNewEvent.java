@@ -17,7 +17,7 @@ public class CreateNewEvent extends AppCompatActivity {
     private EditText eventLocation;
     private EditText eventStartTime;
     private EditText eventEndTime;
-    private Button submit;
+//    private Button submit;
     private Bundle userData;
     private HttpsRequest httpsRequest;
     private final String server_url = ServerConfig.SERVER_URL;
@@ -33,7 +33,7 @@ public class CreateNewEvent extends AppCompatActivity {
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
 
-        submit = findViewById(R.id.button_submit);
+        Button submit = findViewById(R.id.button_submit);
         submit.setOnClickListener(view -> {
             eventName = findViewById(R.id.et_eName);
             eventLocation = findViewById(R.id.et_location);

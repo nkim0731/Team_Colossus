@@ -1,6 +1,5 @@
 package com.example.frontend;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,8 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.frontend.EventData;
-import com.example.frontend.R;
+
 
 import java.util.List;
 
@@ -19,13 +17,13 @@ import java.util.List;
  * */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private List<EventData> eventList;
-    private Context context;
+//    private Context context;
     /*
      * ChatGPT usage: No
      * */
-    public EventAdapter(List<EventData> eventList, Context context) {
+    public EventAdapter(List<EventData> eventList) {
         this.eventList = eventList;
-        this.context = context;
+//        this.context = context;
     }
 
 

@@ -23,13 +23,13 @@ import java.util.List;
 public class EventDisplayActivity extends AppCompatActivity {
     private final String TAG = "EventDisplayActivity";
     private final String server_url = ServerConfig.SERVER_URL;
-    private EventAdapter eventAdapter;
+//    private EventAdapter eventAdapter;
     private List<EventData> dataArrayList = new ArrayList<>(); // list of received events
 
-    private RecyclerView rv_eventList;
+//    private RecyclerView rv_eventList;
 
-    private Bundle userData;
-    private HttpsRequest httpsRequest;
+//    private Bundle userData;
+//    private HttpsRequest httpsRequest;
 
     /*
      * ChatGPT usage: Partial
@@ -40,13 +40,13 @@ public class EventDisplayActivity extends AppCompatActivity {
         setContentView(R.layout.activity_schedule);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        userData = getIntent().getExtras();
-        httpsRequest = new HttpsRequest();
+        Bundle userData = getIntent().getExtras();
+        HttpsRequest httpsRequest = new HttpsRequest();
 
         // initialize recyclerView
-        rv_eventList = findViewById(R.id.rv_eventList);
+        RecyclerView rv_eventList = findViewById(R.id.rv_eventList);
         rv_eventList.setLayoutManager(new LinearLayoutManager(this));
-        eventAdapter = new EventAdapter(dataArrayList,this);
+        EventAdapter eventAdapter = new EventAdapter(dataArrayList);
         rv_eventList.setAdapter(eventAdapter);
 
         // temporary samples
