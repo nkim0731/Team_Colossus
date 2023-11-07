@@ -77,7 +77,7 @@ class Database {
                 && exp > Math.floor(Date.now() / 1000)
                 && email == useremail) 
             {
-                hd++; 
+                // hd++; 
                 // The ID token is valid and satisfies the criteria
                 console.log("\n id_token verified");
                 return true;
