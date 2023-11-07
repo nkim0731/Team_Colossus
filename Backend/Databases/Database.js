@@ -9,6 +9,11 @@ const chatSchema = require('../Schema/chatSchema');
 const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
+
+// For google auth
+const { google } = require('googleapis');
+const { OAuth2Client } = require('google-auth-library');
+
 //Import export variables from variables.js
 // const { isHttps, isTest, test_calendoDB } = require('../variables.js');
 
@@ -29,9 +34,13 @@ const mongoURI = 'mongodb://localhost:27017/calendoDB';
 //     mongoURI = 'mongodb://localhost:27017/calendoDB';
 // }
 
+
+
 class Database {
     constructor() {
         this.connect();
+        
+        const authClient = new OAuth2Client();
     }
 
     // ChatGPT usage: No
@@ -51,6 +60,34 @@ class Database {
     // ChatGPT usage: No
     async getUserById(id) {
         return await UserModel.findOne({ userId: id });
+    }
+
+    async verifyUser(id_token, useremail, audience) {
+        try {
+            const ticket = await this.authClient.verifyIdToken({
+                idToken: id_token
+            });
+            const payload = ticket.getPayload();
+
+            if (payload) {
+                // Check the criteria you mentioned
+                const { aud, iss, exp, hd, email } = verifiedPayload;
+        
+                if (aud === audience
+                    && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
+                    && exp > Math.floor(Date.now() / 1000)
+                    && email == useremail) 
+                {
+                    // The ID token is valid and satisfies the criteria
+                    console.log("\n id_token verified");
+                    return true;
+                }
+            }
+                    
+        } catch(e) {
+            console.error('verifyIdToken() ID token verification failed:', e);
+            return false;
+        }
     }
 
     // Add a new user to Users Database
