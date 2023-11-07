@@ -239,7 +239,7 @@ app.get('/api/calendar/import', async (req, res) => {
         
                 const result = await User.findOneAndUpdate(
                     { username: useremail },
-                    { $set: { events: extractedEvents } },
+                    { events: extractedEvents },
                     { new: true } // This option returns the updated document
                 );
         
@@ -438,16 +438,11 @@ const authorizationUrl = oauth2Client.generateAuthUrl({
 
 
 const verifyIdToken = async (id_token) => {
-    try {
-        const ticket = await authClient.verifyIdToken({
-            idToken: id_token
-        });
-        const payload = ticket.getPayload();
-        return payload;
-    } catch(e) {
-        console.error('verifyIdToken() ID token verification failed:', e);
-        return false;
-    }
+    const ticket = await authClient.verifyIdToken({
+        idToken: id_token
+    });
+    const payload = ticket.getPayload();
+    return payload;
 }
 
 
@@ -509,7 +504,7 @@ app.get('/auth/google/token', async (req, res) => {
     // Assuming you have a User model and user email stored in 'userEmail'
     const result = await User.findOneAndUpdate(
         { username: useremail },
-        { $set: { id_token: id_token, refresh_token: refresh_token } },
+        { id_token: id_token, refresh_token: refresh_token },
         { new: true } // This option returns the updated document
     );
 
@@ -580,7 +575,7 @@ oauth2Client.on('tokens', async (tokens) => {
             // Assuming you have a User model and user email stored in 'userEmail'
             await User.findOneAndUpdate(
                 { username: userEmail },
-                { $set: { access_token: tokens.access_token, refresh_token: tokens.refresh_token } },
+                { access_token: tokens.access_token, refresh_token: tokens.refresh_token},
                 { new: true }
             ).then(updatedUser => {
                 console.log('\nOAuthClient Listener updated user with new refresh_token : ', updatedUser);
@@ -627,14 +622,14 @@ app.get('/auth/google/redirect', async (req, res) => {
 
         let result = await User.findOneAndUpdate(
             { username: userEmail },
-            { $set: { access_token: access_token, id_token: id_token, google_token : tokens } },
+            { access_token: access_token, id_token: id_token, google_token : tokens },
             { new: true }
         )
 
         if (refresh_token != null) {
             let result = await User.findOneAndUpdate(
                 { username: userEmail },
-                { $set: { refresh_token: refresh_token } },
+                { refresh_token: refresh_token },
                 { new: true }
             )
         }
