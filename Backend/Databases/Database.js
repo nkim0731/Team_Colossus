@@ -70,13 +70,12 @@ class Database {
 
         if (payload) {
             // Check the criteria you mentioned
-            let { aud, iss, exp, hd, email } = payload;
-            // aud = payload.aud;
-            // iss = payload.iss;
-            // exp = payload.exp;
-            // email = payload.email;
+            // let { aud, iss, exp, hd, email } = payload;
+            let aud = payload.aud;
+            let iss = payload.iss;
+            let exp = payload.exp;
+            let email = payload.email;
             
-    
             if (aud === audience
                 && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
                 && exp > Math.floor(Date.now() / 1000)
