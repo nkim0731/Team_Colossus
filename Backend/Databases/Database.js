@@ -75,6 +75,7 @@ class Database {
             iss = payload.iss;
             exp = payload.exp;
             email = payload.email;
+            
     
             if (aud === audience
                 && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
