@@ -1,54 +1,40 @@
 package com.example.frontend;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.socket.client.IO;
+
 import io.socket.client.Socket;
-import io.socket.emitter.Emitter;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.RequestBody;
-import okhttp3.Request;
-import okhttp3.Response;
+
+
 /*
  * Number of methods: 3
  * */
 public class GroupChat extends AppCompatActivity {
 
-    private Button sendButton;
+//    private Button sendButton;
 
     private Socket mSocket;
-    private Emitter.Listener onMessage;
+//    private Emitter.Listener onMessage;
     private EditText messageEditText;
 
     private RecyclerView messageRecyclerView;
     private MessageAdapter messageAdapter;
     private List<Message> messages; //record the messages of chat room
-    private Bundle userData;
+//    private Bundle userData;
     private HttpsRequest httpsRequest;
     private String username;
 
@@ -62,7 +48,7 @@ public class GroupChat extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_group_chat);
 
-        userData = getIntent().getExtras();
+        Bundle userData = getIntent().getExtras();
         String chatName = userData.getString("chatName");
         username = userData.getString("username");
 
@@ -70,7 +56,7 @@ public class GroupChat extends AppCompatActivity {
 
         //set up socket connection to server
         mSocket = SocketManager.getSocket();
-        mSocket.emit("joinChatroom", chatName);
+        mSocket.emit("joinChatroom", username, chatName);
 
         // listener for new messages from other users
         mSocket.on("message", args -> {
@@ -82,7 +68,7 @@ public class GroupChat extends AppCompatActivity {
                         false);
                 updateMessages(m);
             } catch (JSONException e) {
-                throw new RuntimeException(e);
+                Log.d(TAG,"Message JSON error: "+e.getMessage());
             }
         });
 
@@ -101,7 +87,7 @@ public class GroupChat extends AppCompatActivity {
 
         //initialize message view
         messageEditText = findViewById(R.id.editTextSend);
-        sendButton = findViewById(R.id.buttonSend);
+        Button sendButton = findViewById(R.id.buttonSend);
 
 
         //send button callback

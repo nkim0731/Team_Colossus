@@ -1,24 +1,17 @@
 package com.example.frontend;
 
 import android.os.Bundle;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.preference.PreferenceFragmentCompat;
 
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.textfield.MaterialAutoCompleteTextView;
-import com.google.android.material.textfield.TextInputLayout;
 
 /*
  * Number of methods: 2
  * */
 public class PreferenceActivity extends AppCompatActivity {
-    private final String TAG = "PreferenceActivity";
-    private Bundle userData;
+//    private final String TAG = "PreferenceActivity";
+//    private Bundle userData;
 
     /*
      * ChatGPT usage: Partial
@@ -26,7 +19,7 @@ public class PreferenceActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        userData = getIntent().getExtras();
+        Bundle userData = getIntent().getExtras();
 
         SettingsFragment settingsFragment = new SettingsFragment();
         settingsFragment.setArguments(userData);

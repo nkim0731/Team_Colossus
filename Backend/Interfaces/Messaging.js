@@ -29,9 +29,15 @@ class ChatManager {
             console.log('A user connected');
 
             // ChatGPT usage: Yes
-            socket.on('joinChatroom', (chatName) => {
-                socket.join(chatName);
-                socket.chatName = chatName;
+            socket.on('joinChatroom', async (username, chatName) => {
+                // validate user is a part of the chatroom
+                const user = await db.getUser(username);
+                const chatExists = user.events.find(e => e.eventName === chatName);
+
+                if (chatExists) { // validate chat exists within user events array
+                    socket.join(chatName);
+                    socket.chatName = chatName;
+                }
             });
 
             // ChatGPT usage: Yes
@@ -55,8 +61,8 @@ class ChatManager {
                     const seconds = String(now.getSeconds()).padStart(2, '0');
 
                     let messageObj = {
-                        sender: sender,
-                        message: message,
+                        sender,
+                        message,
                         timestamp: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
                     }
                     // Broadcast the message to all sockets in the chatroom except the sender
