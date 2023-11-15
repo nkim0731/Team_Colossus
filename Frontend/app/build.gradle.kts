@@ -52,4 +52,8 @@ dependencies {
     implementation ("com.google.android.gms:play-services-location:17.0.0")
 
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    androidTestImplementation("androidx.test:runner:1.4.0")
+    androidTestImplementation("androidx.test:rules:1.4.0")
+
 }
