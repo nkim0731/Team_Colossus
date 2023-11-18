@@ -66,7 +66,9 @@ class Database {
     async getUserById(id) {
         return await UserModel.findOne({ userId: id });
     }
-
+    
+    // this function doesn't use the database
+    // should be moved to new file/class for google auth if have time
     async verifyUser(id_token, useremail, audience) {
         const ticket = await this.authClient.verifyIdToken({
             idToken: id_token
