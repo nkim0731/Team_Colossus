@@ -83,6 +83,7 @@ class Database {
                 return true;
             }
         }
+        return false;
     }
 
     // Add a new user to Users Database
