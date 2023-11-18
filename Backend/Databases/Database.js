@@ -19,7 +19,12 @@ const { OAuth2Client } = require('google-auth-library');
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
-const mongoURI = 'mongodb://localhost:27017/calendoDB';
+// For loading env variables
+const path = require('path');
+const envFilePath = path.join(__dirname ,'/../.env');
+require('dotenv').config({ path: envFilePath });
+
+const mongoURI = process.env.MONGODB_URI;
 
 // var mongoURI = null;
 // if (isTest) {
