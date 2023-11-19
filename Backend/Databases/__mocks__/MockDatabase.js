@@ -10,12 +10,13 @@ class MockDatabase {
     }
 
     async getUser(useremail) {
+        if (useremail === 'baduser') throw new Error('Test DB issue'); // simulate error with db (findOne fails for some reason)
         return this.users[useremail] || null;
     }
     
     async addUser(user) {
         if (user.password === undefined) {
-            user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless lol
+            user.password = 'Register from Google';
         }
         // default user preferences on account creation
         user.preferences = { 

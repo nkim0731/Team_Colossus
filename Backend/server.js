@@ -1,6 +1,6 @@
 // Requires
 const express = require('express');
-// const http = require('http');
+const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -10,8 +10,6 @@ const Scheduler = require('./Interfaces/Scheduler.js');
 const db = require('./Databases/Database.js');
 
 // For loading env variables
-const path = require('path');
-
 const envFilePath = path.join(__dirname, '.env');
 require('dotenv').config({ path: envFilePath });
 
@@ -23,25 +21,18 @@ require('dotenv').config({ path: envFilePath });
 const app = express();
 app.use(express.json());
 
-// var httpsServer = null;
-// if (isHttps) {
-//     const options = {
-//         key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
-//         cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
-//     };
-//     httpsServer = https.createServer(options, app);
-// }
+// not using vm, https not needed
+// const options = {
+//     key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
+//     cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
+// };
+// const httpsServer = https.createServer(options, app);
 
-const options = {
-    key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
-    cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
-};
-const httpsServer = https.createServer(options, app);
-
-// const server = http.createServer(app); // HTTP server for testing 
+const server = http.createServer(app); // HTTP server for testing 
 
 // Start socket io service for group chats
-require('./Interfaces/Messaging.js')(httpsServer);
+// require('./Interfaces/Messaging.js')(httpsServer);
+require('./Interfaces/Messaging.js')(server);
 
 
 // DO NOT DELETE THIS
@@ -58,13 +49,15 @@ app.use((req, res, next) => {
 
     console.log("\nExtracted id_token : " + id_token);
     console.log("Extracted refresh_token : " + refresh_token + "\n");
-    if (authHeader) {
-        const access_token = authHeader.split(' ')[1];
-        const refresh_token = authHeader.split(' ')[2]; 
-        req.headerParser.access_token = access_token; // Attach the token to the request object
-        req.headerParser.refresh_token = refresh_token; // Attach the token to the request object
-        console.log("req.access_token", req.access_token);
-    }
+
+    /* authHeader here is not defined, causing errors */
+    // if (authHeader) { 
+        // const access_token = authHeader.split(' ')[1];
+        // const refresh_token = authHeader.split(' ')[2]; 
+        // req.headerParser.access_token = access_token; // Attach the token to the request object
+        // req.headerParser.refresh_token = refresh_token; // Attach the token to the request object
+        // console.log("req.access_token", req.access_token);
+    // }
     next(); // Continue to the next middleware or route
   });
 
@@ -156,11 +149,12 @@ app.route('/api/calendar')
 // get calendar events by a specific day
 // ChatGPT usage: Partial
 app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
-    const useremail = req.query.user;
-    const id_token = req.headerParser.id_token;
+    const user = req.query.user;
+    // const id_token = req.headerParser.id_token;
+    const id_token = req.id_token;
     const day = new Date(req.query.day + " 10:10:10");
     try {
-        if (!db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, user, process.env.CLIENT_ID)) { // async function returns a promise NEEDS AWAIT
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const calendar = await db.getCalendar(user);
@@ -255,4 +249,7 @@ app.get('/api/chatrooms', async (req, res) => {
 const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
     
-httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
+// httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
+server.listen(3000, () => console.log('Server started on port 3000'));
+
+module.exports = server;

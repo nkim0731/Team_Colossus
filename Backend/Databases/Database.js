@@ -50,9 +50,8 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
-        console.log('Database class mongoURL : ', mongoURI);
         await mongoose.connect(mongoURI);
-        console.log('Database class Connected to User MongoDB');   
+        console.log('Database connected to MongoDB at: ', mongoURI);   
     }
 
     // Get data for user by username/email (unique)
@@ -67,8 +66,6 @@ class Database {
         return await UserModel.findOne({ userId: id });
     }
     
-    // this function doesn't use the database
-    // should be moved to new file/class for google auth if have time
     async verifyUser(id_token, useremail, audience) {
         const ticket = await this.authClient.verifyIdToken({
             idToken: id_token
@@ -76,7 +73,6 @@ class Database {
         const payload = ticket.getPayload();
 
         if (payload) {
-            // Check the criteria you mentioned
             let { aud, iss, exp, email } = payload;
     
             if (aud === audience
