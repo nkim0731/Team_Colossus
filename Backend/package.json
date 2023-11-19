@@ -29,7 +29,7 @@
     "socket.io-client": "^4.7.2"
   },
   "jest": {
-    "coverage": true,
+    "collectCoverage": false,
     "collectCoverageFrom": [
       "./**/*.js"
     ],

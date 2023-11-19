@@ -82,4 +82,8 @@ class ChatManager {
     }
 }
 
-module.exports = ChatManager;
+function initializeChatManager(server) {
+    return new ChatManager(server);
+}
+  
+module.exports = initializeChatManager;
