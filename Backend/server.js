@@ -9,8 +9,6 @@ const path = require('path');
 const Scheduler = require('./Interfaces/Scheduler.js');
 const db = require('./Databases/Database.js');
 
-// For loading env variables
-const path = require('path');
 
 const envFilePath = path.join(__dirname, '.env');
 require('dotenv').config({ path: envFilePath });
@@ -32,16 +30,27 @@ app.use(express.json());
 //     httpsServer = https.createServer(options, app);
 // }
 
+
+// This is commented for testing purpose
+// const options = {
+//     key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
+//     cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
+// };
+
+const sslFilePath = path.join(__dirname, '..', '..', 'ssl/');
+const key = fs.readFileSync(sslFilePath + "key.pem", 'utf8');
+const cert = fs.readFileSync(sslFilePath + "cert.pem", 'utf8');
 const options = {
-    key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
-    cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
+    key: key,
+    cert: cert,
+    passphrase: 'Colossus3210' // only if your key is passphrase protected
 };
 const httpsServer = https.createServer(options, app);
 
 // const server = http.createServer(app); // HTTP server for testing 
 
 // Start socket io service for group chats
-require('./Interfaces/Messaging.js')(httpsServer);
+// require('./Interfaces/Messaging.js')(httpsServer);
 
 
 // DO NOT DELETE THIS
@@ -255,4 +264,4 @@ app.get('/api/chatrooms', async (req, res) => {
 const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
     
-httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
+//httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });

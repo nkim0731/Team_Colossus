@@ -50,6 +50,7 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
+        let mongoURI = process.env.MONGO_URI;
         console.log('Database class mongoURL : ', mongoURI);
         await mongoose.connect(mongoURI);
         console.log('Database class Connected to User MongoDB');   

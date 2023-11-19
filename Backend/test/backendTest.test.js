@@ -11,13 +11,22 @@ require('dotenv').config({ path: envFilePath });
 /*
 So:
     working on unit test for 
-    '/login/google'
-    '/api/preferences'
-    '/api/calendar/import'
-    '/api/calendar'
-
+    '/login/google' POST
+    '/api/preferences' POST GET
+    '/api/calendar' POST GET
 
 */
+
+// Mock the entire Database class
+jest.mock('../Databases/Database.js', () => {
+    return jest.fn().mockImplementation(() => {
+      return {
+        getUser: jest.fn().mockResolvedValue({ username: 'testuser', email: 'test@example.com' })
+        // Mock other methods if needed
+      };
+    });
+  });
+  
 
 describe('POST /login/google', () => {
   let mongoServer;
@@ -29,7 +38,8 @@ describe('POST /login/google', () => {
     const mongoUri = await mongoServer.getUri();
 
     // Set the MongoDB URI for your application to the in-memory server
-    process.env.MONGODB_URI = mongoUri;
+    process.env.MONGO_URI = mongoUri;
+    console.log('process.env.MONGO_URI is set : ', process.env.MONGO_URI)
 
     // Create a MongoDB client and database instance
     const { MongoClient } = require('mongodb');

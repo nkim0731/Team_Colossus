@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   backend-tests:
@@ -16,10 +19,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16.20.1
+
+      - name: Change to Backend Directory
+        run: cd Backend
 
       - name: Install dependencies
         run: npm install
+        working-directory: /Backend
 
       - name: Run tests
         run: npm test
+        working-directory: /Backend

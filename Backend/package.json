@@ -30,8 +30,13 @@
   },
   "jest": {
     "coverage": true,
-    "collectCoverageFrom": ["./**/*.js"],
-    "coverageReporters": ["text", "html"]
+    "collectCoverageFrom": [
+      "./**/*.js"
+    ],
+    "coverageReporters": [
+      "text",
+      "html"
+    ]
   },
   "devDependencies": {
     "jest": "^29.7.0",
