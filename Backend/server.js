@@ -264,7 +264,6 @@ app.get('/api/chatrooms', async (req, res) => {
     }
 });
 
-
 const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
     

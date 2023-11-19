@@ -43,18 +43,20 @@ const mongoURI = process.env.MONGODB_URI;
 
 class Database {
     constructor() {
-        this.connect();
+        // Run connect() if there is a MONGO_URI exists in env file
+        //this.connect();
         
         this.authClient = new OAuth2Client();
     }
 
     // ChatGPT usage: No
-    async connect() {
-        let mongoURI = process.env.MONGO_URI;
+    async connect(uri) {
+        const mongoURI = uri || process.env.MONGO_URI;
         console.log('Database class mongoURL : ', mongoURI);
         await mongoose.connect(mongoURI);
-        console.log('Database connected to MongoDB at: ', mongoURI);   
+        console.log('Database class Connected to User MongoDB');
     }
+
 
     // Get data for user by username/email (unique)
     // ChatGPT usage: Partial

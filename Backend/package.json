@@ -28,16 +28,6 @@
     "socket.io": "^4.7.2",
     "socket.io-client": "^4.7.2"
   },
-  "jest": {
-    "collectCoverage": false,
-    "collectCoverageFrom": [
-      "./**/*.js"
-    ],
-    "coverageReporters": [
-      "text",
-      "html"
-    ]
-  },
   "devDependencies": {
     "jest": "^29.7.0",
     "mongodb-memory-server": "^9.1.1",
