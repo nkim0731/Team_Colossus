@@ -37,7 +37,7 @@ const server = http.createServer(app); // HTTP server for testing
 
 // Start socket io service for group chats
 // require('./Interfaces/Messaging.js')(httpsServer);
-require('./Interfaces/Messaging.js')(server);
+const ChatMangaer = require('./Interfaces/Messaging.js')(server);
 
 
 // Important header parser middleware for user verification and sign in 
@@ -264,4 +264,8 @@ const host = "calendo.westus2.cloudapp.azure.com";
 // httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
 server.listen(3000, () => console.log('Server started on port 3000'));
 
+// function cleanUp() {
+//     ChatMangaer.closeSocket();
+//     server.close();
+// }
 module.exports = server;

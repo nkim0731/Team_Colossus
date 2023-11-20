@@ -144,19 +144,13 @@ class Database {
     // update preferences for user in database
     // ChatGPT usage: Partial
     async updatePreferences(user, preferences) {
-        if (await this.userExists(user.username) == false) {
+        if (await this.userExists(user) == false) {
             throw new Error("No such user exists");
         }
-        let newUser = await UserModel.findOne({ username: user });
+        let updatedUser = await UserModel.findOne({ username: user });
 
-        try {
-            newUser.preferences = deepMerge(newUser.preferences, preferences);
-            await newUser.save();
-        } catch (e) {
-            let errorMessage = "Error updating preferences: " + e.message;
-            console.error(errorMessage);
-            throw e;
-        }
+        updatedUser.preferences = deepMerge(updatedUser.preferences, preferences);
+        await updatedUser.save();
     }
 
     /*

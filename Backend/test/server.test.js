@@ -1,8 +1,3 @@
-/* 
-    charles backend tests
-    move this out of Backend folder when testing
-    move it back when pushing
-*/
 const server = require('../server.js');
 const request = require('supertest');
 
@@ -12,10 +7,6 @@ const Scheduler = require('../Interfaces/Scheduler.js');
 // mock database functions to only test endpoint functionalities
 jest.mock('../Databases/Database.js');
 
-
-beforeEach(async () => {
-    jest.clearAllMocks(); // Clear mocks before each test
-});
 
 const today = new Date();
 const mockEvents = [

@@ -1,7 +1,6 @@
 /* For testing sockets in Messaging.js */
 // https://socket.io/docs/v4/testing/
 
-// DONE 100% ALL COVERAGE
 const { createServer } = require("node:http");
 const io = require('socket.io-client');
 const initializeChatManager = require('../Interfaces/Messaging.js');
@@ -11,13 +10,15 @@ jest.mock('../Databases/Database.js');
 
 
 describe('Test socket server group chat', () => {
-    let chatManager, clientSocket;
+    let chatManager, clientSocket, server;
 
     beforeEach((done) => {
-        const server = createServer();
+        server = createServer();
         chatManager = initializeChatManager(server);
-        server.listen(8081, () => {
-            clientSocket = io('http://localhost:8081');
+
+        const testPort = 8080
+        server.listen(testPort, () => {
+            clientSocket = io(`http://localhost:${testPort}`);
             clientSocket.on('connect', () => { done(); });
         });
     });
@@ -26,6 +27,10 @@ describe('Test socket server group chat', () => {
         clientSocket.disconnect();
         chatManager.closeSocket();
     });
+
+    // afterAll(() => {
+    //     server.close();
+    // })
 
     const user = 'user@gmail.com';
     const mockChat = 'cpen321';
