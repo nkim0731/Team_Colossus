@@ -20,7 +20,7 @@ const path = require('path');
 const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
-const mongoURI = process.env.MONGODB_URI;
+const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/test_calendoDB";
 
 class Database {
     constructor() {
