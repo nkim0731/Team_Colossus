@@ -12,34 +12,10 @@ const Scheduler = require('../Interfaces/Scheduler.js');
 // mock database functions to only test endpoint functionalities
 jest.mock('../Databases/Database.js');
 
-// Need this for the Jest to correctly work, and terminate at the end
-// Right now Jest test doesnt terminate correctly
-//let mongoServer;
-beforeAll(async () => {
-    // mongoServer = await MongoMemoryServer.create();
-    // const mongoUri = mongoServer.getUri();
-    // //console.log('MONGO_URI : ', mongoUri);
-    // await db.connect(mongoUri); 
-    // await mongoose.connect(mongoUri, {
-    //     useNewUrlParser: true,
-    //     useUnifiedTopology: true,
-    // });
-
-});
-
-afterAll(async () => {
-    // await mongoose.disconnect();
-    // await mongoServer.stop();
-});
-
 
 beforeEach(async () => {
     jest.clearAllMocks(); // Clear mocks before each test
-    // await mongoose.connection.db.dropDatabase();
-    // console.log('Database dropped');
 });
-
-
 
 const today = new Date();
 const mockEvents = [
