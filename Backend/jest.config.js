@@ -1,13 +1,16 @@
-module.exports = {
-    // Write all your JEST configurations here.    
+module.exports = {   
     collectCoverage: true,
     collectCoverageFrom: [
-        "./**/*.js",
-        "!**/coverage/**",
+        "./**/*.js"
     ],
     coverageReporters: [
         "text",
         "html"
+    ],
+    coveragePathIgnorePatterns: [
+        '/node_modules/',
+        '/coverage/',
+        'jest.config.js'
     ],
 };
       

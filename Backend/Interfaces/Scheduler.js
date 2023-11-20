@@ -15,7 +15,7 @@ class Scheduler {
     // get direction to an event from position when called
     // ChatGPT usage: Partial
     async getDirections(origin, event, preferences) {
-        
+
         let params = {
             origin,
             destination: event.address,
@@ -43,29 +43,6 @@ class Scheduler {
     // create schedule with routes for events taking place today
     // ChatGPT usage: Partial
     async createDaySchedule(events, origin, preferences) { // origin is user home location
-        // callback for sort, optimize for shortest duration, least steps, earliest arrival
-        function compareRoutes(a, b) {
-            // compare by duration
-            if (a.legs[0].duration.value < b.legs[0].duration.value) {
-                return -1;
-            } else if (a.legs[0].duration.value > b.legs[0].duration.value) {
-                return 1;
-            }
-            // compare by steps, if duration is equal
-            if (a.legs[0].steps.length < b.legs[0].steps.length) {
-                return -1;
-            } else if (a.legs[0].steps.length > b.legs[0].steps.length) {
-                return 1;
-            }
-            // compare arrival time to then use earliest arrival
-            if (a.legs[0].arrival_time.value < b.legs[0].arrival_time.value) {
-                return -1;
-            } else if (a.legs[0].arrival_time.value > b.legs[0].arrival_time.value) {
-                return 1;
-            }
-            return 0; // route a and b are equal in duration and steps
-        }
-
         const today = new Date();
         const dayEvents = events.filter(e => {
             const eventDate = new Date(e.start);
@@ -83,7 +60,7 @@ class Scheduler {
                 const directions = await this.getDirections(origin, dayEvents[i], preferences);
                 let routes = directions.routes;
                 // routes sorted by lowest duration, then steps and time of arrival, optimal is routes[0]
-                routes.sort(compareRoutes); 
+                routes.sort(this.compareRoutes); 
                 const route = {
                     distance: routes[0].legs[0].distance,
                     duration: routes[0].legs[0].duration,
@@ -98,6 +75,29 @@ class Scheduler {
             }
         }
         return schedule;
+    }
+
+    // callback for sort, optimize for shortest duration, least steps, earliest arrival
+    compareRoutes(a, b) {
+        // compare by duration
+        if (a.legs[0].duration.value < b.legs[0].duration.value) {
+            return -1;
+        } else if (a.legs[0].duration.value > b.legs[0].duration.value) {
+            return 1;
+        }
+        // compare by steps, if duration is equal
+        if (a.legs[0].steps.length < b.legs[0].steps.length) {
+            return -1;
+        } else if (a.legs[0].steps.length > b.legs[0].steps.length) {
+            return 1;
+        }
+        // compare arrival time to then use earliest arrival
+        if (a.legs[0].arrival_time.value < b.legs[0].arrival_time.value) {
+            return -1;
+        } else if (a.legs[0].arrival_time.value > b.legs[0].arrival_time.value) {
+            return 1;
+        }
+        return 0; // route a and b are equal in duration and steps
     }
 }
 

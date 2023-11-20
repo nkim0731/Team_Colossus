@@ -1,171 +1,383 @@
 /* 
     charles backend tests
-    for So, just move this file out of backend when doing your own test if it interferes
-    merge with So file once done, and set "collectCoverage" to true and check for 100%
-
-    test endpoints
-    /api/calendar/by_day
-    /api/calendar/day_schedule
-    /api/message_history
-    /api/chatrooms
-    Message sockets
-
-
-So:
-    working on unit test for 
-    '/login/google' POST
-    '/api/preferences' POST GET
-    '/api/calendar' POST GET
+    move this out of Backend folder when testing
+    move it back when pushing
 */
 const server = require('../server.js');
 const request = require('supertest');
-var db = require('../Databases/Database.js');
-const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
 
-let mongoServer;
-beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    //console.log('MONGO_URI : ', mongoUri);
-    await db.connect(mongoUri); 
-    await mongoose.connect(mongoUri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    });
-});
+const db = require('../Databases/Database.js');
+const Scheduler = require('../Interfaces/Scheduler.js');
 
-afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
-});
+// mock database functions to only test endpoint functionalities
+jest.mock('../Databases/Database.js');
 
-
-beforeEach(async () => {
-    // This is needed when we have the mock functions for db
-    // This loops through all properties and resets mock functions 
-    Object.values(db).forEach((property) => {
-        // Check if the property is a Jest mock function
-        if (typeof property.mockClear === 'function') {
-            property.mockClear();
+// Interface GET POST /api/calendar/day_schedule
+describe('create and get day schedule for a user', () => {
+    const today = new Date();
+    const mockEvents = [
+        { 
+            eventName: 'cpen321',
+            start: today.toISOString(),
+            end: '2023-11-30T12:00:00Z',
+            address: '2357 Main Mall, Vancouver',
+        },
+        { 
+            eventName: 'event2',
+            start: today.toISOString(),
+            end: '2023-11-30T12:00:00Z',
+            address: '6200 University Blvd, Vancouver',
+        },
+    ];
+    const mockUser = {
+        username: 'user@gmail.com',
+        events: mockEvents,
+        preferences: { 
+            commute_method: 'Driving',
+            preparation_time: '0',
+            notification_preferences: {
+                morning_alarm: true,
+                event_alarm: true,
+                event_notification: true,
+                traffic_alerts: true,
+                weather_alerts: true,
+            },
+            maxMissedBus: '1',
+        },
+    }
+    const mockDirections = {
+        routes: [
+            {
+                legs: [
+                    {
+                        distance: { value: 100, text: '100 m' },
+                        duration: { value: 4200, text: '1 hours 10 mins' },
+                        end_address: '2357 Main Mall, Vancouver',
+                        start_address: '', // not important to mocked implementation
+                        steps: [1, 2, 3], // details not important to implementation
+                        arrival_time: { value: new Date(), text: '', timezone: 'America/Vancouver'},
+                    }
+                ],
+            },
+        ],
+    }
+    const mockSchedule = [
+        {
+            event: mockEvents[0],
+            route: JSON.parse(JSON.stringify(mockDirections.routes[0].legs[0], (key, value) => {
+                if (key === 'steps' || key === 'arrival_time') {
+                    return undefined;
+                }
+                return value;
+            })),
+        },
+        {
+            event: mockEvents[1],
+            route: JSON.parse(JSON.stringify(mockDirections.routes[0].legs[0], (key, value) => {
+                if (key === 'steps' || key === 'arrival_time') {
+                    return undefined;
+                }
+                return value;
+            })),
         }
+    ];
+
+    // Input: 
+    // Expected status code: 
+    // Expected behavior: 
+    // Expected output: 
+    it('should create a schedule for the current day', async () => {
+        const data = { 
+            username: 'user@gmail.com', 
+            latitude: 49.1673,
+            longitude: 123.1384,
+        }
+        const id_token = 'token';
+        db.verifyUser.mockResolvedValue(true);
+        db.getUser.mockResolvedValue(mockUser);
+        db.addSchedule.mockResolvedValue(true);
+        // mock google api directions
+        jest.spyOn(Scheduler, 'getDirections').mockImplementation(() => { return mockDirections });
+
+        const res = await request(server)
+            .post('/api/calendar/day_schedule')
+            .send(data)
+            .set('id_token', id_token)
+            .set('Accept', 'application/json');
+
+        // output expectations
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(mockSchedule);
+
+        expect(db.verifyUser).toHaveBeenCalledWith(id_token, data.username, process.env.CLIENT_ID);
+        expect(db.getUser).toHaveBeenCalledWith(data.username);
+        expect(db.addSchedule).toHaveBeenCalledWith(data.username, res.body);
+    })
+
+    it('should not make a schedule for an invalid token', async () => {
+        const data = { 
+            username: 'user@gmail.com', 
+            latitude: 49.1673,
+            longitude: 123.1384,
+        }
+        const id_token = 'invalid_token';
+
+        db.verifyUser.mockResolvedValue(false);
+        const res = await request(server)
+            .post('/api/calendar/day_schedule')
+            .send(data)
+            .set('id_token', id_token)
+            .set('Accept', 'application/json');
+
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('message');
+        expect(res.body).not.toHaveProperty('daySchedule');
+
+        expect(db.verifyUser).toHaveBeenCalledWith(id_token, data.username, process.env.CLIENT_ID);
+    })
+
+    it('should throw error if getting direction fails', async () => {
+        const data = { 
+            username: 'user@gmail.com', 
+            latitude: 'not a lat',
+            longitude: 'not a long',
+        }
+        const id_token = 'token';
+
+        db.verifyUser.mockResolvedValue(true);
+        db.getUser.mockResolvedValue(mockUser);
+        db.addSchedule.mockResolvedValue(true);
+        jest.spyOn(Scheduler, 'getDirections').mockImplementation(() => { throw new Error('Bad LatLng') });
+
+        const res = await request(server)
+            .post('/api/calendar/day_schedule')
+            .send(data)
+            .set('id_token', id_token)
+            .set('Accept', 'application/json');
+        
+        expect(res.status).toBe(500);
+        expect(res.body).toHaveProperty('error');
+        expect(res.body).not.toHaveProperty('daySchedule');
+    })
+
+    it('should be able to return the day schedule', async () => {
+        let day = new Date(today);
+        day.setHours(0, 0, 0, 0);
+        const id_token = 'token';
+
+        db.verifyUser.mockResolvedValue(true);
+        db.getSchedule.mockResolvedValue({ daySchedule: mockSchedule });
+        const res = await request(server)
+            .get(`/api/calendar/day_schedule?user=${mockUser.username}&day=${day}`)
+            .set('id_token', id_token);
+
+        expect(res.status).toBe(200);
+        expect(res.body[0]).toHaveProperty('route');
+        expect(res.body[0]).toHaveProperty('event');
+
+        expect(db.getSchedule).toHaveBeenCalledWith(mockUser.username);
+    })
+
+    it('should handle bad token in get', async () => {
+        let day = new Date(today);
+        day.setHours(0, 0, 0, 0);
+        const id_token = 'invalid_token';
+
+        db.verifyUser.mockResolvedValue(false);
+        db.getSchedule.mockResolvedValue({ daySchedule: mockSchedule });
+        const res = await request(server)
+            .get(`/api/calendar/day_schedule?user=${mockUser.username}&day=${day}`)
+            .set('id_token', id_token);
+
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('message');
+    })
+
+    it('should handle internal server error', async () => {
+        let day = new Date(today);
+        day.setHours(0, 0, 0, 0);
+        const id_token = 'token';
+
+        db.verifyUser.mockResolvedValue(true);
+        jest.spyOn(db, 'getSchedule').mockImplementation(() => { throw new Error('Database error'); });
+        const res = await request(server)
+            .get(`/api/calendar/day_schedule?user=${mockUser.username}&day=${day}`)
+            .set('id_token', id_token);
+
+        expect(res.status).toBe(500);
+        expect(res.body).toHaveProperty('error');
+    })
+})
+
+// Interface GET /api/calendar/by_day
+describe('get calendar events of a given day', () => {
+    const events = [
+        { 
+            eventName: 'cpen321',
+            start: '2023-11-18T09:00:00Z',
+            end: '2023-11-18T12:00:00Z',
+            address: '2357 Main Mall, Vancouver',
+        },
+        { 
+            eventName: 'cpen321 v2',
+            start: '2023-11-18T13:00:00Z',
+            end: '2023-11-18T15:00:00Z',
+            address: '2357 Main Mall, Vancouver',
+        },
+    ]
+    // Input: username as email string, id_token google auth session, day string
+    // Expected status code: 200
+    // Expected behavior: a valid user gets events on 
+    // Expected output: array of events on the specified day
+    it('should get events of a given day', async () => {
+        const user = 'user@gmail.com';
+        const id_token = 'token';
+        const date = '2023-11-18';
+        db.verifyUser.mockResolvedValue(true);
+        db.getCalendar.mockResolvedValue({ events });
+
+        const res = await request(server)
+            .get(`/api/calendar/by_day?user=${user}&day=${date}`)
+            .set('id_token', id_token);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(events);
+
+        expect(db.verifyUser).toHaveBeenCalledWith(id_token, user, process.env.CLIENT_ID);
+        expect(db.getCalendar).toHaveBeenCalledWith(user);
+    })
+    // Input: username as email string, id_token google auth session, day string
+    // Expected status code: 500
+    // Expected behavior: 
+    // Expected output: 
+    it('should handle error case', async () => {
+        jest.spyOn(db, 'verifyUser').mockImplementation(() => { throw new Error('Database error'); });
+        const user = 'user@gmail.com';
+        const id_token = 'token';
+        const date = '2023-11-18';
+    
+        const res = await request(server)
+          .get(`/api/calendar/by_day?user=${user}&day=${date}`)
+          .set('id_token', id_token);
+    
+        expect(res.status).toBe(500);
+        expect(res.body).toHaveProperty('error');
     });
-
-    await mongoose.connection.db.dropDatabase();
-    console.log('Database dropped');
-});
-
-
-// // This is only for charles code to run
-// // mocked database will only work if you disable jest.unmock('../Databases/Database.js'); in my part of the code
-// jest.mock('../Databases/Database.js');
-// db = require('../Databases/Database.js');
-
-
-// // Interface GET /api/calendar/by_day
-// describe('GET calendar events of a given day', () => {
-//     const events = [
-//         { 
-//             eventName: 'cpen321',
-//             start: '2023-11-18T09:00:00Z',
-//             end: '2023-11-18T12:00:00Z',
-//             address: '2357 Main Mall, Vancouver',
-//         },
-//         { 
-//             eventName: 'cpen321 v2',
-//             start: '2023-11-18T13:00:00Z',
-//             end: '2023-11-18T15:00:00Z',
-//             address: '2357 Main Mall, Vancouver',
-//         },
-//     ]
-
-
-//     // Input: username as email string, id_token google auth session, day string
-//     // Expected status code: 200
-//     // Expected behavior: a valid user gets events on 
-//     // Expected output: array of events on the specified day
-//     it('should get events of a given day', async () => {
-//         const user = 'user@gmail.com';
-//         const id_token = 'token';
-//         const date = '2023-11-18';
-//         db.verifyUser.mockResolvedValue(true);
-//         db.getCalendar.mockResolvedValue({ events });
-
-//         const res = await request(server)
-//             .get(`/api/calendar/by_day?user=${user}&day=${date}`)
-//             .set('id_token', id_token);
-
-//         expect(res.status).toBe(200);
-//         expect(res.body).toEqual(events);
-
-//         expect(db.verifyUser).toHaveBeenCalledWith(id_token, user, process.env.CLIENT_ID);
-//         expect(db.getCalendar).toHaveBeenCalledWith(user);
-//     })
-
-//     // //This code the rewritten code for function above, but using actual database class functions
-//     // it('should get events of a given day', async () => {
-//     //     // Set up a test user and events in the database
-//     //     const user = { username: 'user@gmail.com', events: events};
-//     //     await db.addUser(user);
-
-//     //     const res = await request(server)
-//     //         .get(`/api/calendar/by_day?user=${user.username}&day=2023-11-18`);
-
-//     //     expect(res.status).toBe(200);
-//     //     expect(res.body).toEqual(user.events);
-//     // });
-
-
-
-//     // Input: username as email string, id_token google auth session, day string
-//     // Expected status code: 500
-//     // Expected behavior: 
-//     // Expected output: 
-//     it('should handle error case', async () => {
-//         jest.spyOn(db, 'verifyUser').mockImplementation(() => { throw new Error('Database error'); });
-//         const user = 'user@gmail.com';
-//         const id_token = 'token';
-//         const date = '2023-11-18';
+    // Input: username as email string, invalid id_token google auth session, day string
+    // Expected status code: 400
+    // Expected behavior: 
+    // Expected output: 
+    it('should handle an invalid token', async () => {
+        const user = 'user@gmail.com';
+        const id_token = 'invalid_token';
+        const date = '2023-11-18';
+        db.verifyUser.mockResolvedValue(false);
+        db.getCalendar.mockResolvedValue({ events });
     
-//         const res = await request(server)
-//           .get(`/api/calendar/by_day?user=${user}&day=${date}`)
-//           .set('id_token', id_token);
+        const res = await request(server)
+          .get(`/api/calendar/by_day?user=${user}&day=${date}`)
+          .set('id_token', id_token);
     
-//         expect(res.status).toBe(500);
-//         expect(res.body).toHaveProperty('message');
-//     });
-//     // Input: username as email string, invalid id_token google auth session, day string
-//     // Expected status code: 400
-//     // Expected behavior: 
-//     // Expected output: 
-//     it('should handle an invalid token', async () => {
-//         const user = 'user@gmail.com';
-//         const id_token = 'invalid_token';
-//         const date = '2023-11-18';
-//         db.verifyUser.mockResolvedValue(false);
-//         db.getCalendar.mockResolvedValue({ events });
-    
-//         const res = await request(server)
-//           .get(`/api/calendar/by_day?user=${user}&day=${date}`)
-//           .set('id_token', id_token);
-    
-//         expect(res.status).toBe(400);
-//         expect(res.body).toHaveProperty('message');
-//         expect(res.body).not.toHaveProperty('events');
-//     });
-// })
+        expect(res.status).toBe(400);
+        expect(res.body).toHaveProperty('message');
+        expect(res.body).not.toHaveProperty('events');
+    });
+})
 
+// Interface GET /api/message_history
+describe('get the message history of a specific chat', () => {
+    const mockMessages = [
+        {message: 'hi', sender: 'me', timestamp: 123},
+        {message: 'hi', sender: 'you', timestamp: 123},
+        {message: 'bye', sender: 'me', timestamp: 123}
+    ];
+    const mockChatName = 'cpen321';
 
+    it('should get message history of a chatroom', async () => {
+        db.getMessages.mockResolvedValue({ messages: [
+            {message: 'hi', sender: 'me', timestamp: 123},
+            {message: 'hi', sender: 'you', timestamp: 123},
+            {message: 'bye', sender: 'me', timestamp: 123}
+        ] });
 
+        const res = await request(server).get(`/api/message_history?chatName=${mockChatName}`);
 
-/*
-So's test:
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual(mockMessages);
 
-    working on unit test for 
-    '/login/google' POST
-    '/api/preferences' POST GET
-    '/api/calendar' POST GET
-*/
+        expect(db.getMessages).toHaveBeenCalledWith(mockChatName);
+    })
+
+    it('should return error if issue with database or connection', async () => {
+        jest.spyOn(db, 'getMessages').mockImplementation(() => { throw new Error('Database error'); });
+        const res = await request(server).get(`/api/message_history?chatName=${mockChatName}`);
+
+        expect(res.status).toBe(500);
+        expect(res.body).toHaveProperty('error');
+        expect(res.body).not.toBeInstanceOf(Array);
+    })
+})
+
+// Interface GET /api/chatrooms
+describe('get chatrooms associated with a user', () => {
+    const today = new Date();
+    const mockUser = 'user@gmail.com';
+    const mockEvents = [
+        { 
+            eventName: 'cpen321',
+            start: today.toISOString(),
+            end: '2023-11-30T12:00:00Z',
+            address: '2357 Main Mall, Vancouver',
+            hasChat: true,
+        },
+        { 
+            eventName: 'event2',
+            start: today.toISOString(),
+            end: '2023-11-30T12:00:00Z',
+            address: '6200 University Blvd, Vancouver',
+            hasChat: false,
+        },
+    ];
+
+    it('should get chatrooms of a user', async () => {
+        db.getCalendar.mockResolvedValue({ events: mockEvents });
+        jest.spyOn(db, 'getRoom').mockImplementation((eventName) => { 
+            return { chatName: eventName, messages: [] }
+        });
+        jest.spyOn(db, 'createRoom').mockImplementation((eventName) => { 
+            return { chatName: eventName, messages: [] }
+        });
+
+        const res = await request(server).get(`/api/chatrooms?user=${mockUser}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toBeInstanceOf(Array);
+    })
+
+    it('should create chatroom instance if not existing already', async () => {
+        db.getCalendar.mockResolvedValue({ events: mockEvents });
+        jest.spyOn(db, 'getRoom').mockImplementation(() => { 
+            return null;
+        });
+        jest.spyOn(db, 'createRoom').mockImplementation((eventName) => { 
+            return { chatName: eventName, messages: [] }
+        });
+
+        const res = await request(server).get(`/api/chatrooms?user=${mockUser}`);
+
+        expect(res.status).toBe(200);
+        expect(res.body).toBeInstanceOf(Array);
+    })
+
+    it('should handle database errors', async () => {
+        jest.spyOn(db, 'getCalendar').mockImplementation(() => { throw new Error('Database Error'); });
+        const res = await request(server).get(`/api/chatrooms?user=${mockUser}`);
+
+        expect(res.status).toBe(500);
+        expect(res.body).toHaveProperty('error');
+    })
+})
+
 
 const sampleUser = {
     username: "sampleUser_So@gmail.com",
@@ -219,153 +431,80 @@ const sampleUser = {
     ]
 };
 
-var invalidDataUser = {
-    username: "this user is invalid",
-    preferences: {
-      such_preferences_dont_exist: "Space ship", // this actually does not cause error cuz its seen as extra data
-      commute_method: false, // However this does not match mongoose schema type so causes error
-      traffic_alerts: "aagggghhhhh",
-    },
-    // this events also does not cause error cuz its type is Mixed object  
-    events: [
-        {
-            eventID: null,
-            summary: "invalid events",
-            description: null,
-        }
-    ]
-};
-
-var invalidUsernameUser = {
-    //Invalid username
-    "username": null,
-    "preferences": {
-      "such preferences dont exist": "Space ship",
-    },
-    "events": [
-        {
-            eventID: null,
-            summary: "invalid events",
-            description: null,
-        }
-    ]
-};
-
-
-// Use actual db implementation for the second part of tests
-jest.unmock('../Databases/Database.js');
-db = jest.requireActual('../Databases/Database.js');
-
-describe('POST /login/google', () => {
+// Interface POST /login/google
+// this endpoint is not supposed to take anything else other than username
+describe('logging in or registering with google signin', () => {
     // Input: sampleUser is valid user
     // Expected status code: 200
     // Expected behavior: user is added to the database, and output is register new user
     // Expected output: { result: 'register' }
-    it('registers a new user', async () => {
+    it('should register a new user on first time login', async () => {
+        db.userExists.mockResolvedValue(false);
+        db.addUser.mockResolvedValue(sampleUser);
+
         const response = await request(server)
-        .post('/login/google')
-        .send(sampleUser);
+            .post('/login/google')
+            .send(sampleUser)
+            .set('Accept', 'application/json');
 
         expect(response.statusCode).toBe(200);
         expect(response.body.result).toBe('register');
-        const actualUser = await db.getUser(sampleUser.username);
-        //console.log("actualUser : \n", actualUser);  // Check what's being returned here
-
-        // Compare specific fields
-        expect(actualUser).toHaveProperty('username', sampleUser.username);
-        expect(actualUser).toHaveProperty('preferences', sampleUser.preferences);
-        expect(actualUser).toHaveProperty('events', sampleUser.events);
-        // ... add more fields as needed
-
-        // For nested objects, you can use expect.objectContaining
-        expect(actualUser.preferences.notification_preferences).toEqual(
-            expect.objectContaining(sampleUser.preferences.notification_preferences)
-        );
-
+        expect(db.addUser).toHaveBeenCalledWith(sampleUser);
     });
 
-    // Input: invalidUsernameUser
+    // Input: invalidUser
     // Expected status code: 500
     // Expected behavior: user is not added
     // Expected output: error message
-    it('register null username ', async () => {
+    it('should not allow invalid user to register/login', async () => {
+        const invalidUser = { username: null };
+        db.userExists.mockResolvedValue(false); // expect false
+        jest.spyOn(db, 'addUser').mockImplementation(() => { throw new Error("No such user exists"); }); // expected addUser behaviour
+        
         const response = await request(server)
-        .post('/login/google')
-        .send(invalidUsernameUser);
+            .post('/login/google')
+            .send(invalidUser)
+            .set('Accept', 'application/json');
 
         expect(response.statusCode).toBe(500);
-        //console.log("null user name response", response.body);
-    });
-
-
-
-    // Input: invalidDataUser
-    // Expected status code: 500
-    // Expected behavior: user is not added
-    // Expected output: error message
-    it('register invalid data user', async () => {
-        const response = await request(server)
-        .post('/login/google')
-        .send(invalidDataUser);
-
-        expect(response.statusCode).toBe(500);
-        console.log("invalid username response", response.body);
+        expect(response.body).toHaveProperty('error');
     });
 
     // Input: sampleUser is valid user
     // Expected status code: 200
     // Expected behavior: user is added to the database, and output is login user
     // Expected output: 'login'
-    it('logs in an existing user', async () => {
-        // Add user to database
-        db.addUser(sampleUser);
+    it('should log in an existing user', async () => {
+        db.userExists.mockResolvedValue(true);
+        db.addUser.mockResolvedValue(sampleUser);
 
         const response = await request(server)
-        .post('/login/google')
-        .send(sampleUser);
+            .post('/login/google')
+            .send(sampleUser)
+            .set('Accept', 'application/json');
 
         expect(response.statusCode).toBe(200);
         expect(response.body.result).toBe('login');
-        
-        // Check that the user was added to the database
-        const actualUser = await db.getUser(sampleUser.username);
-
-        // Compare specific fields
-        expect(actualUser).toHaveProperty('username', sampleUser.username);
-        expect(actualUser).toHaveProperty('preferences', sampleUser.preferences);
-        expect(actualUser).toHaveProperty('events', sampleUser.events);
-        // ... add more fields as needed
-
-        // For nested objects, you can use expect.objectContaining
-        expect(actualUser.preferences.notification_preferences).toEqual(
-            expect.objectContaining(sampleUser.preferences.notification_preferences)
-        );
+        expect(db.addUser).toHaveBeenCalledWith(sampleUser);
     });
-});
-  
+})
 
-  
-describe('GET /api/preferences', () => {
+// Interface GET and PUT /api/preferences
+describe('get or update a users preferences', () => {
     // Test case: Retrieving user preferences
     // Input: sampleUser is an existing user in the database
     // Expected status code: 200
     // Expected behavior: correct preferences are retrieved from the database
     // Expected output: sampleUser.preferences
-    it('retrieves user preferences', async () => {
-        // Add user to database
-        db.addUser(sampleUser);
-
+    it('gets user preferences', async () => {
+        db.userExists.mockResolvedValue(true);
+        db.getUser.mockResolvedValue(sampleUser);
+    
         const response = await request(server)
             .get(`/api/preferences?user=${sampleUser.username}`);
 
         expect(response.statusCode).toBe(200);
-        expect(response.body).toEqual(sampleUser.preferences)
-        
-        const actualUser = await db.getUser(sampleUser.username);
-        console.log("actualUser preferences: \n", actualUser.preferences);  
-
-        // Compare specific fields
-        expect(actualUser).toHaveProperty('preferences', sampleUser.preferences);
+        expect(response.body).toEqual(sampleUser.preferences);
     });
 
     // Test case: Retrieving preferences for a non-existing user
@@ -373,23 +512,28 @@ describe('GET /api/preferences', () => {
     // Expected status code: 404 (Not Found) or similar
     // Expected behavior: No user found in the database
     // Expected output: error message
-    it('fails to retrieve preference with non-existing user', async () => {
+    it('should fail to retrieve preference of non-existing user', async () => {
+        const invalidUser = 'invalid username';
+        db.userExists.mockResolvedValue(false);
+
         const response = await request(server)
-            .get(`/api/preferences?user=${invalidUsernameUser.username}`);
+            .get(`/api/preferences?user=${invalidUser}`);
 
         expect(response.statusCode).toBe(404);
-        console.log("GET preference response : \n", response);
-
-        // Checks if the error message contains the specified text
-        expect(response.body.error).toMatch(/No such user exists/);
+        expect(response.body).toHaveProperty('error');
     });
-});
 
+    it('should fail on server error/database connection issues', async () => {
+        db.userExists.mockResolvedValue(true);
+        jest.spyOn(db, 'getUser').mockImplementation(() => { throw new Error('Database Error'); });
 
+        const response = await request(server).get(`/api/preferences?user=${sampleUser.username}`);
 
+        expect(response.statusCode).toBe(500);
+        expect(response.body).toHaveProperty('error');
+    })
 
-describe('PUT /api/preferences', () => {
-    preferencesUpdate = {
+    const preferencesUpdate = {
         commute_method: "bike", // changed
         traffic_alerts: true,
         preparation_time: "30 minutes",
@@ -407,62 +551,180 @@ describe('PUT /api/preferences', () => {
         snooze_duration: "10 minutes",
         vibration_alert: true
     }
+
     // Test case: Updating user preferences
     // Input: sampleUser is an existing user, preferencesUpdate contains new preferences
     // Expected status code: 200
     // Expected behavior: user's preferences are updated in the database
     // Expected output: { result: 'success' }
-    it('updates user preferences', async () => {
-        // Add user to database
-        db.addUser(sampleUser);
-
-
-        const response = await request(server)
-            .put('/api/preferences')
-            .send({ username: sampleUser.username, preferences: preferencesUpdate });
-
-        expect(response.statusCode).toBe(200);
-        expect(response.body.result).toBe('success');
+    it('should update user preferences', async () => {
+        db.userExists.mockResolvedValue(true);
+        db.updatePreferences.mockResolvedValue(preferencesUpdate);
         
-        const actualUser = await db.getUser(sampleUser.username);
+        const data = {
+            username: sampleUser.username,
+            preferences: preferencesUpdate,
+        }
+        const res = await request(server)
+            .put('/api/preferences')
+            .send(data)
+            .set('Accept', 'application/json');
 
-        // Compare specific fields
-        expect(actualUser).toHaveProperty('preferences', preferencesUpdate);
-    });
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toEqual({ result: 'success' });
+        expect(db.updatePreferences).toHaveBeenCalledWith(sampleUser.username, preferencesUpdate);
+    })
 
     // Test case: Updating preferences for a non-existing user
     // Input: nonExistingUser is a user not present in the database, preferencesUpdate contains new preferences
     // Expected status code: 404 (Not Found) or similar
     // Expected behavior: No user found in the database
     // Expected output: error message
-    it('fails to update preferences for a non-existing user', async () => {
+    it('should not update preferences for a non-existing user', async () => {
+        db.userExists.mockResolvedValue(false);
+
         const response = await request(server)
             .put('/api/preferences')
-            .send({ username: "This username does not exist", preferences: preferencesUpdate });
+            .send({ username: "This username does not exist", preferences: preferencesUpdate })
+            .set('Accept', 'application/json');
 
-        expect(response.statusCode).toBe(404); // user not found
-        // Checks if the error message contains the specified text
+        expect(response.statusCode).toBe(404);
         expect(response.body.error).toMatch(/No such user exists/);
     });
 
-    // Test case: Updating preferences with invalid input
-    // Input: sampleUser is an existing user, invalidPreferencesUpdate contains incorrect or malformed data
-    // Expected status code: 400 (Bad Request) or similar
-    // Expected behavior: Invalid input format
-    // Expected output: error message
-    it('fails to update preferences with invalid input', async () => {
-        // Add user to database
-        db.addUser(sampleUser);
+    it('should fail on connection error to database or server error', async () => {
+        db.userExists.mockResolvedValue(true);
+        jest.spyOn(db, 'updatePreferences').mockImplementation(() => { throw new Error('Database Error') });
 
-        const response = await request(server)
+        const data = {
+            username: sampleUser.username,
+            preferences: preferencesUpdate,
+        }
+        const res = await request(server)
             .put('/api/preferences')
-            .send({ username: sampleUser.username, preferences: invalidDataUser.preferences });
+            .send(data)
+            .set('Accept', 'application/json');
 
-        expect(response.statusCode).toBe(500);  // user not found
-        // Checks if the error message contains the specified text
-        expect(response.body.error).toMatch(/user validation failed/);
-    });
-});
-    
-  
-  
+        expect(res.statusCode).toBe(500);
+        expect(res.body).toHaveProperty('error')
+    })
+})
+
+// Interface GET and POST /api/calendar
+describe('get the users events or add to events', () => {
+    //
+    it('should get events array of a valid user', async () => {
+        const id_token = 'token';
+        db.verifyUser.mockResolvedValue(true);
+        db.getCalendar.mockResolvedValue({ events: sampleUser.events });
+        
+        const res = await request(server)
+            .get(`/api/calendar?user=${sampleUser.username}`)
+            .set('id_token', id_token);
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toEqual(sampleUser.events);
+        expect(db.getCalendar).toHaveBeenCalledWith(sampleUser.username);
+    })
+
+    it('should fail on invalid token', async () => {
+        const id_token = 'invalid_token';
+        db.verifyUser.mockResolvedValue(false);
+        db.getCalendar.mockResolvedValue({ events: sampleUser.events });
+        
+        const res = await request(server)
+            .get(`/api/calendar?user=${sampleUser.username}`)
+            .set('id_token', id_token);
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toHaveProperty('message');
+    })
+
+    it('should fail on server error', async () => {
+        const id_token = 'token';
+        db.verifyUser.mockResolvedValue(true);
+        jest.spyOn(db, 'getCalendar').mockImplementation(() => { throw new Error('Database Error') });
+        
+        const res = await request(server)
+            .get(`/api/calendar?user=${sampleUser.username}`)
+            .set('id_token', id_token);
+
+        expect(res.statusCode).toBe(500);
+        expect(res.body).toHaveProperty('error');
+    })
+
+    const today = new Date();
+    const mockUser = 'user@gmail.com';
+    const mockEvents = [
+        { 
+            eventName: 'cpen321',
+            start: today.toISOString(),
+            end: '2023-11-30T12:00:00Z',
+            address: '2357 Main Mall, Vancouver',
+        },
+        { 
+            eventName: 'event2',
+            start: today.toISOString(),
+            end: '2023-11-30T12:00:00Z',
+            address: '6200 University Blvd, Vancouver',
+        },
+    ];
+
+    it('should be able to push array of events', async () => {
+        const id_token = 'token';
+        const data = {
+            username: mockUser,
+            events: mockEvents,
+        }
+        db.verifyUser.mockResolvedValue(true);
+        db.addEvents.mockResolvedValue(true); // function returns nothing
+        
+        const res = await request(server)
+            .post('/api/calendar')
+            .send(data)
+            .set('id_token', id_token)
+            .set('Accept', 'application/json');
+
+        expect(res.statusCode).toBe(200);
+        expect(res.body).toEqual({ message: 'Events add successful' });
+        expect(db.addEvents).toHaveBeenCalledWith(mockUser, mockEvents);
+    })
+
+    it('should fail on invalid token', async () => {
+        const id_token = 'invalid_token';
+        const data = {
+            username: mockUser,
+            events: mockEvents,
+        }
+        db.verifyUser.mockResolvedValue(false);
+        db.addEvents.mockResolvedValue(true);
+        
+        const res = await request(server)
+            .post('/api/calendar')
+            .send(data)
+            .set('id_token', id_token)
+            .set('Accept', 'application/json');
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body).toEqual({ message: 'Could not verify user' });
+    })
+
+    it('should fail on server error', async () => {
+        const id_token = 'token';
+        const data = {
+            username: mockUser,
+            events: mockEvents,
+        }
+        db.verifyUser.mockResolvedValue(true);
+        jest.spyOn(db, 'addEvents').mockImplementation(() => { throw new Error('Database Error') });
+        
+        const res = await request(server)
+            .post('/api/calendar')
+            .send(data)
+            .set('id_token', id_token)
+            .set('Accept', 'application/json');
+
+        expect(res.statusCode).toBe(500);
+        expect(res.body).toHaveProperty('error');
+    })
+})

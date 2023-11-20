@@ -1,6 +1,6 @@
 /*
     leg object {
-        distance: distance.value
+        distance: distance.value // in meters
         duration: duration.value // in seconds
         arrival_time: Time object: {value: Date, text: String, time_zone}
         departure_time.value: Date

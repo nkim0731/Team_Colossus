@@ -14,23 +14,8 @@ const db = require('./Databases/Database.js');
 const envFilePath = path.join(__dirname, '.env');
 require('dotenv').config({ path: envFilePath });
 
-//const mongoURI = process.env.MONGODB_URI;
-
-//Import export variables from variables.js
-// const { isHttps, isTest, test_calendoDB } = require('./variables.js');
-
 const app = express();
 app.use(express.json());
-
-// var httpsServer = null;
-// if (isHttps) {
-//     const options = {
-//         key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
-//         cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
-//     };
-//     httpsServer = https.createServer(options, app);
-// }
-
 
 // This is commented for testing purpose
 // const options = {
@@ -38,15 +23,15 @@ app.use(express.json());
 //     cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
 // };
 
-const sslFilePath = path.join(__dirname, '..', '..', 'ssl/');
-const key = fs.readFileSync(sslFilePath + "key.pem", 'utf8');
-const cert = fs.readFileSync(sslFilePath + "cert.pem", 'utf8');
-const options = {
-    key: key,
-    cert: cert,
-    passphrase: 'Colossus3210' // only if your key is passphrase protected
-};
-const httpsServer = https.createServer(options, app);
+// const sslFilePath = path.join(__dirname, '..', '..', 'ssl/');
+// const key = fs.readFileSync(sslFilePath + "key.pem", 'utf8');
+// const cert = fs.readFileSync(sslFilePath + "cert.pem", 'utf8');
+// const options = {
+//     key: key,
+//     cert: cert,
+//     passphrase: 'Colossus3210' // only if your key is passphrase protected
+// };
+// const httpsServer = https.createServer(options, app);
 
 const server = http.createServer(app); // HTTP server for testing 
 
@@ -55,7 +40,6 @@ const server = http.createServer(app); // HTTP server for testing
 require('./Interfaces/Messaging.js')(server);
 
 
-// DO NOT DELETE THIS
 // Important header parser middleware for user verification and sign in 
 app.use((req, res, next) => {
     // Log a message to indicate that the middleware is running
@@ -79,7 +63,7 @@ app.use((req, res, next) => {
         // console.log("req.access_token", req.access_token);
     // }
     next(); // Continue to the next middleware or route
-  });
+});
 
 
 
@@ -111,15 +95,13 @@ app.route('/api/preferences')
 .get(async (req, res) => {
     const username = req.query.user; 
     try {
-        // Assuming 'db' is an instance of the Database class
         if (!await db.userExists(username)) {
             return res.status(404).json({ error: "No such user exists" });
         }
-
         const user = await db.getUser(username);
         res.status(200).send(user.preferences);
     } catch (e) {
-        res.status(500).json({ error: e.message || "Internal server error" });
+        res.status(500).json({ error: e.message });
     }
 })
 .put(async (req, res) => {
@@ -127,16 +109,14 @@ app.route('/api/preferences')
     const username = data.username; 
     const preferences = data.preferences; 
     try {
-        // Assuming 'db' is an instance of the Database class
         if (!await db.userExists(username)) {
             return res.status(404).json({ error: "No such user exists" });
         }
-
         await db.updatePreferences(username, preferences);
         res.status(200).json({ result: 'success' });
     } catch (e) {
         console.log(e);
-        res.status(500).json({ error: e.message || "Internal server error" });
+        res.status(500).json({ error: e.message });
     }
 });
 
@@ -151,10 +131,10 @@ app.route('/api/preferences')
 // ChatGPT usage: Partial
 app.route('/api/calendar')
 .get(async (req, res) => { // /api/calendar?user=username
-    const useremail = req.query.user;
-    const id_token = req.headerParser.id_token;
+    const user = req.query.user;
+    const id_token = req.id_token;
     try {
-        if (!db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, user, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const events = await db.getCalendar(user);
@@ -166,10 +146,9 @@ app.route('/api/calendar')
 // ChatGPT usage: No
 .post(async (req, res) => {
     const data = req.body;
-    const useremail = data.username;
-    const id_token = req.headerParser.id_token;
+    const id_token = req.id_token;
     try {
-        if (!db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, data.username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
         await db.addEvents(data.username, data.events);
@@ -190,7 +169,7 @@ app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
     const id_token = req.id_token;
     const day = new Date(req.query.day + " 10:10:10");
     try {
-        if (!await db.verifyUser(id_token, user, process.env.CLIENT_ID)) { // async function returns a promise NEEDS AWAIT
+        if (!await db.verifyUser(id_token, user, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const calendar = await db.getCalendar(user);
@@ -213,10 +192,9 @@ app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
 app.route('/api/calendar/day_schedule')
 .post(async (req, res) => {
     const data = req.body; // username, latitude, longitude
-    const id_token = req.headerParser.id_token;
-    const useremail = data.username;
+    const id_token = req.id_token;
     try {
-        if (!db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, data.username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const user = await db.getUser(data.username);
@@ -232,10 +210,9 @@ app.route('/api/calendar/day_schedule')
 })
 // ChatGPT usage: No
 .get(async (req, res) => { // ?user=username
-    const useremail = data.username;
-    const id_token = req.headerParser.id_token;
+    const id_token = req.id_token;
     try {
-        if (!db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, req.query.user, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const schedule = await db.getSchedule(req.query.user);
