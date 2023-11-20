@@ -1,5 +1,4 @@
-
-# name: Deploy Workflow
+# name: Deploy to Azure VM
 
 # on:
 #   push:
@@ -9,32 +8,20 @@
 # jobs:
 #   deploy:
 #     runs-on: ubuntu-latest
-
 #     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v2
+#     - name: Checkout Repository
+#       uses: actions/checkout@v2
 
-#       - name: Restart MongoDB
-#         run: |
-#           # Restart MongoDB on RHEL using systemctl
-#           sudo systemctl restart mongod
-#         shell: bash
-        
-#       - name : Reload pm2-calendo.service
-#         run: |
-#           sudo systemctl daemon-reload
-#         shell: bash
+#     - name: Set up Azure CLI
+#       uses: azure/login@v1
+#       with:
+#         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-#       - name: Check the application status with PM2
-#         run: |
-#           # Start the application with PM2 on RHEL using systemctl
-#           sudo systemctl status pm2-calendo.service
-#         shell: bash
+#     - name: Deploy to Azure VM
+#       run: |
+#         # Add your deployment commands here
+#         # Example: SSH into the Azure VM and pull the latest code
+#         ssh -o StrictHostKeyChecking=no azureuser@your-vm-ip 'cd /path/to/your/app && git pull origin main && ./deploy_script.sh'
 
-#       - name: Start the application with PM2
-#         run: |
-#           # Start the application with PM2 on RHEL using systemctl
-#           sudo systemctl start pm2-calendo.service
-#         shell: bash
-
-        
+#     - name: Logout of Azure CLI
+#       run: az logout
