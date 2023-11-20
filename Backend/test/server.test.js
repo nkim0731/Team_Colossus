@@ -489,7 +489,7 @@ describe('logging in or registering with google signin', () => {
     });
 })
 
-// Interface GET and PUT /api/preferences
+// Interface GET /api/preferences
 describe('get or update a users preferences', () => {
     // Test case: Retrieving user preferences
     // Input: sampleUser is an existing user in the database
@@ -531,8 +531,12 @@ describe('get or update a users preferences', () => {
 
         expect(response.statusCode).toBe(500);
         expect(response.body).toHaveProperty('error');
-    })
+    });
 
+})
+
+// Interface PUT /api/preferences
+describe('get or update a users preferences', () => {
     const preferencesUpdate = {
         commute_method: "bike", // changed
         traffic_alerts: true,
@@ -610,9 +614,8 @@ describe('get or update a users preferences', () => {
     })
 })
 
-// Interface GET and POST /api/calendar
+// Interface GET /api/calendar
 describe('get the users events or add to events', () => {
-    //
     it('should get events array of a valid user', async () => {
         const id_token = 'token';
         db.verifyUser.mockResolvedValue(true);
@@ -652,7 +655,10 @@ describe('get the users events or add to events', () => {
         expect(res.statusCode).toBe(500);
         expect(res.body).toHaveProperty('error');
     })
+})
 
+// Interface POST /api/calendar
+describe('get the users events or add to events', () => {
     const today = new Date();
     const mockUser = 'user@gmail.com';
     const mockEvents = [
