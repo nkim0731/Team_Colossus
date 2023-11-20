@@ -23,15 +23,6 @@ var db = require('../Databases/Database.js');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
-// Schemas needed for db
-const userSchema = require('../Schema/userSchema');
-const chatSchema = require('../Schema/chatSchema');
-
-// models to interact with database collections
-const UserModel = mongoose.model('user', userSchema);
-const ChatModel = mongoose.model('chat', chatSchema);
-
-
 let mongoServer;
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
@@ -48,7 +39,6 @@ afterAll(async () => {
     await mongoose.disconnect();
     await mongoServer.stop();
 });
-
 
 
 beforeEach(async () => {
