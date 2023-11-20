@@ -12,19 +12,30 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+import static androidx.test.espresso.web.assertion.WebViewAssertions.webMatches;
+import static androidx.test.espresso.web.sugar.Web.onWebView;
 
 ;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.widget.EditText;
 
 import androidx.preference.EditTextPreference;
+import androidx.preference.PreferenceManager;
+import androidx.test.core.app.ApplicationProvider;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.espresso.web.webdriver.DriverAtoms;
+import androidx.test.espresso.web.webdriver.Locator;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
 import org.junit.Rule;
@@ -36,12 +47,9 @@ public class PreferenceTest {
             new ActivityScenarioRule<>(PreferenceActivity.class);
 
 
-
+    //ChatGPT usage:Partial
     @Test
     public void checkPreferenceIsDisplayed() {
-//        onView(withId(R.id.list))
-//                .perform(RecyclerViewActions.scrollTo(hasDescendant(withText("Alarms"))))
-//                .check(matches(isDisplayed()));
         onView(withText("Notifications")).check(matches(isDisplayed()));
         //check alarms
         onView(withText("Alarms")).check(matches(isDisplayed()));
@@ -71,11 +79,11 @@ public class PreferenceTest {
         onView(withId(androidx.preference.R.id.recycler_view))
                 .perform(RecyclerViewActions.scrollTo(hasDescendant(withText("Max missed bus"))))
                 .check(matches(isDisplayed()));
-//        onView(withText("Snooze duration (min)"))
-//                .check(matches(isDisplayed()));
+
 
     }
 
+    //ChatGPT usage:Partial
     @Test
     public void inputErrorAddress() {
         // open the location dialog
@@ -89,9 +97,16 @@ public class PreferenceTest {
 
         //click ok button
         onView(withText("OK")).perform(click());
+
+        // Verify if the new value is not set in the home location
+        String newValue = "123"; // the expected new value
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ApplicationProvider.getApplicationContext());
+        String currentValue = preferences.getString("home_location", "");
+        assertNotEquals(newValue, currentValue);
     }
 
 
+    //ChatGPT usage:Partial
     @Test
     public void checkPreferenceChange() {
         //enable notify
@@ -104,10 +119,12 @@ public class PreferenceTest {
                 .perform(typeText("6138 Student Union Blvd, Vancouver"), closeSoftKeyboard());
         //click ok button
         onView(withText("OK")).perform(click());
-    }
-    @Test
-    public void checkSave() {
-        onView(withText("save")).perform(click());
+
+        // Verify if the new value is set in the EditTextPreference
+        String newValue = "6138 Student Union Blvd, Vancouver"; // the expected new value
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ApplicationProvider.getApplicationContext());
+        String currentValue = preferences.getString("home_location", "");
+        assertEquals(newValue, currentValue);
     }
 
 }
