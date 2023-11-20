@@ -51,6 +51,11 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         // set values from data obtained in database for consistency
         try {
+            if(userData == null){
+                userData = new Bundle();
+                String jsonPreferences = "{\"commute_method\": \"walking\", \"maxMissedBus\": \"2\"}"; // Example JSON string
+                userData.putString("preferences", jsonPreferences);
+            }
             JSONObject preferences = new JSONObject(userData.getString("preferences"));
             JSONObject notifications = new JSONObject(preferences.getString("notification_preferences"));
             // display the values
