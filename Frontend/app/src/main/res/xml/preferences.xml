@@ -5,7 +5,7 @@
         app:title="Notifications"
         app:defaultValue="true"/>
 
-<!--    Alarms Preferences-->
+    <!--    Alarms Preferences-->
     <PreferenceCategory
         app:key="alarms_category"
         app:title="Alarms">
@@ -22,7 +22,7 @@
 
     </PreferenceCategory>
 
-<!--    Alerts Preferences-->
+    <!--    Alerts Preferences-->
     <PreferenceCategory
         app:key="alerts_category"
         app:title="Alerts">
@@ -40,7 +40,7 @@
             app:title="Vibration alert"/>
     </PreferenceCategory>
 
-<!--    Location Preferences-->
+    <!--    Location Preferences-->
     <PreferenceCategory
         app:key="location_category"
         app:title="Location">
@@ -65,7 +65,7 @@
 
     </PreferenceCategory>
 
-<!--    Other Preferences-->
+    <!--    Other Preferences-->
     <PreferenceCategory
         app:key="others"
         app:title="Others">
@@ -108,8 +108,8 @@
 
 
     <!--    <Preference-->
-<!--        app:key="feedback"-->
-<!--        app:title="Send feedback"-->
-<!--        app:summary="Report technical issues or suggest new features"/>-->
+    <!--        app:key="feedback"-->
+    <!--        app:title="Send feedback"-->
+    <!--        app:summary="Report technical issues or suggest new features"/>-->
 
 </PreferenceScreen>

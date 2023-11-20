@@ -3,6 +3,7 @@ package com.example.frontend;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.preference.EditTextPreference;
 import androidx.preference.ListPreference;
@@ -149,6 +150,28 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
         // Register the listener
         sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+
+
+        home_location.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                String userInput = (String) newValue;
+
+                if (isValidAddress(userInput)) {
+                    return true; // Address is considered valid
+                } else {
+                    Toast.makeText(getContext(), "Address format is incorrect", Toast.LENGTH_LONG).show();
+                    return false; // Prevent the change
+                }
+            }
+        });
+    }
+
+    /*
+     * ChatGPT usage: Yes
+     * */
+    private boolean isValidAddress(String address) {
+        return address != null && address.trim().length() > 0 && (!address.matches("[0-9]+")); // Basic check for non-empty address
     }
 
     /*
