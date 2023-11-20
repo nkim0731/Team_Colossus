@@ -92,41 +92,54 @@ app.use((req, res, next) => {
 app.post('/login/google', async (req, res) => {
     const data = req.body;
     try {
-        const checkUser = await db.getUser(data.username);
-        if (!checkUser) {
+        let exist = await db.userExists(data.username);
+        if (!exist) {
             await db.addUser(data); // first time google auth, add to db
             res.status(200).json({ result: 'register' });
         } else {
             res.status(200).json({ result: 'login' });
         }
     } catch (e) {
-        console.log(e);
-        res.status(500).json({ result: e });
+        res.status(500).json({ error: e.message });
     }
 })
 
 // endpoint set/get preferences for user
 // ChatGPT usage: Partial
 app.route('/api/preferences')
-.put(async (req, res) => {
-    const data = req.body;
-    try {
-        await db.updatePreferences(data.username, data.preferences);
-        res.status(200).json({ result: 'success' });
-    } catch (e) {
-        res.status(500).json({ result: e });
-    }
-})
 // ChatGPT usage: No
 .get(async (req, res) => {
-    const username = req.query.user; // ?user=username
+    const username = req.query.user; 
     try {
+        // Assuming 'db' is an instance of the Database class
+        if (!await db.userExists(username)) {
+            return res.status(404).json({ error: "No such user exists" });
+        }
+
         const user = await db.getUser(username);
         res.status(200).send(user.preferences);
     } catch (e) {
-        res.status(500).json({ result: e });
+        res.status(500).json({ error: e.message || "Internal server error" });
     }
 })
+.put(async (req, res) => {
+    const data = req.body;
+    const username = data.username; 
+    const preferences = data.preferences; 
+    try {
+        // Assuming 'db' is an instance of the Database class
+        if (!await db.userExists(username)) {
+            return res.status(404).json({ error: "No such user exists" });
+        }
+
+        await db.updatePreferences(username, preferences);
+        res.status(200).json({ result: 'success' });
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ error: e.message || "Internal server error" });
+    }
+});
+
 
 
 
@@ -147,7 +160,7 @@ app.route('/api/calendar')
         const events = await db.getCalendar(user);
         res.status(200).send(events.events); // send events array
     } catch (e) {
-        res.status(500).json({ message: e });
+        res.status(500).json({ error: e.message });
     }
 })
 // ChatGPT usage: No
@@ -162,9 +175,12 @@ app.route('/api/calendar')
         await db.addEvents(data.username, data.events);
         res.status(200).json({ message: 'Events add successful' });
     } catch (e) {
-        res.status(500).json({ message: e });
+        res.status(500).json({ error: e.message });
     }
 });
+
+
+
 
 // get calendar events by a specific day
 // ChatGPT usage: Partial
@@ -188,7 +204,7 @@ app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
         })
         res.status(200).send(dayEvents);
     } catch (e) {
-        res.status(500).json({ message: e });
+        res.status(500).json({ error: e.message });
     }
 }) 
 
@@ -211,7 +227,7 @@ app.route('/api/calendar/day_schedule')
         res.status(200).send(schedule);
     } catch (e) {
         console.log(e);
-        res.status(500).json({ message: e });
+        res.status(500).json({ error: e.message });
     }
 })
 // ChatGPT usage: No
@@ -226,7 +242,7 @@ app.route('/api/calendar/day_schedule')
         res.status(200).send(schedule.daySchedule);
     } catch (e) {
         console.log(e);
-        res.status(500).json({ message: e });
+        res.status(500).json({ error: e.message });
     }
     
 })
@@ -241,7 +257,7 @@ app.get('/api/message_history', async (req, res) => {
         const messages = await db.getMessages(chatName);
         res.status(200).send(messages.messages);
     } catch (e) {
-        res.status(500).json({ message: e });
+        res.status(500).json({ error: e.message });
     }
 });
 
@@ -261,7 +277,7 @@ app.get('/api/chatrooms', async (req, res) => {
         }
         res.status(200).send(myChatrooms);
     } catch (e) {
-        res.status(500).json({ message: e });
+        res.status(500).json({ error: e.message });
     }
 });
 

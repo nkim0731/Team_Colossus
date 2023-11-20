@@ -304,7 +304,7 @@ describe('POST /login/google', () => {
         .send(invalidUsernameUser);
 
         expect(response.statusCode).toBe(500);
-        console.log("null user name response", response.body);
+        //console.log("null user name response", response.body);
     });
 
 
@@ -356,6 +356,11 @@ describe('POST /login/google', () => {
 
   
 describe('GET /api/preferences', () => {
+    // Test case: Retrieving user preferences
+    // Input: sampleUser is an existing user in the database
+    // Expected status code: 200
+    // Expected behavior: correct preferences are retrieved from the database
+    // Expected output: sampleUser.preferences
     it('retrieves user preferences', async () => {
         // Add user to database
         db.addUser(sampleUser);
@@ -364,7 +369,6 @@ describe('GET /api/preferences', () => {
             .get(`/api/preferences?user=${sampleUser.username}`);
 
         expect(response.statusCode).toBe(200);
-        console.log("GET preference response.body : \n", response.body);
         expect(response.body).toEqual(sampleUser.preferences)
         
         const actualUser = await db.getUser(sampleUser.username);
@@ -373,23 +377,56 @@ describe('GET /api/preferences', () => {
         // Compare specific fields
         expect(actualUser).toHaveProperty('preferences', sampleUser.preferences);
     });
+
+    // Test case: Retrieving preferences for a non-existing user
+    // Input: nonExistingUser is a user not present in the database
+    // Expected status code: 404 (Not Found) or similar
+    // Expected behavior: No user found in the database
+    // Expected output: error message
+    it('fails to retrieve preference with non-existing user', async () => {
+        const response = await request(server)
+            .get(`/api/preferences?user=${invalidUsernameUser.username}`);
+
+        expect(response.statusCode).toBe(404);
+        console.log("GET preference response : \n", response);
+
+        // Checks if the error message contains the specified text
+        expect(response.body.error).toMatch(/No such user exists/);
+    });
 });
 
 
+
+
 describe('PUT /api/preferences', () => {
+    preferencesUpdate = {
+        commute_method: "bike", // changed
+        traffic_alerts: true,
+        preparation_time: "30 minutes",
+        notification_preferences: {
+            morning_alarm: true,
+            event_alarm: true,
+            event_notification: true,
+            traffic_alerts: true,
+            weather_alerts: false // unchanged
+        },
+        maxMissedBus: "2", // changed
+        home_location: "updated home location",
+        school_location: "new school!",
+        work_location: "456 Business Ave, Your City", // unchanged
+        snooze_duration: "10 minutes",
+        vibration_alert: true
+    }
+    // Test case: Updating user preferences
+    // Input: sampleUser is an existing user, preferencesUpdate contains new preferences
+    // Expected status code: 200
+    // Expected behavior: user's preferences are updated in the database
+    // Expected output: { result: 'success' }
     it('updates user preferences', async () => {
         // Add user to database
         db.addUser(sampleUser);
 
-        preferencesUpdate = {
-            "commute_method": "bike",
-            "maxMissedBus": "2",
-            "home_location": "updated home location",
-            "school_location": "new school!",
-            "work_location": "new work~",
-            "snooze_duration": "10 minutes",
-            "vibration_alert": false
-        }
+
         const response = await request(server)
             .put('/api/preferences')
             .send({ username: sampleUser.username, preferences: preferencesUpdate });
@@ -401,6 +438,39 @@ describe('PUT /api/preferences', () => {
 
         // Compare specific fields
         expect(actualUser).toHaveProperty('preferences', preferencesUpdate);
+    });
+
+    // Test case: Updating preferences for a non-existing user
+    // Input: nonExistingUser is a user not present in the database, preferencesUpdate contains new preferences
+    // Expected status code: 404 (Not Found) or similar
+    // Expected behavior: No user found in the database
+    // Expected output: error message
+    it('fails to update preferences for a non-existing user', async () => {
+        const response = await request(server)
+            .put('/api/preferences')
+            .send({ username: "This username does not exist", preferences: preferencesUpdate });
+
+        expect(response.statusCode).toBe(404); // user not found
+        // Checks if the error message contains the specified text
+        expect(response.body.error).toMatch(/No such user exists/);
+    });
+
+    // Test case: Updating preferences with invalid input
+    // Input: sampleUser is an existing user, invalidPreferencesUpdate contains incorrect or malformed data
+    // Expected status code: 400 (Bad Request) or similar
+    // Expected behavior: Invalid input format
+    // Expected output: error message
+    it('fails to update preferences with invalid input', async () => {
+        // Add user to database
+        db.addUser(sampleUser);
+
+        const response = await request(server)
+            .put('/api/preferences')
+            .send({ username: sampleUser.username, preferences: invalidDataUser.preferences });
+
+        expect(response.statusCode).toBe(500);  // user not found
+        // Checks if the error message contains the specified text
+        expect(response.body.error).toMatch(/user validation failed/);
     });
 });
     
