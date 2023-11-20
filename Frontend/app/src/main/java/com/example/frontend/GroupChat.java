@@ -49,6 +49,12 @@ public class GroupChat extends AppCompatActivity {
         setContentView(R.layout.activity_group_chat);
 
         Bundle userData = getIntent().getExtras();
+
+        if(userData == null){
+            userData = new Bundle();
+            userData.putString("chatName", "Room1");
+            userData.putString("userName", "user1");
+        }
         String chatName = userData.getString("chatName");
         username = userData.getString("username");
 
