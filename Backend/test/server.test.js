@@ -19,6 +19,7 @@ So:
 */
 const server = require('../server.js');
 const request = require('supertest');
+var db = require('../Databases/Database.js');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
@@ -35,7 +36,7 @@ let mongoServer;
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = mongoServer.getUri();
-    console.log('MONGO_URI : ', mongoUri);
+    //console.log('MONGO_URI : ', mongoUri);
     await db.connect(mongoUri); 
     await mongoose.connect(mongoUri, {
         useNewUrlParser: true,
@@ -45,12 +46,13 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await mongoose.disconnect();
-    //await mongoServer.stop();
+    await mongoServer.stop();
 });
 
 
 
 beforeEach(async () => {
+    // This is needed when we have the mock functions for db
     // This loops through all properties and resets mock functions 
     Object.values(db).forEach((property) => {
         // Check if the property is a Jest mock function
@@ -59,16 +61,15 @@ beforeEach(async () => {
         }
     });
 
-    //await mongoose.connection.db.dropDatabase();
-    // console.log('Database dropped');
+    await mongoose.connection.db.dropDatabase();
+    console.log('Database dropped');
 });
-
 
 
 // // This is only for charles code to run
 // // mocked database will only work if you disable jest.unmock('../Databases/Database.js'); in my part of the code
 // jest.mock('../Databases/Database.js');
-// const db = require('../Databases/Database.js');
+// db = require('../Databases/Database.js');
 
 
 // // Interface GET /api/calendar/by_day
@@ -177,25 +178,25 @@ So's test:
 */
 
 const sampleUser = {
-    "username": "sampleUser_So@gmail.com",
-    "password": "thisisapassword",
-    "preferences": {
-      "commute_method": "bus",
-      "traffic_alerts": true,
-      "preparation_time": "30 minutes",
-      "notification_preferences": {
-        "morning_alarm": true,
-        "event_alarm": true,
-        "event_notification": true,
-        "traffic_alerts": true,
-        "weather_alerts": true
-      },
-      "maxMissedBus": "1",
-      "home_location": "123 Main St, Your City",
-      "school_location": "4566 Main Mall, Vancouver",
-      "work_location": "456 Business Ave, Your City",
-      "snooze_duration": "10 minutes",
-      "vibration_alert": true
+    username: "sampleUser_So@gmail.com",
+    password: "thisisapassword",
+    preferences: {
+        commute_method: "bus",
+        traffic_alerts: true,
+        preparation_time: "30 minutes",
+        notification_preferences: {
+            morning_alarm: true,
+            event_alarm: true,
+            event_notification: true,
+            traffic_alerts: true,
+            weather_alerts: true
+        },
+        maxMissedBus: "1",
+        home_location: "123 Main St, Your City",
+        school_location: "4566 Main Mall, Vancouver",
+        work_location: "456 Business Ave, Your City",
+        snooze_duration: "10 minutes",
+        vibration_alert: true
     },
    
     events: [
@@ -228,8 +229,26 @@ const sampleUser = {
     ]
 };
 
-var invalidUser = {
-    "username": "this user is invalid",
+var invalidDataUser = {
+    username: "this user is invalid",
+    preferences: {
+      such_preferences_dont_exist: "Space ship", // this actually does not cause error cuz its seen as extra data
+      commute_method: false, // However this does not match mongoose schema type so causes error
+      traffic_alerts: "aagggghhhhh",
+    },
+    // this events also does not cause error cuz its type is Mixed object  
+    events: [
+        {
+            eventID: null,
+            summary: "invalid events",
+            description: null,
+        }
+    ]
+};
+
+var invalidUsernameUser = {
+    //Invalid username
+    "username": null,
     "preferences": {
       "such preferences dont exist": "Space ship",
     },
@@ -245,93 +264,144 @@ var invalidUser = {
 
 // Use actual db implementation for the second part of tests
 jest.unmock('../Databases/Database.js');
-var db = jest.requireActual('../Databases/Database.js');
+db = jest.requireActual('../Databases/Database.js');
 
 describe('POST /login/google', () => {
+    // Input: sampleUser is valid user
+    // Expected status code: 200
+    // Expected behavior: user is added to the database, and output is register new user
+    // Expected output: { result: 'register' }
     it('registers a new user', async () => {
-        // Add user to database
-        db.addUser({ sampleUser });;
-
         const response = await request(server)
         .post('/login/google')
-        .send({ username: sampleUser.username }); // Mock request body
+        .send(sampleUser);
 
         expect(response.statusCode).toBe(200);
         expect(response.body.result).toBe('register');
         const actualUser = await db.getUser(sampleUser.username);
+        //console.log("actualUser : \n", actualUser);  // Check what's being returned here
 
-        console.log("actualUser", actualUser);  // Check what's being returned here
-        //expect(actualUser).toEqual(sampleUser); // Adjust this based on the actual structure of the user object
+        // Compare specific fields
+        expect(actualUser).toHaveProperty('username', sampleUser.username);
+        expect(actualUser).toHaveProperty('preferences', sampleUser.preferences);
+        expect(actualUser).toHaveProperty('events', sampleUser.events);
+        // ... add more fields as needed
+
+        // For nested objects, you can use expect.objectContaining
+        expect(actualUser.preferences.notification_preferences).toEqual(
+            expect.objectContaining(sampleUser.preferences.notification_preferences)
+        );
 
     });
 
-    it('register invalid user info', async () => {
-        // Add invalid user to database
-        db.addUser({ invalidUser });
-
+    // Input: invalidUsernameUser
+    // Expected status code: 500
+    // Expected behavior: user is not added
+    // Expected output: error message
+    it('register null username ', async () => {
         const response = await request(server)
         .post('/login/google')
-        .send({ invalidUser }); // Mock request body
+        .send(invalidUsernameUser);
 
-        expect(response.statusCode).toBe(200);
-        expect(response.body.result).toBe('register');
-        expect(db.getUser(invalidUser.username)).toBe(invalidUser);
+        expect(response.statusCode).toBe(500);
+        console.log("null user name response", response.body);
     });
 
+
+
+    // Input: invalidDataUser
+    // Expected status code: 500
+    // Expected behavior: user is not added
+    // Expected output: error message
+    it('register invalid data user', async () => {
+        const response = await request(server)
+        .post('/login/google')
+        .send(invalidDataUser);
+
+        expect(response.statusCode).toBe(500);
+        console.log("invalid username response", response.body);
+    });
+
+    // Input: sampleUser is valid user
+    // Expected status code: 200
+    // Expected behavior: user is added to the database, and output is login user
+    // Expected output: 'login'
     it('logs in an existing user', async () => {
+        // Add user to database
+        db.addUser(sampleUser);
 
         const response = await request(server)
         .post('/login/google')
-        .send({ sampleUser });
+        .send(sampleUser);
 
         expect(response.statusCode).toBe(200);
         expect(response.body.result).toBe('login');
-        expect(db.getUser(sampleUser.username)).toBe(sampleUser);
+        
+        // Check that the user was added to the database
+        const actualUser = await db.getUser(sampleUser.username);
+
+        // Compare specific fields
+        expect(actualUser).toHaveProperty('username', sampleUser.username);
+        expect(actualUser).toHaveProperty('preferences', sampleUser.preferences);
+        expect(actualUser).toHaveProperty('events', sampleUser.events);
+        // ... add more fields as needed
+
+        // For nested objects, you can use expect.objectContaining
+        expect(actualUser.preferences.notification_preferences).toEqual(
+            expect.objectContaining(sampleUser.preferences.notification_preferences)
+        );
     });
-  });
+});
   
-  
-  
-  
+
   
 describe('GET /api/preferences', () => {
     it('retrieves user preferences', async () => {
-    // Add user to database
-    db.addUser({ sampleUser });
+        // Add user to database
+        db.addUser(sampleUser);
 
-    const response = await request(server)
-        .get(`/api/preferences?user=${sampleUser.username}`);
+        const response = await request(server)
+            .get(`/api/preferences?user=${sampleUser.username}`);
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body).toEqual({  preferences: sampleUser.preferences });
-    expect(db.getUser(sampleUser.username).preferences).toBe(sampleUser.preferences);
+        expect(response.statusCode).toBe(200);
+        console.log("GET preference response.body : \n", response.body);
+        expect(response.body).toEqual(sampleUser.preferences)
+        
+        const actualUser = await db.getUser(sampleUser.username);
+        console.log("actualUser preferences: \n", actualUser.preferences);  
+
+        // Compare specific fields
+        expect(actualUser).toHaveProperty('preferences', sampleUser.preferences);
     });
 });
 
 
 describe('PUT /api/preferences', () => {
     it('updates user preferences', async () => {
-    // Add user to database
-    db.addUser({ sampleUser });
+        // Add user to database
+        db.addUser(sampleUser);
 
-    preferencesUpdate = {
-        "commute_method": "bike",
-        "maxMissedBus": "2",
-        "home_location": "updated home location",
-        "school_location": "new school!",
-        "work_location": "new work~",
-        "snooze_duration": "10 minutes",
-        "vibration_alert": false
-    }
-    const response = await request(server)
-        .put('/api/preferences')
-        .send({ username: sampleUser.username, preferences: preferencesUpdate });
+        preferencesUpdate = {
+            "commute_method": "bike",
+            "maxMissedBus": "2",
+            "home_location": "updated home location",
+            "school_location": "new school!",
+            "work_location": "new work~",
+            "snooze_duration": "10 minutes",
+            "vibration_alert": false
+        }
+        const response = await request(server)
+            .put('/api/preferences')
+            .send({ username: sampleUser.username, preferences: preferencesUpdate });
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body.result).toBe('success');
-    expect(db.getUser(sampleUser.username).preferences).toBe(preferencesUpdate);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.result).toBe('success');
+        
+        const actualUser = await db.getUser(sampleUser.username);
+
+        // Compare specific fields
+        expect(actualUser).toHaveProperty('preferences', preferencesUpdate);
     });
-
 });
     
   

@@ -96,14 +96,19 @@ class Database {
     // Add a new user to Users Database
     // ChatGPT usage: Partial
     async addUser(user) {
-        if (user.password === undefined) {
-            user.password = 'Register from Google'; // no user/pw login yet anyway this field is useless lol
+
+        // Ensure the user has a username and password; set defaults if not provided
+        if (user.username == null) {
+            throw new Error("No username provided");
         }
-        // default user preferences on account creation
-        user.preferences = { 
-            commute_method: 'Driving', // default for navigation
+
+        user.password = user.password || 'Register from Google';
+    
+        // Set default preferences if not provided
+        user.preferences = user.preferences || {
+            commute_method: 'Driving',
             preparation_time: '0',
-            notification_preferences: { // all default true
+            notification_preferences: {
                 morning_alarm: true,
                 event_alarm: true,
                 event_notification: true,
@@ -112,12 +117,22 @@ class Database {
             },
             maxMissedBus: '1',
         };
-        user.events = [];
-        user.daySchedule = [];
-
-        const newUser = new UserModel(user);
-        await newUser.save();
+    
+        // Set default values for events and daySchedule if not provided
+        user.events = user.events || [];
+        user.daySchedule = user.daySchedule || [];
+    
+        try {
+            const newUser = new UserModel(user);
+            await newUser.save();
+            return newUser; // Returns the saved user document
+        } catch (error) {
+            // Handle error (e.g., validation error)
+            console.error("Error adding user:", error);
+            throw error;
+        }
     }
+    
 
 
     // Add a user to Users Database
