@@ -12,75 +12,77 @@ const Scheduler = require('../Interfaces/Scheduler.js');
 // mock database functions to only test endpoint functionalities
 jest.mock('../Databases/Database.js');
 
-// Interface GET POST /api/calendar/day_schedule
-describe('create and get day schedule for a user', () => {
-    const today = new Date();
-    const mockEvents = [
-        { 
-            eventName: 'cpen321',
-            start: today.toISOString(),
-            end: '2023-11-30T12:00:00Z',
-            address: '2357 Main Mall, Vancouver',
+
+const today = new Date();
+const mockEvents = [
+    { 
+        eventName: 'cpen321',
+        start: today.toISOString(),
+        end: '2023-11-30T12:00:00Z',
+        address: '2357 Main Mall, Vancouver',
+    },
+    { 
+        eventName: 'event2',
+        start: today.toISOString(),
+        end: '2023-11-30T12:00:00Z',
+        address: '6200 University Blvd, Vancouver',
+    },
+];
+const mockUser = {
+    username: 'user@gmail.com',
+    events: mockEvents,
+    preferences: { 
+        commute_method: 'Driving',
+        preparation_time: '0',
+        notification_preferences: {
+            morning_alarm: true,
+            event_alarm: true,
+            event_notification: true,
+            traffic_alerts: true,
+            weather_alerts: true,
         },
-        { 
-            eventName: 'event2',
-            start: today.toISOString(),
-            end: '2023-11-30T12:00:00Z',
-            address: '6200 University Blvd, Vancouver',
-        },
-    ];
-    const mockUser = {
-        username: 'user@gmail.com',
-        events: mockEvents,
-        preferences: { 
-            commute_method: 'Driving',
-            preparation_time: '0',
-            notification_preferences: {
-                morning_alarm: true,
-                event_alarm: true,
-                event_notification: true,
-                traffic_alerts: true,
-                weather_alerts: true,
-            },
-            maxMissedBus: '1',
-        },
-    }
-    const mockDirections = {
-        routes: [
-            {
-                legs: [
-                    {
-                        distance: { value: 100, text: '100 m' },
-                        duration: { value: 4200, text: '1 hours 10 mins' },
-                        end_address: '2357 Main Mall, Vancouver',
-                        start_address: '', // not important to mocked implementation
-                        steps: [1, 2, 3], // details not important to implementation
-                        arrival_time: { value: new Date(), text: '', timezone: 'America/Vancouver'},
-                    }
-                ],
-            },
-        ],
-    }
-    const mockSchedule = [
+        maxMissedBus: '1',
+    },
+}
+const mockDirections = {
+    routes: [
         {
-            event: mockEvents[0],
-            route: JSON.parse(JSON.stringify(mockDirections.routes[0].legs[0], (key, value) => {
-                if (key === 'steps' || key === 'arrival_time') {
-                    return undefined;
+            legs: [
+                {
+                    distance: { value: 100, text: '100 m' },
+                    duration: { value: 4200, text: '1 hours 10 mins' },
+                    end_address: '2357 Main Mall, Vancouver',
+                    start_address: '', // not important to mocked implementation
+                    steps: [1, 2, 3], // details not important to implementation
+                    arrival_time: { value: new Date(), text: '', timezone: 'America/Vancouver'},
                 }
-                return value;
-            })),
+            ],
         },
-        {
-            event: mockEvents[1],
-            route: JSON.parse(JSON.stringify(mockDirections.routes[0].legs[0], (key, value) => {
-                if (key === 'steps' || key === 'arrival_time') {
-                    return undefined;
-                }
-                return value;
-            })),
-        }
-    ];
+    ],
+}
+const mockSchedule = [
+    {
+        event: mockEvents[0],
+        route: JSON.parse(JSON.stringify(mockDirections.routes[0].legs[0], (key, value) => {
+            if (key === 'steps' || key === 'arrival_time') {
+                return undefined;
+            }
+            return value;
+        })),
+    },
+    {
+        event: mockEvents[1],
+        route: JSON.parse(JSON.stringify(mockDirections.routes[0].legs[0], (key, value) => {
+            if (key === 'steps' || key === 'arrival_time') {
+                return undefined;
+            }
+            return value;
+        })),
+    }
+];
+
+// Interface POST /api/calendar/day_schedule
+describe('create day schedule for a user', () => {
 
     // Input: 
     // Expected status code: 
@@ -159,7 +161,11 @@ describe('create and get day schedule for a user', () => {
         expect(res.body).toHaveProperty('error');
         expect(res.body).not.toHaveProperty('daySchedule');
     })
+})
 
+// Interface GET /api/calendar/day_schedule
+describe('get day schedule for a user', () => {
+    
     it('should be able to return the day schedule', async () => {
         let day = new Date(today);
         day.setHours(0, 0, 0, 0);
@@ -490,7 +496,7 @@ describe('logging in or registering with google signin', () => {
 })
 
 // Interface GET /api/preferences
-describe('get or update a users preferences', () => {
+describe('get a user preferences', () => {
     // Test case: Retrieving user preferences
     // Input: sampleUser is an existing user in the database
     // Expected status code: 200
@@ -536,7 +542,7 @@ describe('get or update a users preferences', () => {
 })
 
 // Interface PUT /api/preferences
-describe('get or update a users preferences', () => {
+describe('update a user preferences', () => {
     const preferencesUpdate = {
         commute_method: "bike", // changed
         traffic_alerts: true,
@@ -615,7 +621,7 @@ describe('get or update a users preferences', () => {
 })
 
 // Interface GET /api/calendar
-describe('get the users events or add to events', () => {
+describe('get a user events', () => {
     it('should get events array of a valid user', async () => {
         const id_token = 'token';
         db.verifyUser.mockResolvedValue(true);
@@ -658,7 +664,7 @@ describe('get the users events or add to events', () => {
 })
 
 // Interface POST /api/calendar
-describe('get the users events or add to events', () => {
+describe('create a user events and add it to the user data', () => {
     const today = new Date();
     const mockUser = 'user@gmail.com';
     const mockEvents = [
