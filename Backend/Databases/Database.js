@@ -35,10 +35,10 @@ class Database {
         console.log('Database class connected to MongoDB at: ' + mongoURI);
     }
 
-    async disconnect() {
-        await mongoose.disconnect();
-        console.log('Database class disconnected from MongoDB');
-    }
+    // async disconnect() {
+    //     await mongoose.disconnect();
+    //     console.log('Database class disconnected from MongoDB');
+    // }
 
 
     // Get data for user by username/email (unique)
