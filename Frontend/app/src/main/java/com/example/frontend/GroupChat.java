@@ -103,14 +103,19 @@ public class GroupChat extends AppCompatActivity {
             // Add the message to the message list or send it to a server
             // Then, update the RecyclerView to display the new message
 
-            Message msg = new Message(messageText, username,true);
+            if(messageText.length() > 150){
+                messageEditText.setError("The messages is too long, it should be less than 150 characters");
+            }else{
+                Message msg = new Message(messageText, username,true);
 
-            mSocket.emit("sendMessage", messageText, username);
+                mSocket.emit("sendMessage", messageText, username);
 
-            messages.add(msg);
-            messageRecyclerView.scrollToPosition(messages.size() - 1);
-            messageAdapter.notifyDataSetChanged();
-            messageEditText.setText(""); // Clear the message input field
+                messages.add(msg);
+                messageRecyclerView.scrollToPosition(messages.size() - 1);
+                messageAdapter.notifyDataSetChanged();
+                messageEditText.setText(""); // Clear the message input field
+            }
+
         });
 
     }
