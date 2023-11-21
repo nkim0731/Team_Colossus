@@ -12,6 +12,10 @@ jobs:
   backend-tests:
     runs-on: ubuntu-latest
 
+    env:
+      MONGO_URI: mongodb://localhost:27017/calendoDB
+      TESTING: 'true'
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
