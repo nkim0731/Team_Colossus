@@ -21,7 +21,6 @@ const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
 // const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/test_calendoDB";
-// just update the env file for this because this line loses branch coverage because of || use
 const mongoURI = process.env.MONGO_URI;
 
 class Database {
