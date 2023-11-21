@@ -387,11 +387,15 @@ describe('Test database interactions', () => {
     // connect coverage, run this last since it disconnects from memoryserver
     test('connect function on database', async () => {
         await mongoose.disconnect();
-        
         process.env.TESTING = 'false';
-        const mongooseConnectSpy = jest.spyOn(mongoose, 'connect')
+
+        jest.mock('mongoose');
+        const connectSpy = jest.spyOn(mongoose, 'connect').mockImplementation(() => { return true });
+
         await db.connect();
-        expect(mongooseConnectSpy).toHaveBeenCalledWith(process.env.MONGO_URI);
+        expect(connectSpy).toHaveBeenCalledWith(process.env.MONGO_URI);
+        
+        jest.unmock('mongoose');
         process.env.TESTING = 'true';
     })
 })
