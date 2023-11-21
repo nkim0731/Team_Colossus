@@ -1,5 +1,18 @@
 const Scheduler = require('../Interfaces/Scheduler.js');
 
+// mock google api function
+const { Client } = require("@googlemaps/google-maps-services-js");
+jest.mock("@googlemaps/google-maps-services-js", () => {
+    const originalModule = jest.requireActual("@googlemaps/google-maps-services-js");
+    const directionsMock = jest.fn();
+    return {
+        ...originalModule,
+        Client: jest.fn(() => ({
+            directions: directionsMock
+        }))
+    };
+});
+
 describe('Testing google API getDirections', () => {
     const today = new Date();
 
@@ -22,6 +35,10 @@ describe('Testing google API getDirections', () => {
         },
         maxMissedBus: '1',
     }
+    const clientInstance = new Client();
+    // distance got from google maps from richmond centre to mcml
+    const mockData = { data: { routes: [{ legs: [{ distance: { value: 18199 }, }]}]} };
+    clientInstance.directions.mockResolvedValue(mockData);
 
     it('should give a direction from this location to mcml by car', async () => {
         const direction = await Scheduler.getDirections(mockOrigin, mockEvent, mockPreferences);
