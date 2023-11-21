@@ -40,6 +40,7 @@ public class CreateNewEventTest {
     public ActivityScenarioRule<CreateNewEvent> calendarActivityActivityTestRule1
             = new ActivityScenarioRule<>(CreateNewEvent.class);
 
+    //ChatGPT usage: No
     @Test
     public void checkValidInput(){
 
@@ -50,6 +51,7 @@ public class CreateNewEventTest {
 
     }
 
+    //ChatGPT usage: No
     @Test
     public void checkInvalidInput(){
         String invalidTimeFormat = "invalidTimeFormat";
@@ -61,7 +63,8 @@ public class CreateNewEventTest {
         onView(withId(R.id.et_sTime)).check(matches(not(hasValidTimeFormat())));
     }
 
-    // ChatGPT
+    
+    //ChatGPT usage: No
     private static Matcher<View> hasValidTimeFormat() {
         return new TypeSafeMatcher<View>() {
             @Override

@@ -1,5 +1,8 @@
 const Scheduler = require('../Interfaces/Scheduler.js');
 
+// 27 unit tests in server.test.js
+// 6 unit test in scheduler.test.js
+
 // mock google api function
 const { Client } = require("@googlemaps/google-maps-services-js");
 jest.mock("@googlemaps/google-maps-services-js", () => {
@@ -40,6 +43,7 @@ describe('Testing google API getDirections', () => {
     const mockData = { data: { routes: [{ legs: [{ distance: { value: 18199 }, }]}]} };
     clientInstance.directions.mockResolvedValue(mockData);
 
+    //ChatGPT usage: No
     it('should give a direction from this location to mcml by car', async () => {
         const direction = await Scheduler.getDirections(mockOrigin, mockEvent, mockPreferences);
 
@@ -47,6 +51,7 @@ describe('Testing google API getDirections', () => {
         expect(direction.routes[0].legs[0].distance.value).toBe(18199);
     })
 
+    //ChatGPT usage: No
     it('should also give route via transit', async () => {
         mockPreferences.commute_method = 'Transit';
         const direction = await Scheduler.getDirections(mockOrigin, mockEvent, mockPreferences);
@@ -81,6 +86,7 @@ describe('Test optimizer helper for routes', () => {
         }
     })
 
+    //ChatGPT usage: Partial
     it('should pick route with shortest duration', () => {
         mockRouteB.legs[0].duration.value = 1; // a takes longer
         let result = Scheduler.compareRoutes(mockRouteA, mockRouteB);
@@ -91,6 +97,7 @@ describe('Test optimizer helper for routes', () => {
         expect(result).toBe(-1);
     })
 
+    //ChatGPT usage: No
     it('should then pick route with least steps', () => {
         mockRouteB.legs[0].steps = [1, 2]; // a has more steps
         let result = Scheduler.compareRoutes(mockRouteA, mockRouteB);
@@ -101,6 +108,7 @@ describe('Test optimizer helper for routes', () => {
         expect(result).toBe(-1);
     })
 
+    //ChatGPT usage: Partial
     it('should then pick route with earliest arrival time', () => {
         // a arrives later than b
         let arrivalB = new Date(now);
@@ -117,6 +125,7 @@ describe('Test optimizer helper for routes', () => {
         expect(result).toBe(-1);
     })
 
+    //ChatGPT usage: No
     it('should return 0 when both routes are exactly equal', () => {
         let result = Scheduler.compareRoutes(mockRouteA, mockRouteB);
         expect(result).toBe(0);

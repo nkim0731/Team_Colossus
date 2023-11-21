@@ -11,6 +11,18 @@ afterAll(() => {
     server.close();
 })
 
+// Frontend tests
+// 27 unit tests in server.test.js
+// 6 unit test in scheduler.test.js
+// 5 unit tests in message.test.js
+// 22 unit tests in database.test.js
+
+//Backend tests
+// 2 tests in CreateNewEventTest.java
+// 1 test in ExampleInstrumentedTest.java
+// 3 tests in preferenceTest.java
+// 4 tests in SendMessageTest.java
+
 const today = new Date();
 const mockEvents = [
     { 
@@ -82,6 +94,7 @@ const mockSchedule = [
 // Interface POST /api/calendar/day_schedule
 describe('create day schedule for a user', () => {
 
+    // ChatGPT usage: Partial
     // Input: 
     // Expected status code: 
     // Expected behavior: 
@@ -114,6 +127,7 @@ describe('create day schedule for a user', () => {
         expect(db.addSchedule).toHaveBeenCalledWith(data.username, res.body);
     })
 
+    // ChatGPT usage: Partial
     it('should not make a schedule for an invalid token', async () => {
         const data = { 
             username: 'user@gmail.com', 
@@ -136,6 +150,7 @@ describe('create day schedule for a user', () => {
         expect(db.verifyUser).toHaveBeenCalledWith(id_token, data.username, process.env.CLIENT_ID);
     })
 
+    // ChatGPT usage: Partial
     it('should throw error if getting direction fails', async () => {
         const data = { 
             username: 'user@gmail.com', 
@@ -164,6 +179,7 @@ describe('create day schedule for a user', () => {
 // Interface GET /api/calendar/day_schedule
 describe('get day schedule for a user', () => {
     
+    // ChatGPT usage: Partial
     it('should be able to return the day schedule', async () => {
         let day = new Date(today);
         day.setHours(0, 0, 0, 0);
@@ -182,6 +198,7 @@ describe('get day schedule for a user', () => {
         expect(db.getSchedule).toHaveBeenCalledWith(mockUser.username);
     })
 
+    // ChatGPT usage: Partial
     it('should handle bad token in get', async () => {
         let day = new Date(today);
         day.setHours(0, 0, 0, 0);
@@ -197,6 +214,7 @@ describe('get day schedule for a user', () => {
         expect(res.body).toHaveProperty('message');
     })
 
+    // ChatGPT usage: Partial
     it('should handle internal server error', async () => {
         let day = new Date(today);
         day.setHours(0, 0, 0, 0);
@@ -229,6 +247,8 @@ describe('get calendar events of a given day', () => {
             address: '2357 Main Mall, Vancouver',
         },
     ]
+
+    // ChatGPT usage: Partial
     // Input: username as email string, id_token google auth session, day string
     // Expected status code: 200
     // Expected behavior: a valid user gets events on 
@@ -250,6 +270,8 @@ describe('get calendar events of a given day', () => {
         expect(db.verifyUser).toHaveBeenCalledWith(id_token, user, process.env.CLIENT_ID);
         expect(db.getCalendar).toHaveBeenCalledWith(user);
     })
+
+    // ChatGPT usage: Partial
     // Input: username as email string, id_token google auth session, day string
     // Expected status code: 500
     // Expected behavior: 
@@ -267,6 +289,8 @@ describe('get calendar events of a given day', () => {
         expect(res.status).toBe(500);
         expect(res.body).toHaveProperty('error');
     });
+
+    // ChatGPT usage: Partial
     // Input: username as email string, invalid id_token google auth session, day string
     // Expected status code: 400
     // Expected behavior: 
@@ -297,6 +321,8 @@ describe('get the message history of a specific chat', () => {
     ];
     const mockChatName = 'cpen321';
 
+
+    // ChatGPT usage: Partial
     it('should get message history of a chatroom', async () => {
         db.getMessages.mockResolvedValue({ messages: [
             {message: 'hi', sender: 'me', timestamp: 123},
@@ -312,6 +338,8 @@ describe('get the message history of a specific chat', () => {
         expect(db.getMessages).toHaveBeenCalledWith(mockChatName);
     })
 
+
+    // ChatGPT usage: Partial
     it('should return error if issue with database or connection', async () => {
         jest.spyOn(db, 'getMessages').mockImplementation(() => { throw new Error('Database error'); });
         const res = await request(server).get(`/api/message_history?chatName=${mockChatName}`);
@@ -343,6 +371,8 @@ describe('get chatrooms associated with a user', () => {
         },
     ];
 
+
+    // ChatGPT usage: Partial
     it('should get chatrooms of a user', async () => {
         db.getCalendar.mockResolvedValue({ events: mockEvents });
         jest.spyOn(db, 'getRoom').mockImplementation((eventName) => { 
@@ -358,6 +388,8 @@ describe('get chatrooms associated with a user', () => {
         expect(res.body).toBeInstanceOf(Array);
     })
 
+
+    // ChatGPT usage: Partial
     it('should create chatroom instance if not existing already', async () => {
         db.getCalendar.mockResolvedValue({ events: mockEvents });
         jest.spyOn(db, 'getRoom').mockImplementation(() => { 
@@ -373,6 +405,8 @@ describe('get chatrooms associated with a user', () => {
         expect(res.body).toBeInstanceOf(Array);
     })
 
+
+    // ChatGPT usage: Partial
     it('should handle database errors', async () => {
         jest.spyOn(db, 'getCalendar').mockImplementation(() => { throw new Error('Database Error'); });
         const res = await request(server).get(`/api/chatrooms?user=${mockUser}`);
@@ -438,6 +472,8 @@ const sampleUser = {
 // Interface POST /login/google
 // this endpoint is not supposed to take anything else other than username
 describe('logging in or registering with google signin', () => {
+
+    // ChatGPT usage: Partial
     // Input: sampleUser is valid user
     // Expected status code: 200
     // Expected behavior: user is added to the database, and output is register new user
@@ -456,6 +492,7 @@ describe('logging in or registering with google signin', () => {
         expect(db.addUser).toHaveBeenCalledWith(sampleUser);
     });
 
+    // ChatGPT usage: Partial
     // Input: invalidUser
     // Expected status code: 500
     // Expected behavior: user is not added
@@ -474,6 +511,7 @@ describe('logging in or registering with google signin', () => {
         expect(response.body).toHaveProperty('error');
     });
 
+    // ChatGPT usage: Partial
     // Input: sampleUser is valid user
     // Expected status code: 200
     // Expected behavior: user is added to the database, and output is login user
@@ -495,6 +533,8 @@ describe('logging in or registering with google signin', () => {
 
 // Interface GET /api/preferences
 describe('get a user preferences', () => {
+
+    // ChatGPT usage: Partial
     // Test case: Retrieving user preferences
     // Input: sampleUser is an existing user in the database
     // Expected status code: 200
@@ -511,6 +551,8 @@ describe('get a user preferences', () => {
         expect(response.body).toEqual(sampleUser.preferences);
     });
 
+
+    // ChatGPT usage: Partial
     // Test case: Retrieving preferences for a non-existing user
     // Input: nonExistingUser is a user not present in the database
     // Expected status code: 404 (Not Found) or similar
@@ -527,6 +569,13 @@ describe('get a user preferences', () => {
         expect(response.body).toHaveProperty('error');
     });
 
+
+    // ChatGPT usage: Partial
+    // Test case: connection error to database or server error
+    // Input: sampleUser username
+    // Expected status code: 500
+    // Expected behavior: internal server error
+    // Expected output: error message
     it('should fail on server error/database connection issues', async () => {
         db.userExists.mockResolvedValue(true);
         jest.spyOn(db, 'getUser').mockImplementation(() => { throw new Error('Database Error'); });
@@ -560,6 +609,7 @@ describe('update a user preferences', () => {
         vibration_alert: true
     }
 
+    // ChatGPT usage: Partial
     // Test case: Updating user preferences
     // Input: sampleUser is an existing user, preferencesUpdate contains new preferences
     // Expected status code: 200
@@ -583,6 +633,7 @@ describe('update a user preferences', () => {
         expect(db.updatePreferences).toHaveBeenCalledWith(sampleUser.username, preferencesUpdate);
     })
 
+    // ChatGPT usage: Partial
     // Test case: Updating preferences for a non-existing user
     // Input: nonExistingUser is a user not present in the database, preferencesUpdate contains new preferences
     // Expected status code: 404 (Not Found) or similar
@@ -600,6 +651,12 @@ describe('update a user preferences', () => {
         expect(response.body.error).toMatch(/No such user exists/);
     });
 
+    // ChatGPT usage: Partial
+    // Test case: connection error to database or server error
+    // Input: sampleUser username, preferencesUpdate contains new preferences
+    // Expected status code: 500
+    // Expected behavior: internal server error
+    // Expected output: error message
     it('should fail on connection error to database or server error', async () => {
         db.userExists.mockResolvedValue(true);
         jest.spyOn(db, 'updatePreferences').mockImplementation(() => { throw new Error('Database Error') });

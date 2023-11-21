@@ -16,6 +16,11 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+// 2 tests in CreateNewEventTest.java
+// 1 test in ExampleInstrumentedTest.java
+// 3 tests in preferenceTest.java
+// 4 tests in SendMessageTest.java
+
 public class SendMessageTest {
     @Rule
     public ActivityScenarioRule<GroupChat> activityRule =

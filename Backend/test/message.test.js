@@ -9,6 +9,10 @@ const db = require('../Databases/Database.js');
 jest.mock('../Databases/Database.js');
 
 
+// 27 unit tests in server.test.js
+// 6 unit test in scheduler.test.js
+// 5 unit tests in message.test.js
+
 describe('Test socket server group chat', () => {
     let chatManager, clientSocket, server;
 
@@ -35,6 +39,7 @@ describe('Test socket server group chat', () => {
     const user = 'user@gmail.com';
     const mockChat = 'cpen321';
 
+    //ChatGPT usage: Partial
     test('join chat if chat exists for user', (done) => {
         db.getUser.mockResolvedValue({events: [{eventName: mockChat}]});
 
@@ -49,6 +54,7 @@ describe('Test socket server group chat', () => {
         });
     })
 
+    //ChatGPT usage: No
     test('leave chatroom', (done) => {
         db.getUser.mockResolvedValue({events: [{eventName: mockChat}]});
 
@@ -66,6 +72,7 @@ describe('Test socket server group chat', () => {
         });
     })
 
+    //ChatGPT usage: Partial
     test('sending message', (done) => {
         let mockMessage = {
             sender: user,
@@ -90,6 +97,7 @@ describe('Test socket server group chat', () => {
         });
     })
 
+    //ChatGPT usage: No
     test('invalid chat', async () => {
         db.getUser.mockResolvedValue({events: [{eventName: 'not cpen321'}]});
 
@@ -105,6 +113,7 @@ describe('Test socket server group chat', () => {
         expect(testSocket.chatName).toBeUndefined();
     })
 
+    //ChatGPT usage: No
     test('invalid io (server error)', () => {
         chatManager.io = null;
         expect(chatManager.io).toBeNull();
