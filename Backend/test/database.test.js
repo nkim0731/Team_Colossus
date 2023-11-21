@@ -9,9 +9,6 @@ const ChatModel = mongoose.model('chat', require('../Schema/chatSchema'));
 
 let mongoServer;
 beforeAll(async () => {
-    process.env.TESTING = 'false';
-    await db.connect();
-    await db.disconnect();
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = await mongoServer.getUri();
 
@@ -22,7 +19,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-    process.env.TESTING = 'true';
     await mongoose.disconnect();
     await mongoServer.stop();
 });
@@ -386,6 +382,17 @@ describe('Test database interactions', () => {
         expect(findChat.chatName).toBe(newRoom);
         expect(findChat.messages.length).toBe(1);
         expect(findChat.messages).toContainEqual(expect.objectContaining({ message: 'newmessage' }));
+    })
+
+    // connect coverage, run this last since it disconnects from memoryserver
+    test('connect function on database', async () => {
+        await mongoose.disconnect();
+        
+        process.env.TESTING = 'false';
+        const mongooseConnectSpy = jest.spyOn(mongoose, 'connect')
+        await db.connect();
+        expect(mongooseConnectSpy).toHaveBeenCalledWith(process.env.MONGO_URI);
+        process.env.TESTING = 'true';
     })
 })
 

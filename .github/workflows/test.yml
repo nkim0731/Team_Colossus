@@ -27,11 +27,6 @@ jobs:
         with:
           node-version: 16.20.1
 
-      - name: Start MongoDB
-        uses: supercharge/mongodb-github-action@1.6.0
-        with:
-          mongodb-version: 6.1.0
-
       - name: Change to Backend Directory
         run: cd Backend
 
