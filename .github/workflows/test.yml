@@ -1,12 +1,6 @@
 name: Backend Tests
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   backend-tests:
@@ -42,3 +36,70 @@ jobs:
       - name: Run tests
         run: npm test
         working-directory: Backend
+
+
+
+
+
+
+
+# name: Backend Tests
+
+# on: [push, pull_request]
+        
+# jobs:
+#       initial-setup:
+#         runs-on: ubuntu-latest
+    
+#             steps:
+#               - name: Checkout code
+#                 uses: actions/checkout@v2
+        
+#               - name: Set up Node.js
+#                 uses: actions/setup-node@v2
+#                 with:
+#                   node-version: 16.20.1
+        
+        
+        
+#           mongodb-installation-run:
+#               runs-on: ubuntu-latest
+#               needs: initial-setup  # This means mongodb-installation-run will run after intial-setup is completed
+#               steps:
+#               - name: Install MongoDB
+#                 run: |
+#                   if ! command -v mongo &> /dev/null
+#                   then
+#                     wget -qO - https://www.mongodb.org/static/pgp/server-5.0.asc | sudo apt-key add -
+#                     echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/5.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-5.0.list
+#                     sudo apt-get update
+#                     sudo apt-get install -y mongodb-org
+#                   else
+#                     echo "MongoDB is already installed."
+#                   fi
+          
+#               - name: Start MongoDB Service
+#                 run: |
+#                   sudo systemctl start mongod || true
+#                   sudo systemctl enable mongod || true
+          
+#               - name: Verify MongoDB Installation
+#                 run: |
+#                   sudo systemctl status mongod
+#                   mongo --eval 'db.runCommand({ connectionStatus: 1 })'
+        
+        
+#           backend-tests:
+#             runs-on: ubuntu-latest
+#             needs: mongodb-installation-run  # This means backend-tests will run after mongodb-installation-run is completed
+#             steps:
+#               - name: Change to Backend Directory
+#                 run: cd Backend
+        
+#               - name: Install dependencies
+#                 run: npm install
+#                 working-directory: Backend
+        
+#               - name: Run tests
+#                 run: npm test
+#                 working-directory: Backend
