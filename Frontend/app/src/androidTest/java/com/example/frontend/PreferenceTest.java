@@ -41,6 +41,10 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+
+// 1 test in ExampleInstrumentedTest.java
+// 3 tests in preferenceTest.java
+
 public class PreferenceTest {
     @Rule
     public ActivityScenarioRule<PreferenceActivity> activityRule =

@@ -20,7 +20,8 @@ const path = require('path');
 const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
-const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/test_calendoDB";
+// const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/test_calendoDB";
+const mongoURI = process.env.MONGO_URI;
 
 class Database {
     constructor() {
@@ -30,14 +31,14 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
-        await mongoose.connect(mongoURI);
+        if (process.env.TESTING === 'false') await mongoose.connect(mongoURI);
         console.log('Database class connected to MongoDB at: ' + mongoURI);
     }
 
-    async disconnect() {
-        await mongoose.disconnect();
-        console.log('Database class disconnected from MongoDB');
-    }
+    // async disconnect() {
+    //     await mongoose.disconnect();
+    //     console.log('Database class disconnected from MongoDB');
+    // }
 
 
     // Get data for user by username/email (unique)

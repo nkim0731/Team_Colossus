@@ -7,9 +7,14 @@ const { OAuth2Client } = require('google-auth-library');
 const UserModel = mongoose.model('user', require('../Schema/userSchema'));
 const ChatModel = mongoose.model('chat', require('../Schema/chatSchema'));
 
+
+// 27 unit tests in server.test.js
+// 6 unit test in scheduler.test.js
+// 5 unit tests in message.test.js
+// 22 unit tests in database.test.js
+
 let mongoServer;
 beforeAll(async () => {
-    await db.disconnect();
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = await mongoServer.getUri();
 
@@ -27,6 +32,7 @@ afterAll(async () => {
 describe('Test database interactions', () => {
     const mockUser = 'user@gmail.com';
 
+    //ChatGPT usage: No
     test('getUser gets correct user given username', async () => {
         await UserModel.create({ username: mockUser });
 
@@ -34,6 +40,7 @@ describe('Test database interactions', () => {
         expect(gotUser.username).toBe(mockUser);
     })
 
+    //ChatGPT usage: No
     test('getUser fails with nonexisting username', async () => {
         try {
             await db.getUser('nouser@gmail.com');
@@ -45,6 +52,7 @@ describe('Test database interactions', () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
 
+    //ChatGPT usage: No
     // need to mock expected behavior given input of this.authClient.verifyIdToken and ticket.getPayload
     test('verifyUser works with correct token', async () => {
         const id_token = 'token';
@@ -67,6 +75,7 @@ describe('Test database interactions', () => {
         expect(res).toBeTruthy();
     })
 
+    //ChatGPT usage: No
     test('verifyUser fails if no payload', async () => {
         const id_token = 'token';
         const user = 'testuser@gmail.com';
@@ -85,6 +94,7 @@ describe('Test database interactions', () => {
         expect(res).toBeFalsy();
     })
 
+    //ChatGPT usage: No
     test('verifyUser fails on invalid payload', async () => {
         const id_token = 'token';
         const user = 'testuser@gmail.com';
@@ -96,6 +106,7 @@ describe('Test database interactions', () => {
         expect(res).toBeFalsy();
     })
 
+    //ChatGPT usage: No
     test('addUser adds a valid username to database', async () => {
         const newUser = { username: 'newuser@gmail.com' };
         await db.addUser(newUser);
@@ -105,6 +116,7 @@ describe('Test database interactions', () => {
         expect(findUser.username).toBe(newUser.username);
     })
 
+    //ChatGPT usage: No
     test('addUser fails on invalid user', async () => {
         const invalidUser = { username: null };
         try {
@@ -135,6 +147,7 @@ describe('Test database interactions', () => {
         daySchedule: [],
     };
 
+    //ChatGPT usage: No
     test('updatePreferences works on correct inputs', async () => {
         const newUser = new UserModel(preferenceUser);
         await newUser.save();
@@ -166,6 +179,7 @@ describe('Test database interactions', () => {
         expect(findUser.preferences).toEqual(expectedPreferences);
     })
 
+    //ChatGPT usage: No
     test('fail to updatePreferences for non-existing user', async () => {
         const badUser = 'doesntexist@gmail.com';
         const updatedPreferences = { 
@@ -228,6 +242,7 @@ describe('Test database interactions', () => {
         ]
     };
 
+    //ChatGPT usage: No
     test('getCalendar for a valid user', async () => {
         const newUser = new UserModel(sampleUser);
         await newUser.save();
@@ -239,6 +254,7 @@ describe('Test database interactions', () => {
         expect(findUser.events).toEqual(sampleUser.events);
     })
 
+    //ChatGPT usage: No
     test('getCalendar fail on invalid user', async () => {
         const badUser = 'invalid@gmail.com';
 
@@ -273,6 +289,7 @@ describe('Test database interactions', () => {
         }
     ];
 
+    //ChatGPT usage: Yes
     test('addEvents to a valid user', async () => {
         await db.addEvents(sampleUser.username, eventsToAdd);
         
@@ -284,6 +301,7 @@ describe('Test database interactions', () => {
         expect(findUser.events).toContainEqual(expectedAddedEvent);
     })
 
+    //ChatGPT usage: Yes
     test('addEvents fail on invalid user', async () => {
         const badUser = 'invalid@gmail.com';
 
@@ -296,6 +314,7 @@ describe('Test database interactions', () => {
         expect(findUser).toBeNull();
     })
 
+    //ChatGPT usage: Yes
     const scheduleToAdd = [ { event: 'event1', route: 'route 1' }, ];
     test('addSchedule for valid user', async () => {
         await db.addSchedule(sampleUser.username, scheduleToAdd);
@@ -304,6 +323,7 @@ describe('Test database interactions', () => {
         expect(findUser.daySchedule).toEqual(scheduleToAdd);
     })
 
+    //ChatGPT usage: Yes
     test('addSchedule fails on invalid user', async () => {
         const badUser = 'invalid@gmail.com';
 
@@ -316,11 +336,13 @@ describe('Test database interactions', () => {
         expect(findUser).toBeNull();
     })
 
+    //ChatGPT usage: Yes
     test('getSchedule for valid user', async () => {
         const res = await db.getSchedule(sampleUser.username);
         expect(res.daySchedule).toEqual(scheduleToAdd);
     })
 
+    //ChatGPT usage: Yes
     test('getSchedule fails for invalid user', async () => {
         const badUser = 'invalid@gmail.com';
 
@@ -341,6 +363,8 @@ describe('Test database interactions', () => {
         { message: 'hi', sender: 'me', timestamp: 123 }, 
         { message: 'lastmessage', sender: 'me', timestamp: 123 }, // test value for message limit is 5
     ] };
+
+    //ChatGPT usage: No
     test('getMessages succeeds for chat', async () => {
         const newRoom = new ChatModel(mockChat);
         await newRoom.save();
@@ -349,6 +373,7 @@ describe('Test database interactions', () => {
         expect(res.messages.length).toBe(testMessageLimit);
     })
 
+    //ChatGPT usage: No
     test('createRoom makes new room in database', async () => {
         const newRoomName = 'cpen491';
 
@@ -357,6 +382,7 @@ describe('Test database interactions', () => {
         expect(res.messages.length).toBe(0);
     })
 
+    //ChatGPT usage: No
     test('getRoom returns the room object from database', async () => {
         const res = await db.getRoom(mockChat.chatName);
         expect(res.chatName).toBe(mockChat.chatName);
@@ -365,6 +391,7 @@ describe('Test database interactions', () => {
 
     const message = { message: 'newmessage', sender: 'test', timestamp: 321 };
 
+    //ChatGPT usage: No
     test('addMessage adds a message to a chat', async () => {
         await db.addMessage(mockChat.chatName, message);
 
@@ -375,6 +402,7 @@ describe('Test database interactions', () => {
         expect(findChat.messages).not.toContainEqual(expect.objectContaining({ message: 'lastmessage' }));
     })
 
+    //ChatGPT usage: No
     test('addMessage creates room if not exist and adds message', async () => {
         const newRoom = 'cpen355';
         await db.addMessage(newRoom, message);
@@ -383,6 +411,22 @@ describe('Test database interactions', () => {
         expect(findChat.chatName).toBe(newRoom);
         expect(findChat.messages.length).toBe(1);
         expect(findChat.messages).toContainEqual(expect.objectContaining({ message: 'newmessage' }));
+    })
+
+    //ChatGPT usage: No
+    // connect coverage, run this last since it disconnects from memoryserver
+    test('connect function on database', async () => {
+        await mongoose.disconnect();
+        process.env.TESTING = 'false';
+
+        jest.mock('mongoose');
+        const connectSpy = jest.spyOn(mongoose, 'connect').mockImplementation(() => { return true });
+
+        await db.connect();
+        expect(connectSpy).toHaveBeenCalledWith(process.env.MONGO_URI);
+        
+        jest.unmock('mongoose');
+        process.env.TESTING = 'true';
     })
 })
 

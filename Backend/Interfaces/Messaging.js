@@ -81,7 +81,7 @@ class ChatManager {
 
             // ChatGPT usage: Yes
             socket.on('disconnect', () => {
-                console.log('A user disconnected');
+                // console.log('A user disconnected');
                 if (socket.chatName) {
                     socket.leave(socket.chatName);
                 }

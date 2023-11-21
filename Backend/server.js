@@ -262,7 +262,7 @@ const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
     
 // httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
-server.listen(3000, () => console.log('Server started on port 3000'));
+server.listen(3000, () => console.log('Server started on port 8081'));
 
 // function cleanUp() {
 //     ChatMangaer.closeSocket();
