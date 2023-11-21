@@ -30,6 +30,8 @@ describe('Test socket server group chat', () => {
 
     afterAll(() => {
         server.close();
+        clientSocket.disconnect();
+        chatManager.closeSocket();
     })
 
     const user = 'user@gmail.com';
