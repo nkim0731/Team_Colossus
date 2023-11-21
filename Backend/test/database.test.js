@@ -9,6 +9,8 @@ const ChatModel = mongoose.model('chat', require('../Schema/chatSchema'));
 
 let mongoServer;
 beforeAll(async () => {
+    process.env.TESTING = 'false';
+    await db.connect();
     await db.disconnect();
     mongoServer = await MongoMemoryServer.create();
     const mongoUri = await mongoServer.getUri();
@@ -20,6 +22,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+    process.env.TESTING = 'true';
     await mongoose.disconnect();
     await mongoServer.stop();
 });

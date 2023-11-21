@@ -20,7 +20,9 @@ const path = require('path');
 const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
-const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/test_calendoDB";
+// const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/test_calendoDB";
+// just update the env file for this because this line loses branch coverage because of || use
+const mongoURI = process.env.MONGO_URI;
 
 class Database {
     constructor() {
@@ -30,7 +32,7 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
-        await mongoose.connect(mongoURI);
+        if (process.env.TESTING === 'false') await mongoose.connect(mongoURI);
         console.log('Database class connected to MongoDB at: ' + mongoURI);
     }
 

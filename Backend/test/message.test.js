@@ -28,9 +28,9 @@ describe('Test socket server group chat', () => {
         chatManager.closeSocket();
     });
 
-    // afterAll(() => {
-    //     server.close();
-    // })
+    afterAll(() => {
+        server.close();
+    })
 
     const user = 'user@gmail.com';
     const mockChat = 'cpen321';

@@ -7,6 +7,9 @@ const Scheduler = require('../Interfaces/Scheduler.js');
 // mock database functions to only test endpoint functionalities
 jest.mock('../Databases/Database.js');
 
+afterAll(() => {
+    server.close();
+})
 
 const today = new Date();
 const mockEvents = [
