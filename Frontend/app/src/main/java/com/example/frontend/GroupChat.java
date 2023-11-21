@@ -98,7 +98,7 @@ public class GroupChat extends AppCompatActivity {
 
         //send button callback
         sendButton.setOnClickListener(v -> {
-
+            long startTime = System.currentTimeMillis();
             String messageText = messageEditText.getText().toString();
             // Add the message to the message list or send it to a server
             // Then, update the RecyclerView to display the new message
@@ -114,6 +114,9 @@ public class GroupChat extends AppCompatActivity {
                 messageRecyclerView.scrollToPosition(messages.size() - 1);
                 messageAdapter.notifyDataSetChanged();
                 messageEditText.setText(""); // Clear the message input field
+                long endTime = System.currentTimeMillis();
+                long interval = endTime - startTime;
+                Log.d(TAG,"Message sent and receive time in milliseconds: " + interval);
             }
 
         });
