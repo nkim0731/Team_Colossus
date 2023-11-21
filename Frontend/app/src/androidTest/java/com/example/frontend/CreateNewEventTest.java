@@ -36,13 +36,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 
 public class CreateNewEventTest {
+
     @Rule
-    public ActivityScenarioRule<CreateNewEvent> calendarActivityActivityTestRule1
-            = new ActivityScenarioRule<>(CreateNewEvent.class);
+    public ActivityScenarioRule<CalendarActivity> calendarActivityActivityTestRule1
+            = new ActivityScenarioRule<>(CalendarActivity.class);
+
 
     //ChatGPT usage: No
     @Test
     public void checkValidInput(){
+        onView(withId(R.id.button_createEvent)).perform(click());
 
         onView(withId(R.id.et_eName)).perform(replaceText("cpen321"));
         onView(withId(R.id.et_location)).perform(replaceText("mcld"));
@@ -51,9 +54,11 @@ public class CreateNewEventTest {
 
     }
 
-    //ChatGPT usage: No
+    // ChatGPT usage: No
     @Test
     public void checkInvalidInput(){
+        onView(withId(R.id.button_createEvent)).perform(click());
+
         String invalidTimeFormat = "invalidTimeFormat";
         onView(withId(R.id.et_eName)).perform(replaceText("cpen321"));
         onView(withId(R.id.et_location)).perform(replaceText("mcld"));
@@ -63,8 +68,7 @@ public class CreateNewEventTest {
         onView(withId(R.id.et_sTime)).check(matches(not(hasValidTimeFormat())));
     }
 
-    
-    //ChatGPT usage: No
+    // ChatGPT : Yes
     private static Matcher<View> hasValidTimeFormat() {
         return new TypeSafeMatcher<View>() {
             @Override
