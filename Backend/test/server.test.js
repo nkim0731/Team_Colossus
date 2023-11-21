@@ -7,17 +7,18 @@ const Scheduler = require('../Interfaces/Scheduler.js');
 // mock database functions to only test endpoint functionalities
 jest.mock('../Databases/Database.js');
 
+// clean up server of tests
 afterAll(() => {
     server.close();
 })
 
-// Frontend tests
+// Backend tests
 // 27 unit tests in server.test.js
 // 6 unit test in scheduler.test.js
 // 5 unit tests in message.test.js
 // 22 unit tests in database.test.js
 
-//Backend tests
+// Frontend tests
 // 2 tests in CreateNewEventTest.java
 // 1 test in ExampleInstrumentedTest.java
 // 3 tests in preferenceTest.java
@@ -95,10 +96,10 @@ const mockSchedule = [
 describe('create day schedule for a user', () => {
 
     // ChatGPT usage: Partial
-    // Input: 
-    // Expected status code: 
-    // Expected behavior: 
-    // Expected output: 
+    // Input: username latitude longitude id_token
+    // Expected status code: 200
+    // Expected behavior: create and store schedule in database
+    // Expected output: return the schedule 
     it('should create a schedule for the current day', async () => {
         const data = { 
             username: 'user@gmail.com', 
@@ -128,6 +129,11 @@ describe('create day schedule for a user', () => {
     })
 
     // ChatGPT usage: Partial
+    // Test Case: invalid token
+    // Input: invalid token, username, latitude, longitude
+    // Expected status code: 400
+    // Expected behavior: nothing
+    // Expected output: error
     it('should not make a schedule for an invalid token', async () => {
         const data = { 
             username: 'user@gmail.com', 
@@ -151,6 +157,11 @@ describe('create day schedule for a user', () => {
     })
 
     // ChatGPT usage: Partial
+    // Test Case: unable to get directions somewhere
+    // Input: username, invalid latitude and/or longitude, id_token
+    // Expected status code: 500
+    // Expected behavior: nothing
+    // Expected output: error
     it('should throw error if getting direction fails', async () => {
         const data = { 
             username: 'user@gmail.com', 
@@ -180,6 +191,11 @@ describe('create day schedule for a user', () => {
 describe('get day schedule for a user', () => {
     
     // ChatGPT usage: Partial
+    // Test Case: get day schedule out of database
+    // Input: date today, username, id_token
+    // Expected status code: 200
+    // Expected behavior: retrieve schedule from db
+    // Expected output: schedule object
     it('should be able to return the day schedule', async () => {
         let day = new Date(today);
         day.setHours(0, 0, 0, 0);
@@ -198,7 +214,12 @@ describe('get day schedule for a user', () => {
         expect(db.getSchedule).toHaveBeenCalledWith(mockUser.username);
     })
 
-    // ChatGPT usage: Partial
+    // ChatGPT usage: No
+    // Test Case: invalid token
+    // Input: invalid_token, username, today
+    // Expected status code: 400
+    // Expected behavior: nothing
+    // Expected output: error
     it('should handle bad token in get', async () => {
         let day = new Date(today);
         day.setHours(0, 0, 0, 0);
@@ -215,6 +236,11 @@ describe('get day schedule for a user', () => {
     })
 
     // ChatGPT usage: Partial
+    // Test Case: internal server error
+    // Input: id_token, today, username
+    // Expected status code: 500
+    // Expected behavior: nothing
+    // Expected output: error
     it('should handle internal server error', async () => {
         let day = new Date(today);
         day.setHours(0, 0, 0, 0);
@@ -274,8 +300,8 @@ describe('get calendar events of a given day', () => {
     // ChatGPT usage: Partial
     // Input: username as email string, id_token google auth session, day string
     // Expected status code: 500
-    // Expected behavior: 
-    // Expected output: 
+    // Expected behavior: nothing
+    // Expected output: error
     it('should handle error case', async () => {
         jest.spyOn(db, 'verifyUser').mockImplementation(() => { throw new Error('Database error'); });
         const user = 'user@gmail.com';
@@ -293,8 +319,8 @@ describe('get calendar events of a given day', () => {
     // ChatGPT usage: Partial
     // Input: username as email string, invalid id_token google auth session, day string
     // Expected status code: 400
-    // Expected behavior: 
-    // Expected output: 
+    // Expected behavior: nothing
+    // Expected output: error
     it('should handle an invalid token', async () => {
         const user = 'user@gmail.com';
         const id_token = 'invalid_token';
@@ -323,6 +349,11 @@ describe('get the message history of a specific chat', () => {
 
 
     // ChatGPT usage: Partial
+    // Test Case: get messages of a room
+    // Input: chatName
+    // Expected status code: 200
+    // Expected behavior: fetch messages from db
+    // Expected output: array of message objects
     it('should get message history of a chatroom', async () => {
         db.getMessages.mockResolvedValue({ messages: [
             {message: 'hi', sender: 'me', timestamp: 123},
@@ -340,6 +371,11 @@ describe('get the message history of a specific chat', () => {
 
 
     // ChatGPT usage: Partial
+    // Test Case: internal server error
+    // Input: chatName
+    // Expected status code: 500
+    // Expected behavior: nothing
+    // Expected output: error
     it('should return error if issue with database or connection', async () => {
         jest.spyOn(db, 'getMessages').mockImplementation(() => { throw new Error('Database error'); });
         const res = await request(server).get(`/api/message_history?chatName=${mockChatName}`);
@@ -373,6 +409,11 @@ describe('get chatrooms associated with a user', () => {
 
 
     // ChatGPT usage: Partial
+    // Test Case: retrieve chatroom associated with a user
+    // Input: username
+    // Expected status code: 200 
+    // Expected behavior: fetch chatrooms filtered on ones user has
+    // Expected output: array of chatrooms
     it('should get chatrooms of a user', async () => {
         db.getCalendar.mockResolvedValue({ events: mockEvents });
         jest.spyOn(db, 'getRoom').mockImplementation((eventName) => { 
@@ -390,6 +431,11 @@ describe('get chatrooms associated with a user', () => {
 
 
     // ChatGPT usage: Partial
+    // Test Case: first message to chatroom, create the room
+    // Input: username
+    // Expected status code: 200
+    // Expected behavior: creates chatroom for event in db
+    // Expected output: array of chatrooms of user
     it('should create chatroom instance if not existing already', async () => {
         db.getCalendar.mockResolvedValue({ events: mockEvents });
         jest.spyOn(db, 'getRoom').mockImplementation(() => { 
@@ -407,6 +453,11 @@ describe('get chatrooms associated with a user', () => {
 
 
     // ChatGPT usage: Partial
+    // Test Case: internal server error
+    // Input: username
+    // Expected status code: 500
+    // Expected behavior: nothing
+    // Expected output: error
     it('should handle database errors', async () => {
         jest.spyOn(db, 'getCalendar').mockImplementation(() => { throw new Error('Database Error'); });
         const res = await request(server).get(`/api/chatrooms?user=${mockUser}`);
@@ -677,6 +728,11 @@ describe('update a user preferences', () => {
 
 // Interface GET /api/calendar
 describe('get a user events', () => {
+    // Test Case: get events of a user
+    // Input: username, id_token
+    // Expected status code: 200
+    // Expected behavior: fetch events from db
+    // Expected output: events array from db
     it('should get events array of a valid user', async () => {
         const id_token = 'token';
         db.verifyUser.mockResolvedValue(true);
@@ -691,6 +747,11 @@ describe('get a user events', () => {
         expect(db.getCalendar).toHaveBeenCalledWith(sampleUser.username);
     })
 
+    // Test Case: invalid token
+    // Input: invalid_token, username
+    // Expected status code: 400
+    // Expected behavior: nothing
+    // Expected output: error
     it('should fail on invalid token', async () => {
         const id_token = 'invalid_token';
         db.verifyUser.mockResolvedValue(false);
@@ -704,6 +765,11 @@ describe('get a user events', () => {
         expect(res.body).toHaveProperty('message');
     })
 
+    // Test Case: internal server error
+    // Input: id_token, username
+    // Expected status code: 500
+    // Expected behavior: nothing
+    // Expected output: error
     it('should fail on server error', async () => {
         const id_token = 'token';
         db.verifyUser.mockResolvedValue(true);
@@ -737,6 +803,11 @@ describe('create a user events and add it to the user data', () => {
         },
     ];
 
+    // Test Case: adding events to user
+    // Input: array of events, username, id_token
+    // Expected status code: 200
+    // Expected behavior: events pushed to events array of user on db
+    // Expected output: success message
     it('should be able to push array of events', async () => {
         const id_token = 'token';
         const data = {
@@ -757,6 +828,11 @@ describe('create a user events and add it to the user data', () => {
         expect(db.addEvents).toHaveBeenCalledWith(mockUser, mockEvents);
     })
 
+    // Test Case: invalid token
+    // Input: invalid_token, username, events array
+    // Expected status code: 400
+    // Expected behavior: nothing
+    // Expected output: error
     it('should fail on invalid token', async () => {
         const id_token = 'invalid_token';
         const data = {
@@ -776,6 +852,11 @@ describe('create a user events and add it to the user data', () => {
         expect(res.body).toEqual({ message: 'Could not verify user' });
     })
 
+    // Test Case: internal server error
+    // Input: id_token, username, events array
+    // Expected status code: 500
+    // Expected behavior: nothing
+    // Expected output: error
     it('should fail on server error', async () => {
         const id_token = 'token';
         const data = {

@@ -16,6 +16,8 @@ jest.mock('../Databases/Database.js');
 describe('Test socket server group chat', () => {
     let chatManager, clientSocket, server;
 
+    // ChatGPT usage: partial
+    // set up client and server sockets
     beforeEach((done) => {
         server = createServer();
         chatManager = initializeChatManager(server);
@@ -27,11 +29,15 @@ describe('Test socket server group chat', () => {
         });
     });
     
+    // ChatGPT usage: no
+    // clean up client socket calls
     afterEach(() => {
         clientSocket.disconnect();
         chatManager.closeSocket();
     });
 
+    // ChatGPT usage: no
+    // clean up server and sockets
     afterAll(() => {
         server.close();
         clientSocket.disconnect();
@@ -74,7 +80,7 @@ describe('Test socket server group chat', () => {
         });
     })
 
-    //ChatGPT usage: Partial
+    //ChatGPT usage: No
     test('sending message', (done) => {
         let mockMessage = {
             sender: user,

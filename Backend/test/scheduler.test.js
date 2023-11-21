@@ -43,7 +43,7 @@ describe('Testing google API getDirections', () => {
     const mockData = { data: { routes: [{ legs: [{ distance: { value: 18199 }, }]}]} };
     clientInstance.directions.mockResolvedValue(mockData);
 
-    //ChatGPT usage: No
+    //ChatGPT usage: Partial
     it('should give a direction from this location to mcml by car', async () => {
         const direction = await Scheduler.getDirections(mockOrigin, mockEvent, mockPreferences);
 
