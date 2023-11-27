@@ -2,27 +2,16 @@ package com.example.frontend;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
-import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
-import static androidx.test.espresso.matcher.ViewMatchers.hasErrorText;
-import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
-import static androidx.test.espresso.matcher.ViewMatchers.withText;
-
-import static junit.framework.TestCase.assertEquals;
-import static org.hamcrest.core.IsInstanceOf.any;
 
 import static org.hamcrest.Matchers.not;
 
 import android.view.View;
 import android.widget.EditText;
 
-import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
-import androidx.test.rule.ActivityTestRule;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -30,9 +19,6 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 
 public class CreateNewEventTest {

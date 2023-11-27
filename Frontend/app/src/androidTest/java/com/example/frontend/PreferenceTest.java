@@ -1,41 +1,24 @@
 package com.example.frontend;
 
-import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.contrib.RecyclerViewActions.scrollTo;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
-import static androidx.test.espresso.web.assertion.WebViewAssertions.webMatches;
-import static androidx.test.espresso.web.sugar.Web.onWebView;
 
-;
-
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import android.content.SharedPreferences;
-import android.os.Bundle;
-import android.os.SystemClock;
-import android.widget.EditText;
-
-import androidx.preference.EditTextPreference;
 import androidx.preference.PreferenceManager;
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.espresso.action.ViewActions;
+
 import androidx.test.espresso.contrib.RecyclerViewActions;
-import androidx.test.espresso.web.webdriver.DriverAtoms;
-import androidx.test.espresso.web.webdriver.Locator;
+
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
 import org.junit.Rule;
