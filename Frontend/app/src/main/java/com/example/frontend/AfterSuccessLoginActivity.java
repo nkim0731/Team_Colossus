@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -87,7 +88,21 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
             });
         });
 
+        // handle sign out
+        Button signOutButton = findViewById(R.id.button_signOut);
+        signOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                userData.putString("signOut", "SignOut");
+                Intent intent = new Intent(AfterSuccessLoginActivity.this, MainActivity.class);
+                startActivity(intent);
+
+            }
+        });
+
+
     }
+
 
     /*
      * ChatGPT usage: Partial

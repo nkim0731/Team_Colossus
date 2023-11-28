@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
@@ -29,22 +28,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
-
-import com.example.frontend.ServerConfig;
-
 /*
  * Number of methods: 8
  * */
 public class MainActivity extends AppCompatActivity {
 
-    private final String TAG = "MainActivity";
+    private static final String TAG = "MainActivity";
     private final String CHANNEL_ID = "32";
     private HttpsRequest httpsRequest;
     private final String server_url = ServerConfig.SERVER_URL;
-    private GoogleSignInClient mGoogleSignInClient;
+    private static GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
 //    private Button signOutButton;
     private Bundle userData;
+    private Bundle userData2;
 
     //For detecting User Activity
     public static final String DETECTED_ACTIVITY = ".DETECTED_ACTIVITY";
@@ -77,15 +74,19 @@ public class MainActivity extends AppCompatActivity {
             signIn();
         });
 
-        // handle sign out
-        Button signOutButton = findViewById(R.id.button_signOut);
-        signOutButton.setOnClickListener(view -> signOut());
+
 
         createNotificationChannel();
 
         // navigate to main page if previously signed in before, but allow return
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         updateUI(account);
+
+        userData2 = new Bundle();
+        userData2 = getIntent().getExtras();
+        if(userData2.getString("SignOut")=="SignOut"){
+            signOut();
+        }
     }
 
     /*
@@ -135,6 +136,19 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+    /*
+     * ChatGPT usage: No
+     * */
+    private void signOut() {
+        mGoogleSignInClient.signOut()
+                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // ...
+                        Log.d(TAG, "Log out successful");
+                    }
+                });
+    }
 
     /*
      * ChatGPT usage: No
@@ -157,19 +171,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*
-     * ChatGPT usage: No
-     * */
-    private void signOut() {
-        mGoogleSignInClient.signOut()
-                .addOnCompleteListener(this, new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        // ...
-                        Log.d(TAG, "Log out successful");
-                    }
-                });
-    }
+
 
     /*
      * ChatGPT usage: No
