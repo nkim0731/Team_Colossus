@@ -200,8 +200,8 @@ app.route('/api/calendar/day_schedule')
         if (!await auth.verifyUser(id_token, req.query.user, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const schedule = await db.getSchedule(req.query.user);
-        res.status(200).send(schedule.daySchedule);
+        const user = await db.getUser(req.query.user);
+        res.status(200).send(user.daySchedule);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

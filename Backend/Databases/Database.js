@@ -122,13 +122,15 @@ class Database {
      * ChatGPT usage: Partial
      * @param {String} username 
      * @param {Array} schedule array of events with the optimal route to the event for a day
+     * @returns true on success, false on no user
      */
     async addSchedule(username, schedule) {
         let user = await UserModel.findOne({ username });
-        if (!user) throw new Error("No such user exists"); // unfeasible path
+        if (!user) return false;
 
         user.daySchedule = schedule;
         await user.save();
+        return true;
     }
 
     /**

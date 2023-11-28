@@ -2,10 +2,12 @@
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const db = require('../Databases/Database');
-const { OAuth2Client } = require('google-auth-library');
+
 // models to interact with memory server
 const UserModel = mongoose.model('user', require('../Schema/userSchema'));
 const ChatModel = mongoose.model('chat', require('../Schema/chatSchema'));
+
+const inputs = require('./mockInputs.js');
 
 
 // 27 unit tests in server.test.js
@@ -42,90 +44,28 @@ describe('Test database interactions', () => {
 
     //ChatGPT usage: No
     test('getUser fails with nonexisting username', async () => {
-        try {
-            await db.getUser('nouser@gmail.com');
-        } catch (e) {
-            expect(e.message).toBe("No such user exists");
-        }
-    })
-
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    //ChatGPT usage: No
-    // need to mock expected behavior given input of this.authClient.verifyIdToken and ticket.getPayload
-    test('verifyUser works with correct token', async () => {
-        const id_token = 'token';
-        const user = 'testuser@gmail.com';
-        const audience = 'audience';
-
-        const mockTicket = { getPayload: function getPayload() {
-            return { 
-                aud: 'audience', 
-                iss: 'accounts.google.com', 
-                exp: tomorrow, 
-                email: user, 
-            }
-        }};
-
-        // mock verifyIdToken
-        OAuth2Client.prototype.verifyIdToken = jest.fn().mockResolvedValue(mockTicket);
-
-        const res = await db.verifyUser(id_token, user, audience);
-        expect(res).toBeTruthy();
-    })
-
-    //ChatGPT usage: No
-    test('verifyUser fails if no payload', async () => {
-        const id_token = 'token';
-        const user = 'testuser@gmail.com';
-        const audience = 'audience';
-        const mockTicket = { getPayload: function getPayload() {
-            return { 
-                aud: 'audience', 
-                iss: 'not valid iss', 
-                exp: tomorrow, 
-                email: user, 
-            }
-        }};
-        OAuth2Client.prototype.verifyIdToken = jest.fn().mockResolvedValue(mockTicket);
-
-        const res = await db.verifyUser(id_token, user, audience);
-        expect(res).toBeFalsy();
-    })
-
-    //ChatGPT usage: No
-    test('verifyUser fails on invalid payload', async () => {
-        const id_token = 'token';
-        const user = 'testuser@gmail.com';
-        const audience = 'audience';
-        const mockTicket = { getPayload: function getPayload() { return null }};
-        OAuth2Client.prototype.verifyIdToken = jest.fn().mockResolvedValue(mockTicket);
-
-        const res = await db.verifyUser(id_token, user, audience);
-        expect(res).toBeFalsy();
+        const res = await db.getUser('nouser@gmail.com');
+        expect(res).toBeNull();
     })
 
     //ChatGPT usage: No
     test('addUser adds a valid username to database', async () => {
         const newUser = { username: 'newuser@gmail.com' };
-        await db.addUser(newUser);
+        const res = await db.addUser(newUser);
 
         const findUser = await UserModel.findOne(newUser);
         expect(findUser).toBeDefined();
         expect(findUser.username).toBe(newUser.username);
+        expect(res).toBeTruthy();
     })
 
     //ChatGPT usage: No
     test('addUser fails on invalid user', async () => {
         const invalidUser = { username: null };
-        try {
-            await db.addUser(invalidUser);
-        } catch (e) {
-            expect(e.message).toBe("No username provided");
-        }
+        const res = await db.addUser(invalidUser);
         const findUser = await UserModel.findOne(invalidUser);
         expect(findUser).toBeNull();
+        expect(res).toBeFalsy();
     })
 
     const preferenceUser = {
@@ -173,7 +113,6 @@ describe('Test database interactions', () => {
             },
             maxMissedBus: '5',
         }
-
         await db.updatePreferences(preferenceUser.username, updatedPreferences);
         const findUser = await UserModel.findOne({ username: preferenceUser.username });
         expect(findUser.preferences).toEqual(expectedPreferences);
@@ -185,86 +124,10 @@ describe('Test database interactions', () => {
         const updatedPreferences = { 
             commute_method: 'Bicycle',
         }
-        try {
-            await db.updatePreferences(badUser, updatedPreferences);
-        } catch (e) {
-            expect(e.message).toBe("No such user exists");
-        }
+        const res = await db.updatePreferences(badUser, updatedPreferences);
         const findUser = await UserModel.findOne({ username: badUser });
         expect(findUser).toBeNull();
-    })
-
-    const sampleUser = {
-        username: "sampleUser_So@gmail.com",
-        password: "thisisapassword",
-        preferences: {
-            commute_method: "Transit",
-            traffic_alerts: true,
-            preparation_time: "30 minutes",
-            notification_preferences: {
-                morning_alarm: true,
-                event_alarm: true,
-                event_notification: true,
-                traffic_alerts: true,
-                weather_alerts: true
-            },
-            maxMissedBus: "1",
-        },
-        events: [
-            {
-                eventID: "06a9tvveju39v9c0et0egjgan7_20231031T183000Z",
-                summary: "CPEN442 Meeting",
-                eventName: "CPEN442 Meeting",
-                description: null,
-                creator_email: "sou.nozaki@gmail.com",
-                status: "confirmed",
-                kind: "calendar#event",
-                location: null,
-                start: "2023-10-31T11:30:00-07:00",
-                start_timeZone: "America/Vancouver",
-                end: "2023-10-31T12:30:00-07:00",
-                end_timeZone: "America/Vancouver"
-            },
-            {
-                eventID : "_64p36d1h6osj8dhk6gs3idpl70q62oj3cgq38d1l6op0_20231101T010000Z",
-                summary : "APSC 496E 001",
-                eventName: "ASPC 496E 001",
-                description: "This section of New Venture Design capstone is for ECE students only. For more information about the course and how to apply, please go to https://design.engineering.ubc.ca/design-courses/new-venture-design/.\n\n",
-                creator_email : "sou.nozaki@gmail.com",
-                status : "confirmed",
-                kind : "calendar#event",
-                location : "David Lam Management Research Centre, Room 009",
-                start : "2023-10-31T18:00:00-07:00",
-                start_timeZone : "America/Vancouver",
-                end : "2023-10-31T21:00:00-07:00",
-                end_timeZone : "America/Vancouver"
-            },
-        ]
-    };
-
-    //ChatGPT usage: No
-    test('getCalendar for a valid user', async () => {
-        const newUser = new UserModel(sampleUser);
-        await newUser.save();
-
-        await db.getCalendar(sampleUser.username);
-        
-        const findUser = await UserModel.findOne({ username: sampleUser.username });
-        expect(findUser).toHaveProperty('events');
-        expect(findUser.events).toEqual(sampleUser.events);
-    })
-
-    //ChatGPT usage: No
-    test('getCalendar fail on invalid user', async () => {
-        const badUser = 'invalid@gmail.com';
-
-        try {
-            await db.getCalendar(badUser);
-        } catch (e) {
-            expect(e.message).toBe("No such user exists");
-        }
-        const findUser = await UserModel.findOne({ username: badUser });
-        expect(findUser).toBeNull();
+        expect(res).toBeFalsy();
     })
 
     const today = new Date();
@@ -291,9 +154,10 @@ describe('Test database interactions', () => {
 
     //ChatGPT usage: Yes
     test('addEvents to a valid user', async () => {
-        await db.addEvents(sampleUser.username, eventsToAdd);
+        await db.addUser(inputs.sampleUser);
+        await db.addEvents(inputs.sampleUser.username, eventsToAdd);
         
-        const findUser = await UserModel.findOne({ username: sampleUser.username });
+        const findUser = await UserModel.findOne({ username: inputs.sampleUser.username });
         expect(findUser.events.length).toBe(4); // 2 events already in, adding 2 new events, 1 existing already
         
         let expectedAddedEvent = eventsToAdd[0];
@@ -304,55 +168,31 @@ describe('Test database interactions', () => {
     //ChatGPT usage: Yes
     test('addEvents fail on invalid user', async () => {
         const badUser = 'invalid@gmail.com';
+        const res = await db.addEvents(badUser, eventsToAdd);
 
-        try {
-            await db.addEvents(badUser, eventsToAdd);
-        } catch (e) {
-            expect(e.message).toBe("No such user exists");
-        }
         const findUser = await UserModel.findOne({ username: badUser });
         expect(findUser).toBeNull();
+        expect(res).toBeFalsy();
     })
 
     //ChatGPT usage: Yes
     const scheduleToAdd = [ { event: 'event1', route: 'route 1' }, ];
     test('addSchedule for valid user', async () => {
-        await db.addSchedule(sampleUser.username, scheduleToAdd);
+        const res = await db.addSchedule(inputs.sampleUser.username, scheduleToAdd);
 
-        const findUser = await UserModel.findOne({ username: sampleUser.username });
+        const findUser = await UserModel.findOne({ username: inputs.sampleUser.username });
         expect(findUser.daySchedule).toEqual(scheduleToAdd);
+        expect(res).toBeTruthy();
     })
 
     //ChatGPT usage: Yes
     test('addSchedule fails on invalid user', async () => {
         const badUser = 'invalid@gmail.com';
+        const res = await db.addSchedule(badUser, scheduleToAdd);
 
-        try {
-            await db.addSchedule(badUser, scheduleToAdd);
-        } catch (e) {
-            expect(e.message).toBe("No such user exists");
-        }
         const findUser = await UserModel.findOne({ username: badUser });
         expect(findUser).toBeNull();
-    })
-
-    //ChatGPT usage: Yes
-    test('getSchedule for valid user', async () => {
-        const res = await db.getSchedule(sampleUser.username);
-        expect(res.daySchedule).toEqual(scheduleToAdd);
-    })
-
-    //ChatGPT usage: Yes
-    test('getSchedule fails for invalid user', async () => {
-        const badUser = 'invalid@gmail.com';
-
-        try {
-            await db.getSchedule(badUser);
-        } catch (e) {
-            expect(e.message).toBe("No such user exists");
-        }
-        const findUser = await UserModel.findOne({ username: badUser });
-        expect(findUser).toBeNull();
+        expect(res).toBeFalsy();
     })
 
     const testMessageLimit = 5;
@@ -365,15 +205,6 @@ describe('Test database interactions', () => {
     ] };
 
     //ChatGPT usage: No
-    test('getMessages succeeds for chat', async () => {
-        const newRoom = new ChatModel(mockChat);
-        await newRoom.save();
-
-        const res = await db.getMessages('cpen321');
-        expect(res.messages.length).toBe(testMessageLimit);
-    })
-
-    //ChatGPT usage: No
     test('createRoom makes new room in database', async () => {
         const newRoomName = 'cpen491';
 
@@ -384,6 +215,9 @@ describe('Test database interactions', () => {
 
     //ChatGPT usage: No
     test('getRoom returns the room object from database', async () => {
+        const newChat = new ChatModel(mockChat);
+        await newChat.save();
+
         const res = await db.getRoom(mockChat.chatName);
         expect(res.chatName).toBe(mockChat.chatName);
         expect(res.messages.length).toBe(testMessageLimit);
