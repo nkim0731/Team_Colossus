@@ -1,11 +1,9 @@
-// Requires
 const express = require('express');
 const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-// Requires for defined interfaces
 const Scheduler = require('./Interfaces/Scheduler.js');
 const db = require('./Databases/Database.js');
 const auth = require('./Interfaces/GoogleAuth.js');
@@ -37,7 +35,6 @@ const server = http.createServer(app); // HTTP server for testing
 // require('./Interfaces/Messaging.js')(httpsServer);
 require('./Interfaces/Messaging.js')(server);
 
-
 // Important header parser middleware for user verification and sign in 
 app.use((req, res, next) => {
     // Log a message to indicate that the middleware is running
@@ -63,12 +60,6 @@ app.use((req, res, next) => {
     next(); // Continue to the next middleware or route
 });
 
-
-
-/*
-* API calls and calls to/from frontend go here
-*/
-
 // handle signin (and register if first time login) with google account
 // ChatGPT usage: Partial
 app.post('/login/google', async (req, res) => {
@@ -76,7 +67,9 @@ app.post('/login/google', async (req, res) => {
     try {
         const user = await db.getUser(data.username);
         if (!user) {
-            await db.addUser(data);
+            const addResult = await db.addUser(data);
+            if (!addResult) return res.status(404).json({ error: "Tried to add null user" });
+
             res.status(200).json({ result: 'register' });
         } else {
             res.status(200).json({ result: 'login' });
@@ -87,7 +80,6 @@ app.post('/login/google', async (req, res) => {
 })
 
 // endpoint set/get preferences for user
-// ChatGPT usage: Partial
 app.route('/api/preferences')
 // ChatGPT usage: No
 .get(async (req, res) => {
@@ -101,6 +93,7 @@ app.route('/api/preferences')
         res.status(500).json({ error: e.message });
     }
 })
+// ChatGPT usage: No
 .put(async (req, res) => {
     const data = req.body;
     try {
@@ -113,13 +106,9 @@ app.route('/api/preferences')
     }
 });
 
-/*
-* Calendar API calls
-*/
-
-// get / add events to calendar
-// ChatGPT usage: Partial
+// get and add events to calendar
 app.route('/api/calendar')
+// ChatGPT usage: Partial
 .get(async (req, res) => { // /api/calendar?user=username
     const username = req.query.user;
     const id_token = req.id_token;
@@ -130,7 +119,7 @@ app.route('/api/calendar')
         const user = await db.getUser(username);
         if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
 
-        res.status(200).send(user.events); // send events array
+        res.status(200).send(user.events);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -144,7 +133,7 @@ app.route('/api/calendar')
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const eventAddResult = await db.addEvents(data.username, data.events);
-        if (!eventAddResult) return res.status(404).json({ message: 'No user for username: ' + username });
+        if (!eventAddResult) return res.status(404).json({ message: 'No user for username: ' + data.username });
         
         res.status(200).json({ message: 'Events add successful' });
     } catch (e) {
@@ -159,12 +148,13 @@ app.route('/api/calendar')
 // ChatGPT usage: Partial
 app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
     const id_token = req.id_token;
+    const username = req.query.user;
     const day = new Date(req.query.day + " 10:10:10");
     try {
-        if (!await auth.verifyUser(id_token, req.query.user, process.env.CLIENT_ID)) {
+        if (!await auth.verifyUser(id_token, username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const user = await db.getUser(req.query.user);
+        const user = await db.getUser(username);
         if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
 
         const dayEvents = user.events.filter(e => {
@@ -182,8 +172,8 @@ app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
 }) 
 
 // create day schedule on button press
-// ChatGPT usage: Partial
 app.route('/api/calendar/day_schedule')
+// ChatGPT usage: Partial
 .post(async (req, res) => {
     const data = req.body; // username, latitude, longitude
     const id_token = req.id_token;
@@ -193,6 +183,7 @@ app.route('/api/calendar/day_schedule')
         }
         const user = await db.getUser(data.username);
         if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
+
         const LatLng = `${data.latitude}, ${data.longitude}`;
 
         const schedule = await Scheduler.createDaySchedule(user.events, LatLng, user.preferences);
@@ -217,9 +208,6 @@ app.route('/api/calendar/day_schedule')
     
 })
 
-/*
-* Group chats API calls
-*/
 // ChatGPT usage: Partial
 app.get('/api/message_history', async (req, res) => {
     const chatName = req.query.chatName; // ?chatName=x 

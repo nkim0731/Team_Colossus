@@ -9,8 +9,6 @@ const chatSchema = require('../Schema/chatSchema');
 const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
-const { OAuth2Client } = require('google-auth-library');
-
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
 
 // For loading env variables
@@ -24,7 +22,6 @@ const mongoURI = process.env.MONGO_URI;
 class Database {
     constructor() {
         this.connect();
-        this.authClient = new OAuth2Client();
     }
 
     // ChatGPT usage: No
@@ -33,35 +30,27 @@ class Database {
         console.log('Database class connected to MongoDB at: ' + mongoURI);
     }
 
-    // Get data for user by username/email (unique)
-    // do NOT throw an error on null result (not an error case)
-    // ChatGPT usage: Partial
+    /**
+     * Get data of a user by username/email
+     * ChatGPT usage: Partial
+     * @param {String} username email of user
+     * @returns User object in database
+     */
     async getUser(username) {
         return await UserModel.findOne({ username });
     }
 
-    // redundant function and slows down everything by making another query
-    // async userExists(useremail) {
-    //     let user = await UserModel.findOne({ username: useremail });
-    //     if (user == null) {
-    //         return false;
-    //     }
-    //     return true;
-    // }
-
-    // Add a new user to Users Database
-    // ChatGPT usage: Partial
+    /**
+     * Add a new user to Users Database
+     * ChatGPT usage: Partial
+     * @param {String} user username user signed in with through google
+     * @returns true on success, false on null user
+     */
     async addUser(user) {
-        // Ensure the user has a username and password; set defaults if not provided
-        // unfeasible path TODO remove and adjust tests
-        if (user.username == null) {
-            throw new Error("No username provided");
-        }
+        if (user.username == null) return false;
 
         user.password = user.password || 'Register from Google';
     
-        // Set default preferences if not provided
-        // should not even be provided in the first place when creating an account
         user.preferences = user.preferences || {
             commute_method: 'Driving',
             preparation_time: '0',
@@ -74,19 +63,21 @@ class Database {
             },
             maxMissedBus: '1',
         };
-    
-        // Set default values for events and daySchedule if not provided
         user.events = user.events || [];
         user.daySchedule = user.daySchedule || [];
 
-        // no need to try/catch because error thrown here will be caught higher up e.g. in server.js
         const newUser = new UserModel(user);
         await newUser.save();
-        return newUser;
+        return true;
     }
 
-    // update preferences for user in database
-    // ChatGPT usage: Partial
+    /**
+     * Update preferences for user in database
+     * ChatGPT usage: Partial
+     * @param {String} username 
+     * @param {Object} preferences object with preference field to update
+     * @returns true on success, false on no user
+     */
     async updatePreferences(username, preferences) {
         let userToUpdate = await UserModel.findOne({ username });
         if (!userToUpdate) return false;
@@ -96,27 +87,26 @@ class Database {
         return true;
     }
 
-    /*
-    * Calendar Database calls
-    */
-
-    // add events (array) to calendar
-    // ChatGPT usage: Partial
+    /**
+     * Add an array of events to events array in Database
+     * ChatGPT usage: Partial
+     * @param {String} username 
+     * @param {Array} events array with events to add to Database
+     * @returns true on success, false on no user
+     */
     async addEvents(username, events) {
         const user = await UserModel.findOne({ username });
         if (!user) return false;
 
-        const coursePattern = /^[A-Za-z]{4}\d{3}/; // TODO update to relax regex condition
+        const coursePattern = /^[A-Za-z]{4}\d{3}/; // TODO update to relax regex condition xxxx111
         let newEvents = [];
         for (let e of events) {
-            // test against regex for format xxxx111 (course)
             if (coursePattern.test(e.eventName)) {
                 e.hasChat = true;
             } else {
                 e.hasChat = false;
             }
             let included = false;
-            // check if event is already in database
             for (let ue of user.events) {
                 if (ue.eventName === e.eventName) included = true;
             }
@@ -127,39 +117,50 @@ class Database {
         return true;
 	}
 
-    // add day schedule to db
-    // ChatGPT usage: Partial
+    /**
+     * Add day schedule created by Scheduler to database
+     * ChatGPT usage: Partial
+     * @param {String} username 
+     * @param {Array} schedule array of events with the optimal route to the event for a day
+     */
     async addSchedule(username, schedule) {
         let user = await UserModel.findOne({ username });
-        if (!user) throw new Error("No such user exists");
+        if (!user) throw new Error("No such user exists"); // unfeasible path
 
         user.daySchedule = schedule;
         await user.save();
     }
 
-    /*
-    * Message database calls
-    */
-
-    // create room
-    // ChatGPT usage: Partial
+    /**
+     * Create a chat room with name chatName
+     * ChatGPT usage: Partial
+     * @param {String} chatName 
+     * @returns The created chat room
+     */
     async createRoom(chatName) {
         const newRoom = new ChatModel({ chatName, messages: [] });
         const room = await newRoom.save();
         return room;
     }
 
-    // get a chatroom by name
-    // ChatGPT usage: No
+    /**
+     * Get a chatroom by name
+     * ChatGPT usage: No
+     * @param {String} chatName 
+     * @returns chatRoom Object with name, and messages array
+     */
     async getRoom(chatName) {
         return await ChatModel.findOne({ chatName });
     }
 
-    // add a message (object) to chatroom chatID
-    // ChatGPT usage: Partial
+    /**
+     * Add a message object to chatroom in database
+     * ChatGPT usage: Partial
+     * @param {String} chatName 
+     * @param {Object} message object with message string, sender, and timestamp
+     */
     async addMessage(chatName, message) {
         let chatDocument = await ChatModel.findOne({ chatName });
-        // create chatroom in database if does not exist already
         if (!chatDocument) {
             const document = { chatName, messages: [] };
             chatDocument = new ChatModel(document);
