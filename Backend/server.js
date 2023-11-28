@@ -5,11 +5,10 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-
 // Requires for defined interfaces
 const Scheduler = require('./Interfaces/Scheduler.js');
 const db = require('./Databases/Database.js');
-
+const auth = require('./Interfaces/GoogleAuth.js');
 
 const envFilePath = path.join(__dirname, '.env');
 require('dotenv').config({ path: envFilePath });
@@ -17,7 +16,6 @@ require('dotenv').config({ path: envFilePath });
 const app = express();
 app.use(express.json());
 
-// This is commented for testing purpose
 // const options = {
 //     key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
 //     cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
@@ -31,13 +29,13 @@ app.use(express.json());
 //     cert: cert,
 //     passphrase: 'Colossus3210' // only if your key is passphrase protected
 // };
-// const httpsServer = https.createServer(options, app);
 
+// const httpsServer = https.createServer(options, app);
 const server = http.createServer(app); // HTTP server for testing 
 
 // Start socket io service for group chats
 // require('./Interfaces/Messaging.js')(httpsServer);
-const ChatMangaer = require('./Interfaces/Messaging.js')(server);
+require('./Interfaces/Messaging.js')(server);
 
 
 // Important header parser middleware for user verification and sign in 
@@ -76,9 +74,9 @@ app.use((req, res, next) => {
 app.post('/login/google', async (req, res) => {
     const data = req.body;
     try {
-        let exist = await db.userExists(data.username);
-        if (!exist) {
-            await db.addUser(data); // first time google auth, add to db
+        const user = await db.getUser(data.username);
+        if (!user) {
+            await db.addUser(data);
             res.status(200).json({ result: 'register' });
         } else {
             res.status(200).json({ result: 'login' });
@@ -95,10 +93,9 @@ app.route('/api/preferences')
 .get(async (req, res) => {
     const username = req.query.user; 
     try {
-        if (!await db.userExists(username)) {
-            return res.status(404).json({ error: "No such user exists" });
-        }
         const user = await db.getUser(username);
+        if (!user) return res.status(404).json({ error: "No such user exists" });
+
         res.status(200).send(user.preferences);
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -106,22 +103,15 @@ app.route('/api/preferences')
 })
 .put(async (req, res) => {
     const data = req.body;
-    const username = data.username; 
-    const preferences = data.preferences; 
     try {
-        if (!await db.userExists(username)) {
-            return res.status(404).json({ error: "No such user exists" });
-        }
-        await db.updatePreferences(username, preferences);
+        const updateResult = await db.updatePreferences(data.username, data.preferences);
+        if (!updateResult) return res.status(404).json({ error: "No such user exists" });
+
         res.status(200).json({ result: 'success' });
     } catch (e) {
-        console.log(e);
         res.status(500).json({ error: e.message });
     }
 });
-
-
-
 
 /*
 * Calendar API calls
@@ -131,14 +121,16 @@ app.route('/api/preferences')
 // ChatGPT usage: Partial
 app.route('/api/calendar')
 .get(async (req, res) => { // /api/calendar?user=username
-    const user = req.query.user;
+    const username = req.query.user;
     const id_token = req.id_token;
     try {
-        if (!await db.verifyUser(id_token, user, process.env.CLIENT_ID)) {
+        if (!await auth.verifyUser(id_token, username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const events = await db.getCalendar(user);
-        res.status(200).send(events.events); // send events array
+        const user = await db.getUser(username);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
+
+        res.status(200).send(user.events); // send events array
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -148,10 +140,12 @@ app.route('/api/calendar')
     const data = req.body;
     const id_token = req.id_token;
     try {
-        if (!await db.verifyUser(id_token, data.username, process.env.CLIENT_ID)) {
+        if (!await auth.verifyUser(id_token, data.username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        await db.addEvents(data.username, data.events);
+        const eventAddResult = await db.addEvents(data.username, data.events);
+        if (!eventAddResult) return res.status(404).json({ message: 'No user for username: ' + username });
+        
         res.status(200).json({ message: 'Events add successful' });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -164,16 +158,16 @@ app.route('/api/calendar')
 // get calendar events by a specific day
 // ChatGPT usage: Partial
 app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
-    const user = req.query.user;
-    // const id_token = req.headerParser.id_token;
     const id_token = req.id_token;
     const day = new Date(req.query.day + " 10:10:10");
     try {
-        if (!await db.verifyUser(id_token, user, process.env.CLIENT_ID)) {
+        if (!await auth.verifyUser(id_token, req.query.user, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const calendar = await db.getCalendar(user);
-        const dayEvents = calendar.events.filter(e => {
+        const user = await db.getUser(req.query.user);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
+
+        const dayEvents = user.events.filter(e => {
             const eventDate = new Date(e.start);
             return (
                 eventDate.getDate() === day.getDate() &&
@@ -194,17 +188,17 @@ app.route('/api/calendar/day_schedule')
     const data = req.body; // username, latitude, longitude
     const id_token = req.id_token;
     try {
-        if (!await db.verifyUser(id_token, data.username, process.env.CLIENT_ID)) {
+        if (!await auth.verifyUser(id_token, data.username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const user = await db.getUser(data.username);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
         const LatLng = `${data.latitude}, ${data.longitude}`;
 
         const schedule = await Scheduler.createDaySchedule(user.events, LatLng, user.preferences);
         await db.addSchedule(data.username, schedule);
         res.status(200).send(schedule);
     } catch (e) {
-        console.log(e);
         res.status(500).json({ error: e.message });
     }
 })
@@ -212,13 +206,12 @@ app.route('/api/calendar/day_schedule')
 .get(async (req, res) => { // ?user=username
     const id_token = req.id_token;
     try {
-        if (!await db.verifyUser(id_token, req.query.user, process.env.CLIENT_ID)) {
+        if (!await auth.verifyUser(id_token, req.query.user, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const schedule = await db.getSchedule(req.query.user);
         res.status(200).send(schedule.daySchedule);
     } catch (e) {
-        console.log(e);
         res.status(500).json({ error: e.message });
     }
     
@@ -231,8 +224,8 @@ app.route('/api/calendar/day_schedule')
 app.get('/api/message_history', async (req, res) => {
     const chatName = req.query.chatName; // ?chatName=x 
     try {
-        const messages = await db.getMessages(chatName);
-        res.status(200).send(messages.messages);
+        const room = await db.getRoom(chatName);
+        res.status(200).send(room.messages);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -242,12 +235,12 @@ app.get('/api/message_history', async (req, res) => {
 app.get('/api/chatrooms', async (req, res) => {
     const username = req.query.user; // ?user=x
     try {
-        const calendar = await db.getCalendar(username);
-        const courseEvents = calendar.events.filter(e => e.hasChat); // filter for only events with chats
+        const user = await db.getUser(username);
+        const courseEvents = user.events.filter(e => e.hasChat);
         let myChatrooms = [];
         for (let e of courseEvents) {
             let chatroom = await db.getRoom(e.eventName);
-            if (!chatroom) { // room null, not created yet
+            if (!chatroom) {
                 chatroom = await db.createRoom(e.eventName);
             }
             myChatrooms.push(chatroom);
@@ -264,8 +257,4 @@ const host = "calendo.westus2.cloudapp.azure.com";
 // httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
 server.listen(3000, () => console.log('Server started on port 8081'));
 
-// function cleanUp() {
-//     ChatMangaer.closeSocket();
-//     server.close();
-// }
 module.exports = server;

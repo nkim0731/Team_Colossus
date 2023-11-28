@@ -8,53 +8,24 @@ const userSchema = new mongoose.Schema({
     id_token: String,
     google_token: [mongoose.Schema.Types.Mixed],
     preferences: {
-        commute_method: {
-            type: String
-        },
-        traffic_alerts: {
-            type: Boolean
-        },
-        preparation_time: {
-            type: String
-        },
+        commute_method: String,
+        preparation_time: String,
         notification_preferences: {
-            morning_alarm: {
-                type: Boolean,
-            },
-            event_alarm: {
-                type: Boolean,
-            },
-            event_notification: {
-                type: Boolean,
-            },
-            traffic_alerts: {
-                type: Boolean,
-            },
-            weather_alerts: {
-                type: Boolean,
-            },
+            morning_alarm: Boolean,
+            event_alarm: Boolean,
+            event_notification: Boolean,
+            traffic_alerts: Boolean,
+            weather_alerts: Boolean,
         },
-        maxMissedBus: {
-            type: String
-        },
-        home_location: {
-            type: String
-        },
-        school_location: {
-            type: String
-        },
-        work_location: {
-            type: String
-        },
-        snooze_duration: {
-            type: String
-        },
-        vibration_alert: {
-            type: Boolean
-        },
+        maxMissedBus: String,
+        home_location: String,
+        school_location: String,
+        work_location: String,
+        snooze_duration: String,
+        vibration_alert: Boolean,
     },
     events: [mongoose.Schema.Types.Mixed],
-    daySchedule: [mongoose.Schema.Types.Mixed], // returned optimal schedule for the day from scheduler
+    daySchedule: [mongoose.Schema.Types.Mixed],
 });
 
 module.exports = userSchema;

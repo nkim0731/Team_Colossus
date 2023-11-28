@@ -9,8 +9,6 @@ const chatSchema = require('../Schema/chatSchema');
 const UserModel = mongoose.model('user', userSchema);
 const ChatModel = mongoose.model('chat', chatSchema);
 
-// For google auth
-//const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
@@ -20,7 +18,7 @@ const path = require('path');
 const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
-// const mongoURI = process.env.MONGO_URI || "mongodb://localhost:27017/test_calendoDB";
+
 const mongoURI = process.env.MONGO_URI;
 
 class Database {
@@ -35,68 +33,27 @@ class Database {
         console.log('Database class connected to MongoDB at: ' + mongoURI);
     }
 
-    // async disconnect() {
-    //     await mongoose.disconnect();
-    //     console.log('Database class disconnected from MongoDB');
-    // }
-
-
     // Get data for user by username/email (unique)
+    // do NOT throw an error on null result (not an error case)
     // ChatGPT usage: Partial
-    async getUser(useremail) {
-        if (await this.userExists(useremail) === false) {
-            throw new Error("No such user exists");
-        }
-        let user = await UserModel.findOne({ username: useremail });
-        return user
+    async getUser(username) {
+        return await UserModel.findOne({ username });
     }
 
-    // Get user data by google auth id (no endpoint calls this)
-    // ChatGPT usage: No
-    // async getUserById(id) {
-    //     if (await this.userExists(useremail) == false) {
-    //         throw new Error("No such user exists");
+    // redundant function and slows down everything by making another query
+    // async userExists(useremail) {
+    //     let user = await UserModel.findOne({ username: useremail });
+    //     if (user == null) {
+    //         return false;
     //     }
-    //     let user = await UserModel.findOne({ userId: id });
-    //     return user
+    //     return true;
     // }
-
-    async userExists(useremail) {
-        let user = await UserModel.findOne({ username: useremail });
-        if (user == null) {
-            return false;
-        }
-        return true;
-    }
-    
-    async verifyUser(id_token, useremail, audience) {
-        const ticket = await this.authClient.verifyIdToken({
-            idToken: id_token
-        });
-        const payload = ticket.getPayload();
-
-        if (payload) {
-            let { aud, iss, exp, email } = payload;
-    
-            if (aud === audience
-                && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
-                && exp > Math.floor(Date.now() / 1000)
-                && email == useremail) 
-            {
-                // hd++; 
-                // The ID token is valid and satisfies the criteria
-                console.log("\n id_token verified");
-                return true;
-            }
-        }
-        return false;
-    }
 
     // Add a new user to Users Database
     // ChatGPT usage: Partial
     async addUser(user) {
-
         // Ensure the user has a username and password; set defaults if not provided
+        // unfeasible path TODO remove and adjust tests
         if (user.username == null) {
             throw new Error("No username provided");
         }
@@ -104,6 +61,7 @@ class Database {
         user.password = user.password || 'Register from Google';
     
         // Set default preferences if not provided
+        // should not even be provided in the first place when creating an account
         user.preferences = user.preferences || {
             commute_method: 'Driving',
             preparation_time: '0',
@@ -126,55 +84,29 @@ class Database {
         await newUser.save();
         return newUser;
     }
-    
-
-
-    // Add a user to Users Database (not called anywhere else)
-    // ChatGPT usage: Partial
-    // async updateUser(user) {
-    //     if (await this.userExists(user.username) == false) {
-    //         throw new Error("No such user exists");
-    //     }
-    //     return await UserModel.findOneAndUpdate(
-    //         { username: user.username },
-    //         user,
-    //         { new: true }
-    //     );
-    // }
 
     // update preferences for user in database
     // ChatGPT usage: Partial
-    async updatePreferences(user, preferences) {
-        if (await this.userExists(user) == false) {
-            throw new Error("No such user exists");
-        }
-        let updatedUser = await UserModel.findOne({ username: user });
+    async updatePreferences(username, preferences) {
+        let userToUpdate = await UserModel.findOne({ username });
+        if (!userToUpdate) return false;
 
-        updatedUser.preferences = deepMerge(updatedUser.preferences, preferences);
-        await updatedUser.save();
+        userToUpdate.preferences = deepMerge(userToUpdate.preferences, preferences);
+        await userToUpdate.save();
+        return true;
     }
 
     /*
     * Calendar Database calls
     */
 
-    // get calendar events (this might not be needed anyway since we can get events from user in getUser)
-    // ChatGPT usage: Partial
-	async getCalendar(username) {
-        if (await this.userExists(username) == false) {
-            throw new Error("No such user exists");
-        }
-        return await UserModel.findOne({ username }).select('events');
-	}
-
     // add events (array) to calendar
     // ChatGPT usage: Partial
     async addEvents(username, events) {
-        if (await this.userExists(username) == false) {
-            throw new Error("No such user exists");
-        }
         const user = await UserModel.findOne({ username });
-        const coursePattern = /^[A-Za-z]{4}\d{3}/;
+        if (!user) return false;
+
+        const coursePattern = /^[A-Za-z]{4}\d{3}/; // TODO update to relax regex condition
         let newEvents = [];
         for (let e of events) {
             // test against regex for format xxxx111 (course)
@@ -192,36 +124,22 @@ class Database {
         }
         user.events = [...user.events, ...newEvents];
         await user.save();
+        return true;
 	}
 
     // add day schedule to db
     // ChatGPT usage: Partial
     async addSchedule(username, schedule) {
-        if (await this.userExists(username) == false) {
-            throw new Error("No such user exists");
-        }
         let user = await UserModel.findOne({ username });
+        if (!user) throw new Error("No such user exists");
+
         user.daySchedule = schedule;
         await user.save();
-    }
-
-    // ChatGPT usage: No
-    async getSchedule(username) {
-        if (await this.userExists(username) == false) {
-            throw new Error("No such user exists");
-        }
-        return await UserModel.findOne({ username }).select('daySchedule');
     }
 
     /*
     * Message database calls
     */
-
-    // get all messages associated with the chatroom chatID
-    // ChatGPT usage: No
-    async getMessages(chatName) {
-        return await ChatModel.findOne({ chatName }).select('messages');
-    }
 
     // create room
     // ChatGPT usage: Partial
