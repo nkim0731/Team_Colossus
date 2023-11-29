@@ -37,11 +37,10 @@ public class MainActivity extends AppCompatActivity {
     private final String CHANNEL_ID = "32";
     private HttpsRequest httpsRequest;
     private final String server_url = ServerConfig.SERVER_URL;
-    private static GoogleSignInClient mGoogleSignInClient;
+    private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
 //    private Button signOutButton;
     private Bundle userData;
-    private Bundle intentData;
 
     //For detecting User Activity
     public static final String DETECTED_ACTIVITY = ".DETECTED_ACTIVITY";
@@ -68,25 +67,24 @@ public class MainActivity extends AppCompatActivity {
                 .requestEmail()
                 .requestProfile()
                 .build();
-
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         findViewById(R.id.button_googleSignIn).setOnClickListener(view -> {
             signIn();
         });
 
-
-
         createNotificationChannel();
 
-        // navigate to main page if previously signed in before, but allow return
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        updateUI(account);
-
-        intentData = new Bundle();
-        intentData = getIntent().getExtras();
-        if(intentData != null){
+        Intent intent = getIntent();
+        if (intent != null && intent.getBooleanExtra("signout", false)) {
             signOut();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        updateUI(account);
     }
 
     /*
