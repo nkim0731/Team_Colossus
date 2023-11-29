@@ -187,6 +187,7 @@ app.route('/api/preferences')
         res.status(500).json({ error: e.message });
     }
 })
+
 // ChatGPT usage: No
 .put(async (req, res) => {
     const data = req.body;
