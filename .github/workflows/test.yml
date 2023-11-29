@@ -12,7 +12,7 @@ jobs:
       # this is set to null just so Scheduler has something to read in github actions
       GOOGLE_API_KEY: null
       # Added for calendar import feature
-      LOCAL_TEST: false
+      LOCAL_TEST: true
 
       CLIENT_ID : 805259873874-raavn3hag37qjfnm8qt4mhdsgqqhdeu7.apps.googleusercontent.com
       CLIENT_SECRET : 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

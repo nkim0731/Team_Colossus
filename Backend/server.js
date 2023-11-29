@@ -20,6 +20,12 @@ require('dotenv').config({ path: envFilePath });
 const app = express();
 app.use(express.json());
 
+if (process.env.TESTING == 'true') {
+    process.env.CLIENT_ID = '805259873874-thisisonlyfortesting.apps.googleusercontent.com';
+    process.env.CLIENT_SECRET = '0Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3Z3';
+    process.env.REDIRECT_URL = 'https://thisisonlyfortesting.com/auth/google/redirect';
+    process.env.REDIRECT_DOMAIN = 'https://thisisonlyfortesting.com';
+}
 
 /*
     Everything related to Google API
