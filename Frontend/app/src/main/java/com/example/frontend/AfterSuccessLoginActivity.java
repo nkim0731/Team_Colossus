@@ -12,12 +12,17 @@ import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 
 /*
  * Number of methods: 2
  * */
 public class AfterSuccessLoginActivity extends AppCompatActivity  {
-    private final String TAG = "MainMenuActivity";
+    private final String TAG = "AfterSuccessLoginActivity";
 //    private Button calendarButton;
 //    private Button settingButton;
     private Bundle userData;
@@ -61,7 +66,12 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 //            checkPermission();
             Intent calendarIntent = new Intent(AfterSuccessLoginActivity.this, CalendarActivity.class);
             calendarIntent.putExtras(userData);
+
+            // Import calendar in the database
+            initiateCalendarImport();
+
             startActivity(calendarIntent);
+
         });
 
         // settings == preference setting
@@ -101,6 +111,56 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
 
     }
 
+    private void initiateCalendarImport() {
+        String userEmail = userData.getString("userEmail");
+        if (userEmail != null) {
+            calendarImportWithTokenInDB(userEmail);
+        } else {
+            Log.e(TAG, "User email is null");
+        }
+    }
+
+    // Method to get token data and make request
+    private void calendarImportWithTokenInDB(String userEmail) {
+        httpsRequest.get(server_url + "/auth/google/token?useremail=" + userEmail, null, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                Log.d(TAG, "Calendar import initiated: " + response);
+            }
+
+            @Override
+            public void onFailure(String error) {
+                Log.e(TAG, "Error sending ID token: " + error);
+            }
+        });
+    }
+
+    // Method to send the ID token to the server
+//    private void sendIdTokenToServer(String id_token, String refresh_token) {
+//        try {
+//            JSONObject headers = new JSONObject();
+//            headers.put("id_token", id_token);
+//            headers.put("refresh_token", refresh_token);
+//            // Add other headers as needed
+//
+//            // Now you can pass this JSONObject to your post method
+//            JSONObject postData = new JSONObject();
+//            // populate postData as required
+//
+//            httpsRequest.post(server_url + "/auth/google/token", postData, headers, new HttpsCallback() {
+//                @Override
+//                public void onResponse(String response) {
+//                    Log.d(TAG, "Calendar import initiated: " + response);
+//                }
+//
+//                @Override
+//                public void onFailure(String error) {
+//                    Log.e(TAG, "Error sending ID token: " + error);
+//                }
+//            });
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
 
     /*
      * ChatGPT usage: Partial

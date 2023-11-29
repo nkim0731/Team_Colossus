@@ -101,9 +101,10 @@ public class HttpsRequest {
                 Log.v(TAG,"POST Response : " + response);
 
                 if (response.isSuccessful()) {
-                    String responseData = response.body().string();
-                    if (responseData != null) {
-                        callback.onResponse(responseData);
+                    String responseBodyString = response.body().string(); // Store response body in a variable
+
+                    if (responseBodyString != null) {
+                        callback.onResponse(responseBodyString);
                     } else {
                         callback.onFailure("response is null");
                     }
@@ -125,15 +126,30 @@ public class HttpsRequest {
     * Parameters: url: the url of server
     *             postData: JSON object that would be send to server
     * */
-    public void post(String url, JSONObject postData, HttpsCallback callback){
+    public void post(String url, JSONObject postData, JSONObject headers, HttpsCallback callback){
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
         RequestBody body = RequestBody.create(postData.toString(),mediaType);
-        Request request = new Request.Builder()
+
+        Request.Builder requestBuilder = new Request.Builder()
                 .url(url)
-                .post(body)
-                .build();
+                .post(body);
 
+        if (headers != null) {
+            Headers.Builder headersBuilder = new Headers.Builder();
+            Iterator<String> keys = headers.keys();
+            while (keys.hasNext()) {
+                String key = keys.next();
+                try {
+                    String value = headers.getString(key);
+                    headersBuilder.add(key, value);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            requestBuilder.headers(headersBuilder.build());
+        }
 
+        Request request = requestBuilder.build();
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -144,13 +160,17 @@ public class HttpsRequest {
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
                 Log.v(TAG,"POST Response : " + response);
+//                Log.v(TAG,"POST Response Body : " + response.body());
+//                Log.v(TAG,"POST Response Body String() : " + response.body().string());
                 if(response.isSuccessful()){
-                    String responseData = response.body().string();
-                    if(responseData != null){
-                        callback.onResponse(responseData);
-                    }else{
+                    String responseBodyString = response.body().string(); // Store response body in a variable
+
+                    if (responseBodyString != null) {
+                        callback.onResponse(responseBodyString);
+                    } else {
                         callback.onFailure("response is null");
                     }
+
                 }else{
                     Log.e(TAG,"response fail");
                     callback.onFailure("response fail");

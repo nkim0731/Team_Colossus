@@ -73,7 +73,7 @@ public class CalendarActivity extends AppCompatActivity {
 //        eventList.add(new EventData("8:30","wake up",""));
         RecyclerView rv_temp = findViewById(R.id.rv_temp);
         rv_temp.setLayoutManager(new LinearLayoutManager(this));
-        eventAdapter= new EventAdapter(eventList);
+        eventAdapter = new EventAdapter(eventList);
         rv_temp.setAdapter(eventAdapter);
 
 
@@ -198,7 +198,7 @@ public class CalendarActivity extends AppCompatActivity {
                 Log.e(TAG, "Error");
             }
             if (permissionChecker()) {
-                httpsRequest.post(server_url + "/api/calendar/day_schedule", data, new HttpsCallback() {
+                httpsRequest.post(server_url + "/api/calendar/day_schedule", data, null, new HttpsCallback() {
                     @Override
                     public void onResponse(String response) {
                         Log.d(TAG, "Scheduler done");
@@ -297,22 +297,34 @@ public class CalendarActivity extends AppCompatActivity {
         httpsRequest.get(server_url + "/api/calendar/by_day"+ String.format("?user=%s&day=%s",userEmail,selectedDate), null, new HttpsCallback() {
             @Override
             public void onResponse(String response) {
+//                Log.v(TAG, "by_day response string : " + response);
                 try{
-                    Log.d(TAG, response);
-                    JSONArray eventJsonArray = new JSONArray(response);
-                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-                    SimpleDateFormat eventTimeFormat = new SimpleDateFormat("HH:mm");
-                    for (int i=0; i<eventJsonArray.length();i++){
-                        JSONObject eventJson = eventJsonArray.getJSONObject(i);
 
-                        Date start = dateFormat.parse(eventJson.getString("start"));
-                        Date end = dateFormat.parse(eventJson.getString("end"));
+                    // Date format to parse the ISO 8601 date-time strings
+                    SimpleDateFormat isoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX", Locale.getDefault());
+                    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+
+                    JSONArray events = new JSONArray(response);  // jsonString is your JSON array string
+//                    Log.v(TAG, "by_day events JSONArray : " + events);
+
+                    for (int i = 0; i < events.length(); i++) {
+                        JSONObject event = events.getJSONObject(i);
+
+                        Date start = isoFormat.parse(event.getString("start"));
+                        Date end = isoFormat.parse(event.getString("end"));
                         long durationMillis = Math.abs(start.getTime() - end.getTime());
-                        long eventDuration = durationMillis / (1000 * 60 * 60); // in hours
+                        double eventDuration = durationMillis / (1000 * 60 * 60); // in hours
 
-                        EventData newEvent = new EventData(eventTimeFormat.format(start),
-                                eventJson.getString("eventName"),
-                                String.format("%d Hours", eventDuration)
+                        //String startDate = dateFormat.format(start); // Extracted date
+                        String startTime = timeFormat.format(start); // Extracted time
+                        String endTime = timeFormat.format(end); // Extracted time
+
+                        Log.v(TAG, "event summary : " + event.getString("summary"));
+                        EventData newEvent = new EventData(
+                                startTime + " ~ " + endTime,
+                                event.getString("summary"),
+                                String.format(Locale.getDefault(), "%.1f Hours", eventDuration)
                         );
                         eventList.add(newEvent);
                     }
@@ -323,16 +335,43 @@ public class CalendarActivity extends AppCompatActivity {
                             eventAdapter.notifyDataSetChanged();
                         }
                     });
+
+//                    Log.d(TAG, response);
+//                    JSONArray eventJsonArray = new JSONArray(response);
+//                    // "start":"2023-11-29T13:00:00-08:00","start_timeZone":"America/Vancouver"
+//                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+//                    SimpleDateFormat eventTimeFormat = new SimpleDateFormat("HH:mm");
+//                    for (int i=0; i<eventJsonArray.length();i++){
+//                        JSONObject eventJson = eventJsonArray.getJSONObject(i);
+//
+//                        Date start = dateFormat.parse(eventJson.getString("start"));
+//                        Date end = dateFormat.parse(eventJson.getString("end"));
+//                        long durationMillis = Math.abs(start.getTime() - end.getTime());
+//                        long eventDuration = durationMillis / (1000 * 60 * 60); // in hours
+//
+//                        EventData newEvent = new EventData(eventTimeFormat.format(start),
+//                                eventJson.getString("eventName"),
+//                                String.format("%d Hours", eventDuration)
+//                        );
+//                        eventList.add(newEvent);
+//                    }
+//                    runOnUiThread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            // This block of code is executed on the main UI thread
+//                            eventAdapter.notifyDataSetChanged();
+//                        }
+//                    });
                 }catch (JSONException e){
-                    Log.e(TAG,"GET events JSON error");
+                    Log.e(TAG,"GET events JSON error : " + e.getMessage());
                 } catch (ParseException e) {
-                    Log.e(TAG, "Error formatting date");
+                    Log.e(TAG, "Error formatting date : " + e.getMessage());
                 }
             }
 
             @Override
             public void onFailure(String error) {
-                Log.d(TAG,"GET events fail");
+                Log.d(TAG,"GET events fail : " + error);
             }
         });
     }
