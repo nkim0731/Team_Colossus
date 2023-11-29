@@ -12,10 +12,15 @@ class Scheduler {
         this.client = new Client({});
     }
 
-    // get direction to an event from position when called
-    // ChatGPT usage: Partial
+    /**
+     * Get direction to an event from position when called
+     * ChatGPT usage: Partial
+     * @param {String} origin user position or last event position
+     * @param {Object} event event to get routes to
+     * @param {Object} preferences
+     * @returns an Object with array of routes returned by google API
+     */
     async getDirections(origin, event, preferences) {
-
         let params = {
             origin,
             destination: event.address,
@@ -26,7 +31,6 @@ class Scheduler {
         if (preferences.commute_method.toLowerCase() === 'transit') {
             params.transitOptions = {
                 arrivalTime: new Date(event.start),
-                // routingPreference: preferences.routing,
             }
         }
         if (preferences.commute_method.toLowerCase() === 'driving') {
@@ -36,13 +40,18 @@ class Scheduler {
             }
         }
         const result = await this.client.directions({ params });
-        return result.data; // array of possible routes from origin to destination
-        
+        return result.data;
     }
 
-    // create schedule with routes for events taking place today
-    // ChatGPT usage: Partial
-    async createDaySchedule(events, origin, preferences) { // origin is user home location
+    /**
+     * Create a schedule with routes for events taking place today
+     * ChatGPT usage: Partial
+     * @param {Array} events 
+     * @param {String} origin 
+     * @param {Object} preferences 
+     * @returns schedule array with route and associated event
+     */
+    async createDaySchedule(events, origin, preferences) {
         const today = new Date();
         const dayEvents = events.filter(e => {
             const eventDate = new Date(e.start);
@@ -52,14 +61,12 @@ class Scheduler {
                 eventDate.getFullYear() === today.getFullYear()
             );
         });
-
         let schedule = [];
         for (let i = 0; i < dayEvents.length; i++) {
             if (i > 0) origin = dayEvents[i].address;
             try {
                 const directions = await this.getDirections(origin, dayEvents[i], preferences);
                 let routes = directions.routes;
-                // routes sorted by lowest duration, then steps and time of arrival, optimal is routes[0]
                 routes.sort(this.compareRoutes); 
                 const route = {
                     distance: routes[0].legs[0].distance,
@@ -70,29 +77,30 @@ class Scheduler {
                 const eventRoute = { event: dayEvents[i], route };
                 schedule.push(eventRoute);
             } catch (e) {
-                console.log('Error generating routes: ' + e);
                 throw e;
             }
         }
         return schedule;
     }
 
-    // callback for sort, optimize for shortest duration, least steps, earliest arrival
+    /**
+     * Callback for sort to optimize for shortest duration, least steps, earliest arrival
+     * @param {Object} a route A to compare 
+     * @param {Object} b route B to compare
+     * @returns -1 if a is better route, 1 if b is, 0 if equal
+     */
     compareRoutes(a, b) {
-        // compare by duration
-        if (a.legs[0].duration.value < b.legs[0].duration.value) {
+        if (a.legs[0].duration.value < b.legs[0].duration.value) { // compare by duration use lowest
             return -1;
         } else if (a.legs[0].duration.value > b.legs[0].duration.value) {
             return 1;
         }
-        // compare by steps, if duration is equal
-        if (a.legs[0].steps.length < b.legs[0].steps.length) {
+        if (a.legs[0].steps.length < b.legs[0].steps.length) { // compare by steps use least steps
             return -1;
         } else if (a.legs[0].steps.length > b.legs[0].steps.length) {
             return 1;
         }
-        // compare arrival time to then use earliest arrival
-        if (a.legs[0].arrival_time.value < b.legs[0].arrival_time.value) {
+        if (a.legs[0].arrival_time.value < b.legs[0].arrival_time.value) { // compare arrival time use earliest arrival
             return -1;
         } else if (a.legs[0].arrival_time.value > b.legs[0].arrival_time.value) {
             return 1;

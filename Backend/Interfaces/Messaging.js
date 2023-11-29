@@ -14,12 +14,18 @@ class ChatManager {
         this.initSocketIo(server);
     }
 
+    /**
+     * Close the socket server
+     */
     closeSocket() {
-        console.log('closing socket server');
         if (this.io) this.io.close();
     }
     
-    // ChatGPT usage: Partial
+    /**
+     * Start all the socket server and set up listeners
+     * ChatGPT usage: Partial
+     * @param {Server} server 
+     */
     initSocketIo(server) {
         // ChatGPT usage: Yes
         this.io = socketIo(server, {
@@ -31,11 +37,8 @@ class ChatManager {
         
         // ChatGPT usage: Partial
         this.io.on('connection', (socket) => {
-            console.log('A user connected');
-
             // ChatGPT usage: Yes
             socket.on('joinChatroom', async (username, chatName) => {
-                // validate user is a part of the chatroom
                 const user = await db.getUser(username);
                 const chatExists = user.events.some(e => e.eventName === chatName);
 
@@ -56,9 +59,8 @@ class ChatManager {
             });
 
             // ChatGPT usage: Partial
-            socket.on('sendMessage', async (message, sender) => { // message string and username
+            socket.on('sendMessage', async (message, sender) => {
                 if (socket.chatName) {
-                    // format timestamp string
                     const now = new Date();
                     const year = now.getFullYear();
                     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -66,22 +68,19 @@ class ChatManager {
                     const hours = String(now.getHours()).padStart(2, '0');
                     const minutes = String(now.getMinutes()).padStart(2, '0');
                     const seconds = String(now.getSeconds()).padStart(2, '0');
-
                     let messageObj = {
                         sender,
                         message,
                         timestamp: `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`,
                     }
-                    // Broadcast the message to all sockets in the chatroom except the sender
                     socket.to(socket.chatName).except(socket.id).emit('message', messageObj);
-                    await db.addMessage(socket.chatName, messageObj); // store message in database
                     socket.emit('messageSent', `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`);
+                    await db.addMessage(socket.chatName, messageObj);
                 }
             });
 
             // ChatGPT usage: Yes
             socket.on('disconnect', () => {
-                // console.log('A user disconnected');
                 if (socket.chatName) {
                     socket.leave(socket.chatName);
                 }
@@ -90,6 +89,11 @@ class ChatManager {
     }
 }
 
+/**
+ * Start the chat manager service
+ * @param {Server} server 
+ * @returns Instance of ChatManager
+ */
 function initializeChatManager(server) {
     return new ChatManager(server);
 }

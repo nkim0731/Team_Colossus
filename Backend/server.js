@@ -182,7 +182,7 @@ app.route('/api/calendar/day_schedule')
             return res.status(400).json({ message: 'Could not verify user' });
         }
         const user = await db.getUser(data.username);
-        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + data.username });
 
         const LatLng = `${data.latitude}, ${data.longitude}`;
 
@@ -243,6 +243,6 @@ const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
     
 // httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
-server.listen(3000, () => console.log('Server started on port 8081'));
+server.listen(3000, () => console.log('Server started on port 3000'));
 
 module.exports = server;

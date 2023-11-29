@@ -1,22 +1,16 @@
 const mongoose = require('mongoose');
 const deepMerge = require('deepmerge');
 
-// Schemas needed for db
-const userSchema = require('../Schema/userSchema');
-const chatSchema = require('../Schema/chatSchema');
-
 // models to interact with database collections
-const UserModel = mongoose.model('user', userSchema);
-const ChatModel = mongoose.model('chat', chatSchema);
+const UserModel = mongoose.model('user', require('../Schema/userSchema'));
+const ChatModel = mongoose.model('chat', require('../Schema/chatSchema'));
 
-const maxMessages = 5; // TODO set diff value for actual, low value for testing
-
-// For loading env variables
+// loading env variables
 const path = require('path');
 const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
-
+const maxMessages = 5; // TODO set diff value for actual, low value for testing
 const mongoURI = process.env.MONGO_URI;
 
 class Database {
@@ -98,14 +92,12 @@ class Database {
         const user = await UserModel.findOne({ username });
         if (!user) return false;
 
-        const coursePattern = /^[A-Za-z]{4}\d{3}/; // TODO update to relax regex condition xxxx111
+        const coursePattern = /^[A-Za-z]{4}\d{3}/i;
         let newEvents = [];
         for (let e of events) {
-            if (coursePattern.test(e.eventName)) {
-                e.hasChat = true;
-            } else {
-                e.hasChat = false;
-            }
+            if (coursePattern.test(e.eventName)) e.hasChat = true;
+            else e.hasChat = false;
+            
             let included = false;
             for (let ue of user.events) {
                 if (ue.eventName === e.eventName) included = true;
