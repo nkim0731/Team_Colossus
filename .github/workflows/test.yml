@@ -11,6 +11,13 @@ jobs:
       TESTING: true
       # this is set to null just so Scheduler has something to read in github actions
       GOOGLE_API_KEY: null
+      # Added for calendar import feature
+      LOCAL_TEST: false
+
+      CLIENT_ID : 805259873874-raavn3hag37qjfnm8qt4mhdsgqqhdeu7.apps.googleusercontent.com
+      CLIENT_SECRET : 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
+      REDIRECT_URL : https://22c3-2604-3d08-4a84-cb00-1ded-bf21-7710-1856.ngrok-free.app/auth/google/redirect
+      REDIRECT_DOMAIN : https://22c3-2604-3d08-4a84-cb00-1ded-bf21-7710-1856.ngrok-free.app
 
     steps:
       - name: Checkout code

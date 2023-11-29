@@ -84,7 +84,7 @@ var server = null;
 var httpsServer = null;
 var options = null;
 
-if (process.env.LOCAL_TEST === 'True') {
+if (process.env.LOCAL_TEST === 'true') {
     server = http.createServer(app); // HTTP server for testing 
 } else {
     // This is only for deployment on the VM using HTTPS
@@ -611,7 +611,7 @@ app.get('/auth/google', async (req, res) => {
     const useremail = req.query.useremail; 
     console.log(`\nGoing to authenticate google with email : ${useremail}`);
     
-    if (process.env.LOCAL_TEST === 'True') {
+    if (process.env.LOCAL_TEST === 'true') {
         res.redirect(authorizationUrl);
         console.log("Redirecting you to authorizationUrl : ", authorizationUrl + "\n");
     } else {
@@ -633,7 +633,7 @@ app.get('/auth/google', async (req, res) => {
     //     res.redirect(`https://${host}:${port}/api/calendar/import?useremail=${useremail}`);
     //     console.log(`Redirecting you to https://${host}:${port}/api/calendar/import?useremail=${useremail}`);
     // } else {
-    //     if (process.env.LOCAL_TEST === 'True') {
+    //     if (process.env.LOCAL_TEST === 'true') {
     //         res.redirect(authorizationUrl);
     //         console.log("Redirecting you to authorizationUrl : ", authorizationUrl + "\n");
     //     } else {
@@ -798,7 +798,7 @@ app.get('/', (req, res) => {
 const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
     
-if (process.env.LOCAL_TEST === 'True') {
+if (process.env.LOCAL_TEST === 'true') {
     server.listen(port, () => console.log(`Server started on http://localhost:${port}`));
 } else {
     httpsServer.listen(port, () => {

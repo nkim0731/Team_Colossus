@@ -23,7 +23,7 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
-        if (process.env.LOCAL_TEST === 'True') {
+        if (process.env.LOCAL_TEST === 'true' || process.env.LOCAL_TEST === 'True') {
             mongoURI = 'mongodb://localhost:27017/test_calendoDB';
         }
         if (process.env.TESTING === 'false' || process.env.TESTING === 'False' ) await mongoose.connect(mongoURI);
