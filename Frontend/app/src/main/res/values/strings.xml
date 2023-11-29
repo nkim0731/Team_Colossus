@@ -22,7 +22,7 @@
 
 
     <string name="setting_img_description">Setting</string>
-
+    <string name="signout_img_description">Sign out</string>
     <string name="address_hint">Address: e.g., 123 Main St, City</string>
     <string name="time_hint">YYYY-MM-DD HH:mm</string>
 
