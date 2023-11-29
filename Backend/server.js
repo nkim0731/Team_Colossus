@@ -157,7 +157,7 @@ app.post('/login/google', async (req, res) => {
     const data = req.body;
     const useremail = data.username;
     try {
-        const user = await db.getUser(data.username);
+        const user = await db.getUser(useremail);
         if (!user) {
             const addResult = await db.addUser(data);
             if (!addResult) return res.status(404).json({ error: "Tried to add null user" });
@@ -178,7 +178,7 @@ app.route('/api/preferences')
 .get(async (req, res) => {
     const useremail = req.query.user; 
     try {
-        const user = await db.getUser(username);
+        const user = await db.getUser(useremail);
         if (!user) return res.status(404).json({ error: "No such user exists" });
 
         res.status(200).send(user.preferences);
@@ -260,8 +260,8 @@ app.route('/api/calendar')
         if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const user = await db.getUser(username);
-        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
+        const user = await db.getUser(useremail);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + useremail });
 
         res.status(200).send(user.events);
     } catch (e) {
@@ -278,10 +278,10 @@ app.route('/api/calendar')
         const tokens = await db.getUserTokens(useremail, ['id_token']);
         const id_token = tokens.id_token;
 
-        if (!await db.verifyUser(id_token, username, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        await db.addEvents(data.username, data.events);
+        await db.addEvents(useremail, data.events);
         res.status(200).json({ message: 'Events add successful' });
     } catch (e) {
         console.log(e);
@@ -308,8 +308,8 @@ app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
         if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const user = await db.getUser(username);
-        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
+        const user = await db.getUser(useremail);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + useremail });
 
         const dayEvents = user.events.filter(e => {
             const eventDate = new Date(e.start);
@@ -332,21 +332,20 @@ app.route('/api/calendar/day_schedule')
 .post(async (req, res) => {
     const data = req.body; // username, latitude, longitude
     // const id_token = req.middleware.id_token;
-    const username = data.username;
+    const useremail = data.username;
     const LatLng = `${data.latitude}, ${data.longitude}`;
 
     try {
         const tokens = await db.getUserTokens(useremail, ['id_token']);
         const id_token = tokens.id_token;
 
-        if (!await db.verifyUser(id_token, username, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const user = await db.getUser(data.username);
-        const LatLng = `${data.latitude}, ${data.longitude}`;
+        const user = await db.getUser(useremail);
 
         const schedule = await Scheduler.createDaySchedule(user.events, LatLng, user.preferences);
-        await db.addSchedule(username, schedule);
+        await db.addSchedule(useremail, schedule);
         res.status(200).send(schedule);
     } catch (e) {
         res.status(500).json({ error: e.message });

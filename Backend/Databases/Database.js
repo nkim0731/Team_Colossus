@@ -14,7 +14,7 @@ const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
-const mongoURI = process.env.MONGO_URI;
+var mongoURI = process.env.MONGO_URI;
 
 class Database {
     constructor() {
@@ -23,10 +23,6 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
-        if (process.env.LOCAL_TEST === 'True') {
-            mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-        }
-        if (process.env.TESTING === 'false' || process.env.TESTING === 'False' ) await mongoose.connect(mongoURI);
         if (process.env.LOCAL_TEST === 'True') {
             mongoURI = 'mongodb://localhost:27017/test_calendoDB';
         }
@@ -69,11 +65,6 @@ class Database {
                 idToken: id_token
             });
             const payload = ticket.getPayload();
-        try {
-            const ticket = await this.authClient.verifyIdToken({
-                idToken: id_token
-            });
-            const payload = ticket.getPayload();
 
             if (payload) {
                 let { aud, iss, exp, email } = payload;
@@ -93,7 +84,7 @@ class Database {
         } catch (e) {
             console.log(e);
             throw new Error("Error in verifyUser");
-        }
+        };
     }
 
     // Function to update multiple token fields for a user
@@ -159,27 +150,6 @@ class Database {
         }
 
         return tokens;
-        // Example usage:
-        // const userTokens = await database.getUserTokens('user@example.com', ['access_token', 'id_token']);
-            if (payload) {
-                let { aud, iss, exp, email } = payload;
-        
-                if (aud === audience
-                    && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
-                    && exp > Math.floor(Date.now() / 1000)
-                    && email == useremail) 
-                {
-                    // hd++; 
-                    // The ID token is valid and satisfies the criteria
-                    console.log("\n id_token verified");
-                    return true;
-                }
-            }
-            return false;
-        } catch (e) {
-            console.log(e);
-            throw new Error("Error in verifyUser");
-        }
     }
 
     // Function to update multiple token fields for a user
@@ -317,24 +287,7 @@ class Database {
 
         return updatedUser;
     }
-	}
-
-    // Function to update the calendar events for a user
-    async updateCalendar(username, events) {
-        // Check if the user exists
-        if (await this.userExists(username) === false) {
-            throw new Error("No such user exists");
-        }
-
-        // Update the events field for the user
-        const updatedUser = await UserModel.findOneAndUpdate(
-            { username: username },
-            { $set: { events: events } },
-            { new: true }
-        );
-
-        return updatedUser;
-    }
+	
 
     // add events (array) to calendar
     // ChatGPT usage: Partial
