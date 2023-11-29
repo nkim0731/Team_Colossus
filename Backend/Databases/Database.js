@@ -27,6 +27,10 @@ class Database {
             mongoURI = 'mongodb://localhost:27017/test_calendoDB';
         }
         if (process.env.TESTING === 'false' || process.env.TESTING === 'False' ) await mongoose.connect(mongoURI);
+        if (process.env.LOCAL_TEST === 'True') {
+            mongoURI = 'mongodb://localhost:27017/test_calendoDB';
+        }
+        if (process.env.TESTING === 'false' || process.env.TESTING === 'False' ) await mongoose.connect(mongoURI);
         console.log('Database class connected to MongoDB at: ' + mongoURI);
     }
 
@@ -37,6 +41,7 @@ class Database {
             throw new Error("No such user exists");
         }
         let user = await UserModel.findOne({ username: useremail });
+        return user;
         return user;
     }
 
@@ -64,7 +69,98 @@ class Database {
                 idToken: id_token
             });
             const payload = ticket.getPayload();
+        try {
+            const ticket = await this.authClient.verifyIdToken({
+                idToken: id_token
+            });
+            const payload = ticket.getPayload();
 
+            if (payload) {
+                let { aud, iss, exp, email } = payload;
+        
+                if (aud === audience
+                    && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
+                    && exp > Math.floor(Date.now() / 1000)
+                    && email == useremail) 
+                {
+                    // hd++; 
+                    // The ID token is valid and satisfies the criteria
+                    console.log("\n id_token verified");
+                    return true;
+                }
+            }
+            return false;
+        } catch (e) {
+            console.log(e);
+            throw new Error("Error in verifyUser");
+        }
+    }
+
+    // Function to update multiple token fields for a user
+    async updateUserTokens(userEmail, tokensToUpdate) {
+        const validTokens = ['access_token', 'id_token', 'google_token', 'refresh_token', 'expire_time'];
+
+        // Validate token names
+        for (const tokenName of Object.keys(tokensToUpdate)) {
+            if (!validTokens.includes(tokenName)) {
+                throw new Error(`Invalid token name: ${tokenName}`);
+            }
+        }
+
+        // Check if user exists
+        if (await this.userExists(userEmail) === false) {
+            throw new Error("No such user exists");
+        }
+
+        // Prepare the update object
+        const update = {};
+        for (const [tokenName, tokenValue] of Object.entries(tokensToUpdate)) {
+            update[tokenName] = tokenValue;
+        }
+
+        // Update the user document
+        const updatedUser = await UserModel.findOneAndUpdate(
+            { username: userEmail },
+            { $set: update },
+            { new: true }
+        );
+
+        return updatedUser;
+        // Example usage:
+        // await database.updateUserTokens('user@example.com', {
+        //     access_token: 'newAccessToken',
+        //     id_token: 'newIdToken'
+        // });
+    }
+
+    // Function to get multiple token fields for a user
+    async getUserTokens(userEmail, tokenFields) {
+        const validTokens = ['access_token', 'id_token', 'google_token', 'refresh_token'];
+
+        // Validate token field names
+        for (const tokenField of tokenFields) {
+            if (!validTokens.includes(tokenField)) {
+                throw new Error(`Invalid token field: ${tokenField}`);
+            }
+        }
+
+        // Check if user exists
+        if (await this.userExists(userEmail) == false) {
+            throw new Error("No such user exists");
+        }
+
+        // Find the user and select the requested token fields
+        const user = await UserModel.findOne({ username: userEmail }).select(tokenFields.join(' '));
+
+        // Extract and return the token fields
+        const tokens = {};
+        for (const field of tokenFields) {
+            tokens[field] = user[field];
+        }
+
+        return tokens;
+        // Example usage:
+        // const userTokens = await database.getUserTokens('user@example.com', ['access_token', 'id_token']);
             if (payload) {
                 let { aud, iss, exp, email } = payload;
         
@@ -203,6 +299,24 @@ class Database {
             throw new Error("No such user exists");
         }
         return await UserModel.findOne({ username }).select('events');
+	}
+
+    // Function to update the calendar events for a user
+    async updateCalendar(username, events) {
+        // Check if the user exists
+        if (await this.userExists(username) === false) {
+            throw new Error("No such user exists");
+        }
+
+        // Update the events field for the user
+        const updatedUser = await UserModel.findOneAndUpdate(
+            { username: username },
+            { $set: { events: events } },
+            { new: true }
+        );
+
+        return updatedUser;
+    }
 	}
 
     // Function to update the calendar events for a user

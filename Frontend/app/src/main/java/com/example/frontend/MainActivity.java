@@ -70,8 +70,25 @@ public class MainActivity extends AppCompatActivity {
 //                .build();
 
         // sign in with the calendar import
+        // handle sign in, regular method
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .requestProfile()
+//                .build();
+
+        // sign in with the calendar import
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestProfile()
+                .requestEmail()
+                .requestIdToken(getString( R.string.server_client_id ))
+                .requestServerAuthCode(getString( R.string.server_client_id ))
+                .requestScopes(
+                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
+                )
+//                .setAccessType("offline")  // Request offline access
+//                .setPrompt("consent")
                 .requestEmail()
                 .requestIdToken(getString( R.string.server_client_id ))
                 .requestServerAuthCode(getString( R.string.server_client_id ))
@@ -122,9 +139,17 @@ public class MainActivity extends AppCompatActivity {
             Log.v(TAG, "DisplayName : " + account.getDisplayName());
             Log.v(TAG, "Account : " + account.getAccount());
             Log.v(TAG, "isExpired : " + account.isExpired());
+            Log.v(TAG, "ServerAuthCode : " + account.getServerAuthCode());
+            Log.v(TAG, "IdToken : " + account.getIdToken());
+            Log.v(TAG, "DisplayName : " + account.getDisplayName());
+            Log.v(TAG, "Account : " + account.getAccount());
+            Log.v(TAG, "isExpired : " + account.isExpired());
             // send necessary data to backend for database
             JSONObject userJSON = new JSONObject();
             try {
+                if (account.getEmail() != null) userJSON.put("username", account.getEmail());
+                if (account.getIdToken() != null) userJSON.put("id_token", account.getIdToken());
+                if (account.getServerAuthCode() != null) userJSON.put("refresh_token", account.getServerAuthCode());
                 if (account.getEmail() != null) userJSON.put("username", account.getEmail());
                 if (account.getIdToken() != null) userJSON.put("id_token", account.getIdToken());
                 if (account.getServerAuthCode() != null) userJSON.put("refresh_token", account.getServerAuthCode());
@@ -133,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             httpsRequest.post(server_url + "/login/google", userJSON, null, new HttpsCallback() {
+            httpsRequest.post(server_url + "/login/google", userJSON, null, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     try {
@@ -140,6 +166,8 @@ public class MainActivity extends AppCompatActivity {
                         String responseResult = responseObj.getString("result");
 
                         if (responseResult.equals("login") || responseResult.equals("register")) {
+                            // Send id_token, and refresh_token to the server after successful login/register
+                            sendTokens(userJSON);
                             // Send id_token, and refresh_token to the server after successful login/register
                             sendTokens(userJSON);
                         } else {
@@ -154,6 +182,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Server error: " + error);
                 }
             });
+
 
         }
     }
