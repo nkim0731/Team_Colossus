@@ -20,6 +20,9 @@
     <string name="button_eventDisplay">Schedule</string>
     <string name="submit_button">Submit</string>
 
+
+    <string name="setting_img_description">Setting</string>
+
     <string name="address_hint">Address: e.g., 123 Main St, City</string>
     <string name="time_hint">YYYY-MM-DD HH:mm</string>
 
