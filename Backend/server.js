@@ -10,8 +10,6 @@ const querystring = require('querystring'); // Node.js module to stringify as x-
 
 // Calendar import
 const { google } = require('googleapis');
-
-// Requires for defined interfaces
 const Scheduler = require('./Interfaces/Scheduler.js');
 const db = require('./Databases/Database.js');
 const auth = require('./Interfaces/GoogleAuth.js');
@@ -157,7 +155,7 @@ app.post('/login/google', async (req, res) => {
     const data = req.body;
     const useremail = data.username;
     try {
-        const user = await db.getUser(useremail);
+        const user = await db.getUser(data.username);
         if (!user) {
             const addResult = await db.addUser(data);
             if (!addResult) return res.status(404).json({ error: "Tried to add null user" });
@@ -178,7 +176,7 @@ app.route('/api/preferences')
 .get(async (req, res) => {
     const useremail = req.query.user; 
     try {
-        const user = await db.getUser(useremail);
+        const user = await db.getUser(username);
         if (!user) return res.status(404).json({ error: "No such user exists" });
 
         res.status(200).send(user.preferences);
@@ -187,68 +185,20 @@ app.route('/api/preferences')
         res.status(500).json({ error: e.message });
     }
 })
-
 // ChatGPT usage: No
 .put(async (req, res) => {
     const data = req.body;
-    const useremail = data.username; 
-    const preferences = data.preferences; 
     try {
-        if (!await db.userExists(useremail)) {
-            return res.status(404).json({ error: "No such user exists" });
-        }
-        await db.updatePreferences(useremail, preferences);
+        const updateResult = await db.updatePreferences(data.username, data.preferences);
+        if (!updateResult) return res.status(404).json({ error: "No such user exists" });
+
         res.status(200).json({ result: 'success' });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-
-/*
-* Group chats API calls
-*/
-// ChatGPT usage: Partial
-app.get('/api/message_history', async (req, res) => {
-    const chatName = req.query.chatName; // ?chatName=x 
-    try {
-        const messages = await db.getMessages(chatName);
-        res.status(200).send(messages.messages);
-    } catch (e) {
-        console.log(e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// ChatGPT usage: Partial
-app.get('/api/chatrooms', async (req, res) => {
-    const useremail = req.query.user; // ?user=x
-    try {
-        const calendar = await db.getCalendar(useremail);
-        const courseEvents = calendar.events.filter(e => e.hasChat); // filter for only events with chats
-        let myChatrooms = [];
-        for (let e of courseEvents) {
-            let chatroom = await db.getRoom(e.eventName);
-            if (!chatroom) { // room null, not created yet
-                chatroom = await db.createRoom(e.eventName);
-            }
-            myChatrooms.push(chatroom);
-        }
-        res.status(200).send(myChatrooms);
-    } catch (e) {
-        console.log(e);
-        res.status(500).json({ error: e.message });
-    }
-});
-
-
-
-/*
-* Calendar API calls
-*/
-
-// get / add events to calendar
-// ChatGPT usage: Partial
+// get and add events to calendar
 app.route('/api/calendar')
 // ChatGPT usage: Partial
 .get(async (req, res) => { // /api/calendar?user=username
@@ -261,8 +211,8 @@ app.route('/api/calendar')
         if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const user = await db.getUser(useremail);
-        if (!user) return res.status(404).json({ message: 'No user for username: ' + useremail });
+        const user = await db.getUser(username);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
 
         res.status(200).send(user.events);
     } catch (e) {
@@ -279,10 +229,12 @@ app.route('/api/calendar')
         const tokens = await db.getUserTokens(useremail, ['id_token']);
         const id_token = tokens.id_token;
 
-        if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        await db.addEvents(useremail, data.events);
+        const eventAddResult = await db.addEvents(data.username, data.events);
+        if (!eventAddResult) return res.status(404).json({ message: 'No user for username: ' + data.username });
+        
         res.status(200).json({ message: 'Events add successful' });
     } catch (e) {
         console.log(e);
@@ -309,8 +261,8 @@ app.get('/api/calendar/by_day', async (req, res) => { // ?user=username&day=date
         if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const user = await db.getUser(useremail);
-        if (!user) return res.status(404).json({ message: 'No user for username: ' + useremail });
+        const user = await db.getUser(username);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
 
         const dayEvents = user.events.filter(e => {
             const eventDate = new Date(e.start);
@@ -333,20 +285,23 @@ app.route('/api/calendar/day_schedule')
 .post(async (req, res) => {
     const data = req.body; // username, latitude, longitude
     // const id_token = req.middleware.id_token;
-    const useremail = data.username;
+    const username = data.username;
     const LatLng = `${data.latitude}, ${data.longitude}`;
 
     try {
         const tokens = await db.getUserTokens(useremail, ['id_token']);
         const id_token = tokens.id_token;
 
-        if (!await db.verifyUser(id_token, useremail, process.env.CLIENT_ID)) {
+        if (!await db.verifyUser(id_token, username, process.env.CLIENT_ID)) {
             return res.status(400).json({ message: 'Could not verify user' });
         }
-        const user = await db.getUser(useremail);
+        const user = await db.getUser(data.username);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + data.username });
+
+        const LatLng = `${data.latitude}, ${data.longitude}`;
 
         const schedule = await Scheduler.createDaySchedule(user.events, LatLng, user.preferences);
-        await db.addSchedule(useremail, schedule);
+        await db.addSchedule(username, schedule);
         res.status(200).send(schedule);
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -371,6 +326,26 @@ app.route('/api/calendar/day_schedule')
     }
     
 })
+
+// ChatGPT usage: Partial
+app.get('/api/chatrooms', async (req, res) => {
+    const username = req.query.user; // ?user=x
+    try {
+        const calendar = await db.getCalendar(username);
+        const courseEvents = calendar.events.filter(e => e.hasChat); // filter for only events with chats
+        let myChatrooms = [];
+        for (let e of courseEvents) {
+            let chatroom = await db.getRoom(e.eventName);
+            if (!chatroom) { // room null, not created yet
+                chatroom = await db.createRoom(e.eventName);
+            }
+            myChatrooms.push(chatroom);
+        }
+        res.status(200).send(myChatrooms);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
 
 async function exchangeAuthCodeForTokens(authCode) {
     try {
