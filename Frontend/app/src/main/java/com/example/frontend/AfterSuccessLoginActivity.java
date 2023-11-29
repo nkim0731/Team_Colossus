@@ -37,8 +37,6 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
 
-
-
         // This asks for scopes to get refresh_token for user calendar access
         // this does not have the necessary permissions to run
 //        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -93,9 +91,9 @@ public class AfterSuccessLoginActivity extends AppCompatActivity  {
         signOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                userData.putString("signOut", "SignOut");
-                Intent intent = new Intent(AfterSuccessLoginActivity.this, MainActivity.class);
-                startActivity(intent);
+                Intent mainIntent = new Intent(AfterSuccessLoginActivity.this, MainActivity.class);
+                mainIntent.putExtra("signout", true);
+                startActivity(mainIntent);
 
             }
         });

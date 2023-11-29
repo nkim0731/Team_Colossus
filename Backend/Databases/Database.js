@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
 const deepMerge = require('deepmerge');
 
+const userSchema = require('../Schema/userSchema');
+const chatSchema = require('../Schema/chatSchema')
+
 // models to interact with database collections
-const UserModel = mongoose.model('user', require('../Schema/userSchema'));
-const ChatModel = mongoose.model('chat', require('../Schema/chatSchema'));
+const UserModel = mongoose.model('user', userSchema);
+const ChatModel = mongoose.model('chat', chatSchema);
 
 // loading env variables
 const path = require('path');
@@ -92,12 +95,12 @@ class Database {
         const user = await UserModel.findOne({ username });
         if (!user) return false;
 
-        const coursePattern = /^[A-Za-z]{4}\d{3}/i;
+        const coursePattern = /^[A-Z]{4}\d{3}/i;
         let newEvents = [];
         for (let e of events) {
             if (coursePattern.test(e.eventName)) e.hasChat = true;
             else e.hasChat = false;
-            
+
             let included = false;
             for (let ue of user.events) {
                 if (ue.eventName === e.eventName) included = true;

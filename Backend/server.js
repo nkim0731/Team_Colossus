@@ -37,8 +37,7 @@ require('./Interfaces/Messaging.js')(server);
 
 // Important header parser middleware for user verification and sign in 
 app.use((req, res, next) => {
-    // Log a message to indicate that the middleware is running
-    console.log('Middleware for extracting access token from the header is running!');
+    // console.log('Middleware for extracting access token from the header is running!');
 
     const id_token = req.headers['id_token'];
     const refresh_token = req.headers['refresh_token'];
@@ -46,8 +45,8 @@ app.use((req, res, next) => {
     req.id_token = id_token; // Attach the token to the request object
     req.refresh_token = refresh_token; // Attach the token to the request object
 
-    console.log("\nExtracted id_token : " + id_token);
-    console.log("Extracted refresh_token : " + refresh_token + "\n");
+    // console.log("\nExtracted id_token : " + id_token);
+    // console.log("Extracted refresh_token : " + refresh_token + "\n");
 
     /* authHeader here is not defined, causing errors */
     // if (authHeader) { 
