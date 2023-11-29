@@ -22,6 +22,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -66,11 +67,27 @@ public class MainActivity extends AppCompatActivity {
         // request location permissions
         checkPermissions();
 
-        // handle sign in
+        // handle sign in, regular method
+//        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//                .requestEmail()
+//                .requestProfile()
+//                .build();
+
+        // sign in with the calendar import
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
                 .requestProfile()
+                .requestEmail()
+                .requestIdToken(getString( R.string.server_client_id ))
+                .requestServerAuthCode(getString( R.string.server_client_id ))
+                .requestScopes(
+                        new Scope("https://www.googleapis.com/auth/calendar.readonly"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.email"),
+                        new Scope("https://www.googleapis.com/auth/userinfo.profile")
+                )
+//                .setAccessType("offline")  // Request offline access
+//                .setPrompt("consent")
                 .build();
+
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         findViewById(R.id.button_googleSignIn).setOnClickListener(view -> {
@@ -102,17 +119,22 @@ public class MainActivity extends AppCompatActivity {
             userData.putString("userEmail", account.getEmail());
             loginSuccessIntent.putExtras(userData);
 
+            Log.v(TAG, "ServerAuthCode : " + account.getServerAuthCode());
+            Log.v(TAG, "IdToken : " + account.getIdToken());
+            Log.v(TAG, "DisplayName : " + account.getDisplayName());
+            Log.v(TAG, "Account : " + account.getAccount());
+            Log.v(TAG, "isExpired : " + account.isExpired());
             // send necessary data to backend for database
             JSONObject userJSON = new JSONObject();
             try {
-                userJSON.put("username", account.getEmail());
-                userJSON.put("id_token", account.getIdToken());
-                userJSON.put("refresh_token", account.getServerAuthCode());
+                if (account.getEmail() != null) userJSON.put("username", account.getEmail());
+                if (account.getIdToken() != null) userJSON.put("id_token", account.getIdToken());
+                if (account.getServerAuthCode() != null) userJSON.put("refresh_token", account.getServerAuthCode());
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }
 
-            httpsRequest.post(server_url + "/login/google", userJSON, new HttpsCallback() {
+            httpsRequest.post(server_url + "/login/google", userJSON, null, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     try {
@@ -120,7 +142,8 @@ public class MainActivity extends AppCompatActivity {
                         String responseResult = responseObj.getString("result");
 
                         if (responseResult.equals("login") || responseResult.equals("register")) {
-                            startActivity(loginSuccessIntent); // show next page after user is validated with backend
+                            // Send id_token, and refresh_token to the server after successful login/register
+                            sendTokens(userJSON);
                         } else {
                             Log.e(TAG, "Error");
                         }
@@ -133,7 +156,38 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Server error: " + error);
                 }
             });
+
         }
+    }
+
+    private void sendTokens(JSONObject userJSON ){
+        Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
+        loginSuccessIntent.putExtras(userData);
+        httpsRequest.post(server_url + "/api/tokens", userJSON, null, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                try {
+                    JSONObject responseObj = new JSONObject(response);
+                    String responseResult = responseObj.getString("result");
+//                    String responseStatusCode = responseObj.getString("status_code");
+
+                    // Assuming you have a way to get the status code. This will depend on your HTTP client.
+//                    int statusCode = responseObj.getInt("code");
+//                    Log.v(TAG, "response string : " + response);
+//                    Log.i(TAG, "status_code : " + responseStatusCode);
+
+                    // responseResult.equals("tokens and expire time backup success") ||
+//                    if (responseStatusCode.equals("200")) {
+                    startActivity(loginSuccessIntent);
+                } catch (JSONException e) {
+                    Log.e(TAG, "JSON Exception accessing /api/tokens");
+                }
+            }
+            @Override
+            public void onFailure(String error) {
+                Log.e(TAG, "Server error: " + error);
+            }
+        });
     }
 
     /*
