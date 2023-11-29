@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
     private int RC_SIGN_IN = 1;
 //    private Button signOutButton;
     private Bundle userData;
-    private Bundle userData2;
+    private Bundle intentData;
 
     //For detecting User Activity
     public static final String DETECTED_ACTIVITY = ".DETECTED_ACTIVITY";
@@ -82,9 +82,9 @@ public class MainActivity extends AppCompatActivity {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
         updateUI(account);
 
-        userData2 = new Bundle();
-        userData2 = getIntent().getExtras();
-        if(userData2.getString("SignOut")=="SignOut"){
+        intentData = new Bundle();
+        intentData = getIntent().getExtras();
+        if(intentData != null){
             signOut();
         }
     }
