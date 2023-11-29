@@ -219,6 +219,31 @@ public class CalendarActivity extends AppCompatActivity {
             }
         });
 
+        // sign out of Calendo
+        findViewById(R.id.imageButton3).setOnClickListener(view -> {
+            Intent mainIntent = new Intent(CalendarActivity.this, MainActivity.class);
+            mainIntent.putExtra("signout", true);
+            startActivity(mainIntent);
+        });
+
+        // go to and update preferences
+        findViewById(R.id.imageButton2).setOnClickListener(view -> {
+            Intent settingIntent = new Intent(CalendarActivity.this, PreferenceActivity.class);
+            httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
+
+                @Override
+                public void onResponse(String response) {
+                    Log.d(TAG, response);
+                    userData.putString("preferences", response);
+                    settingIntent.putExtras(userData);
+                    startActivity(settingIntent);
+                }
+                @Override
+                public void onFailure(String error) {
+                    Log.e(TAG, "Server error: " + error);
+                }
+            });
+        });
     }
 
 

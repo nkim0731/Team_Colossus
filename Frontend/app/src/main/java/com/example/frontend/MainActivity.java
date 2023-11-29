@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "There is no user signed in");
         }
         else {
-            Intent loginSuccessIntent = new Intent(MainActivity.this, AfterSuccessLoginActivity.class);
+            Intent loginSuccessIntent = new Intent(MainActivity.this, CalendarActivity.class);
             // extra data for use else where
             userData.putString("userId", account.getId());
             userData.putString("userEmail", account.getEmail());
