@@ -19,6 +19,12 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.Scope;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,24 +46,16 @@ public class CalendarActivity extends AppCompatActivity {
     private final String TAG = "CalendarActivity";
     private CalendarView calendarView;
     private Calendar calendar;
-//    private TextView tv_schedule;
-//    private Button chatButton;
-
     private Bundle userData;
-//    private Button eventDisplay;
     private HttpsRequest httpsRequest;
     private String selectedDate;
     private final String server_url = ServerConfig.SERVER_URL;
-//    private TextView scheduleDisplay;
-//    private Button createEvent;
-//    private Button createDaySchedule;
     private double latitude;
     private double longitude;
-//    private ArrayList<EventData> schedule;
-//    private RecyclerView rv_temp;
     private List<EventData> eventList;
     private EventAdapter eventAdapter;
     private String userEmail="";
+    private GoogleSignInClient mGoogleSignInClient;
 
 
     /*
@@ -70,18 +68,13 @@ public class CalendarActivity extends AppCompatActivity {
 
         //initalize event list
         eventList = new ArrayList<>();
-//        eventList.add(new EventData("8:30","wake up",""));
         RecyclerView rv_temp = findViewById(R.id.rv_temp);
         rv_temp.setLayoutManager(new LinearLayoutManager(this));
         eventAdapter= new EventAdapter(eventList);
         rv_temp.setAdapter(eventAdapter);
 
-
-
-
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
-//        ArrayList<EventData> schedule = new ArrayList<>();
 
         userEmail = userData.getString("userEmail");
 
@@ -137,44 +130,17 @@ public class CalendarActivity extends AppCompatActivity {
 
         // go to create schedule event
         Button eventDisplay = findViewById(R.id.button_eventDisplay);
-        eventDisplay.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent eventIntent = new Intent(CalendarActivity.this, EventDisplayActivity.class);
-                eventIntent.putExtras(userData);
+        eventDisplay.setOnClickListener(view -> {
+            Intent eventIntent = new Intent(CalendarActivity.this, EventDisplayActivity.class);
+            eventIntent.putExtras(userData);
 
-                if (permissionChecker()) {
-                    startActivity(eventIntent);
-                } else {
-                    Log.w(TAG, "No location permissions");
-                    Toast.makeText(CalendarActivity.this, "Need location permissions to create schedule", Toast.LENGTH_LONG).show();
-                }
+            if (permissionChecker()) {
+                startActivity(eventIntent);
+            } else {
+                Log.w(TAG, "No location permissions");
+                Toast.makeText(CalendarActivity.this, "Need location permissions to create schedule", Toast.LENGTH_LONG).show();
             }
         });
-
-//        TextView scheduleDisplay = findViewById(R.id.tv_scheduleDisplay);
-//        httpsRequest.get(server_url + "/api/calendar/day_schedule" + selectedDate, null, new HttpsCallback() {
-//            @Override
-//            public void onResponse(String response) {
-//                try {
-//                    JSONArray eventArray = new JSONArray(response);
-//                    for (int i=0; i<eventArray.length();i++){
-//                        JSONObject eventObj = eventArray.getJSONObject(i);
-//                        EventData newEvent = new EventData(eventObj.getString("startTime"),
-//                                eventObj.getString("eventName"),
-//                                eventObj.getString("duration")
-//                                );
-//                        schedule.add(newEvent);
-//                    }
-//                } catch (JSONException e) {
-//                    Log.e(TAG, "Error: JSONException");
-//                }
-//            }
-//            @Override
-//            public void onFailure(String error) {
-//                Log.e(TAG, "Error: can't get day schedule");
-//            }
-//        });
 
         // move to CreateNewEvent.java to create new event
         Button createEvent = findViewById(R.id.button_createEvent);
@@ -230,7 +196,6 @@ public class CalendarActivity extends AppCompatActivity {
         findViewById(R.id.imageButton2).setOnClickListener(view -> {
             Intent settingIntent = new Intent(CalendarActivity.this, PreferenceActivity.class);
             httpsRequest.get(server_url + "/api/preferences?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
-
                 @Override
                 public void onResponse(String response) {
                     Log.d(TAG, response);
@@ -243,6 +208,51 @@ public class CalendarActivity extends AppCompatActivity {
                     Log.e(TAG, "Server error: " + error);
                 }
             });
+        });
+
+        // redeclare for silent sign in
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestProfile()
+                .requestIdToken(getString(R.string.server_client_id))
+                .requestServerAuthCode(getString(R.string.server_client_id))
+                .requestScopes(new Scope("https://www.googleapis.com/auth/calendar.readonly"))
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        // update import and refresh displayed events
+        findViewById(R.id.refresh_button).setOnClickListener(view -> {
+            mGoogleSignInClient.silentSignIn().addOnCompleteListener(this, task -> {
+                if (task.isSuccessful()) {
+                    GoogleSignInAccount account = task.getResult();
+                    importCalendar(account.getEmail(), account.getServerAuthCode());
+                } else {
+                    Exception e = task.getException();
+                    if (e != null) {
+                        Log.w("TAG", "signInResult:failed code=" + e.getMessage());
+                    }
+                }
+            });
+        });
+    }
+
+    private void importCalendar(String username, String authCode) {
+        JSONObject tokenJson = new JSONObject();
+        try {
+            tokenJson.put("username", username);
+            tokenJson.put("auth_code", authCode);
+        } catch (JSONException e){
+            Log.e(TAG, "unexpected JSON exception", e);
+        }
+        httpsRequest.post(server_url + "/api/calendar/import", tokenJson, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                getEvents(); // update after importing
+            }
+            @Override
+            public void onFailure(String error) {
+                Log.e(TAG, "Server error: " + error);
+            }
         });
     }
 
@@ -294,11 +304,13 @@ public class CalendarActivity extends AppCompatActivity {
      * ChatGPT usage: Partial
      * */
     private void getEvents(){
-        httpsRequest.get(server_url + "/api/calendar/by_day"+ String.format("?user=%s&day=%s",userEmail,selectedDate), null, new HttpsCallback() {
+        httpsRequest.get(server_url + "/api/calendar/by_day"+ String.format("?user=%s&day=%s",userEmail,selectedDate),
+                null, new HttpsCallback() {
             @Override
             public void onResponse(String response) {
                 try{
                     Log.d(TAG, response);
+                    eventList.clear(); // clear events first
                     JSONArray eventJsonArray = new JSONArray(response);
                     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
                     SimpleDateFormat eventTimeFormat = new SimpleDateFormat("HH:mm");
@@ -316,12 +328,8 @@ public class CalendarActivity extends AppCompatActivity {
                         );
                         eventList.add(newEvent);
                     }
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            // This block of code is executed on the main UI thread
-                            eventAdapter.notifyDataSetChanged();
-                        }
+                    runOnUiThread(() -> {
+                        eventAdapter.notifyDataSetChanged();
                     });
                 }catch (JSONException e){
                     Log.e(TAG,"GET events JSON error");

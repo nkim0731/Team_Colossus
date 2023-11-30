@@ -48,9 +48,6 @@
             android:name=".CalendarActivity"
             android:exported="false" />
         <activity
-            android:name=".AfterSuccessLoginActivity"
-            android:exported="false" />
-        <activity
             android:name=".EventDisplayActivity"
             android:exported="false" />
         <activity

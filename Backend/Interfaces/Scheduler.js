@@ -62,8 +62,12 @@ class Scheduler {
             );
         });
         let schedule = [];
+        let shouldSetOrigin = false;
         for (let i = 0; i < dayEvents.length; i++) {
-            if (i > 0) origin = dayEvents[i].address;
+            if (shouldSetOrigin) origin = dayEvents[i].address;
+            
+            if (!dayEvents[i].address) continue;
+            else shouldSetOrigin = true;
             try {
                 const directions = await this.getDirections(origin, dayEvents[i], preferences);
                 let routes = directions.routes;

@@ -3,6 +3,7 @@ package com.example.frontend;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -49,12 +50,6 @@ public class EventDisplayActivity extends AppCompatActivity {
         EventAdapter eventAdapter = new EventAdapter(dataArrayList);
         rv_eventList.setAdapter(eventAdapter);
 
-        // temporary samples
-//        EventData newEvent1 = new EventData("startTime", "eventName", "duration");
-//        EventData newEvent2 = new EventData("3:30pm", "CPEN321", "1.5 hour");
-//        dataArrayList.add(newEvent1);
-//        dataArrayList.add(newEvent2);
-
         httpsRequest.get(server_url + "/api/calendar/day_schedule?user=" + userData.getString("userEmail"), null, new HttpsCallback() {
             /*
              * ChatGPT usage: Partial
@@ -63,6 +58,11 @@ public class EventDisplayActivity extends AppCompatActivity {
             public void onResponse(String response) {
                 try {
                     JSONArray scheduleArr = new JSONArray(response);
+                    if (scheduleArr.length() == 0) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(EventDisplayActivity.this, "Please Create a Schedule First!", Toast.LENGTH_LONG).show();
+                        });
+                    }
                     for (int i = 0; i < scheduleArr.length(); i++) {
                         JSONObject scheduleObj = scheduleArr.getJSONObject(i);
                         JSONObject routeObj = scheduleObj.getJSONObject("route");

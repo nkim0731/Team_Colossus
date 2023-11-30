@@ -21,6 +21,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.Scope;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
@@ -39,13 +40,10 @@ public class MainActivity extends AppCompatActivity {
     private final String server_url = ServerConfig.SERVER_URL;
     private GoogleSignInClient mGoogleSignInClient;
     private int RC_SIGN_IN = 1;
-//    private Button signOutButton;
     private Bundle userData;
-
-    //For detecting User Activity
+    private String authCode;
+    private String username;
     public static final String DETECTED_ACTIVITY = ".DETECTED_ACTIVITY";
-    //Define an ActivityRecognitionClient//
-//    private ActivityRecognitionClient mActivityRecognitionClient;
 
 
     /*
@@ -66,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .requestProfile()
+                .requestIdToken(getString(R.string.server_client_id))
+                .requestServerAuthCode(getString(R.string.server_client_id))
+                .requestScopes(new Scope("https://www.googleapis.com/auth/calendar.readonly"))
                 .build();
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
         findViewById(R.id.button_googleSignIn).setOnClickListener(view -> {
@@ -83,8 +84,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        updateUI(account);
+        mGoogleSignInClient.silentSignIn().addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                GoogleSignInAccount account = task.getResult();
+                updateUI(account);
+            } else {
+                Exception e = task.getException();
+                if (e != null) {
+                    Log.w("TAG", "signInResult:failed code=" + e.getMessage());
+                }
+                updateUI(null);
+            }
+        });
     }
 
     /*
@@ -95,22 +106,18 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "There is no user signed in");
         }
         else {
-            Intent loginSuccessIntent = new Intent(MainActivity.this, CalendarActivity.class);
-            // extra data for use else where
-            userData.putString("userId", account.getId());
             userData.putString("userEmail", account.getEmail());
-            loginSuccessIntent.putExtras(userData);
+            userData.putString("authCode", account.getServerAuthCode());
+            userData.putString("idToken", account.getIdToken());
+            authCode = account.getServerAuthCode();
+            username = account.getEmail();
 
-            // send necessary data to backend for database
             JSONObject userJSON = new JSONObject();
             try {
-                userJSON.put("username", account.getEmail());
-                userJSON.put("id_token", account.getIdToken());
-                userJSON.put("refresh_token", account.getServerAuthCode());
+                userJSON.put("username", username);
             } catch (JSONException e){
                 Log.e(TAG, "unexpected JSON exception", e);
             }
-
             httpsRequest.post(server_url + "/login/google", userJSON, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
@@ -119,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
                         String responseResult = responseObj.getString("result");
 
                         if (responseResult.equals("login") || responseResult.equals("register")) {
-                            startActivity(loginSuccessIntent); // show next page after user is validated with backend
+                            importCalendar();
                         } else {
                             Log.e(TAG, "Error");
                         }
@@ -134,6 +141,32 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     }
+
+    /**
+     * Helper Import Calendar on Login to Database, then show next page
+     */
+    private void importCalendar() {
+        JSONObject tokenJson = new JSONObject();
+        try {
+            tokenJson.put("username", username);
+            tokenJson.put("auth_code", authCode);
+        } catch (JSONException e){
+            Log.e(TAG, "unexpected JSON exception", e);
+        }
+        httpsRequest.post(server_url + "/api/calendar/import", tokenJson, new HttpsCallback() {
+            @Override
+            public void onResponse(String response) {
+                Intent loginSuccessIntent = new Intent(MainActivity.this, CalendarActivity.class);
+                loginSuccessIntent.putExtras(userData);
+                startActivity(loginSuccessIntent);
+            }
+            @Override
+            public void onFailure(String error) {
+                Log.e(TAG, "Server error: " + error);
+            }
+        });
+    }
+
     /*
      * ChatGPT usage: No
      * */

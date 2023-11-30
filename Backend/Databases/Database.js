@@ -45,8 +45,6 @@ class Database {
      */
     async addUser(user) {
         if (user.username == null) return false;
-
-        user.password = user.password || 'Register from Google';
     
         user.preferences = user.preferences || {
             commute_method: 'Driving',
