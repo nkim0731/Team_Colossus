@@ -10,6 +10,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.util.Log;
+
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 
@@ -86,6 +88,15 @@ public class SendMessageTest {
                 .perform(RecyclerViewActions.scrollToPosition(1));
 
         onView(withText("hello world")).check(matches(isDisplayed()));
+
+    }
+
+    @Test
+    public void checkMessageSpeed(){
+        for(int i=0; i<5; i++){
+            Log.d("MessageTest","Test"+(i+1)+":");
+            checkMessageSent();
+        }
 
     }
 

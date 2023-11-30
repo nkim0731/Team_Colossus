@@ -116,7 +116,7 @@ public class GroupChat extends AppCompatActivity {
                 messageEditText.setText(""); // Clear the message input field
                 long endTime = System.currentTimeMillis();
                 long interval = endTime - startTime;
-                Log.d(TAG,"Message sent and receive time in milliseconds: " + interval);
+                Log.d("MessageTest","Message sent and receive time in milliseconds: " + interval);
             }
 
         });

@@ -76,8 +76,12 @@ public class CalendarActivity extends AppCompatActivity {
         userData = getIntent().getExtras();
         httpsRequest = new HttpsRequest();
 
-        userEmail = userData.getString("userEmail");
+        if(userData == null){
+            userData = new Bundle();
+            userData.putString("userEmail", "sample@gmail.com");
+        }
 
+        userEmail = userData.getString("userEmail");
         // initialize socket connection
         Socket socket = SocketManager.getSocket();
         socket.connect();
@@ -205,7 +209,9 @@ public class CalendarActivity extends AppCompatActivity {
                 }
                 @Override
                 public void onFailure(String error) {
+
                     Log.e(TAG, "Server error: " + error);
+                    startActivity(settingIntent);
                 }
             });
         });
