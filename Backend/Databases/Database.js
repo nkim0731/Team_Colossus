@@ -14,7 +14,7 @@ const envFilePath = path.join(__dirname ,'/../.env');
 require('dotenv').config({ path: envFilePath });
 
 const maxMessages = 5; // TODO set diff value for actual, low value for testing
-var mongoURI = process.env.MONGO_URI;
+const mongoURI = process.env.MONGO_URI;
 
 class Database {
     constructor() {
@@ -23,204 +23,26 @@ class Database {
 
     // ChatGPT usage: No
     async connect() {
-        if (process.env.LOCAL_TEST === 'true' || process.env.LOCAL_TEST === 'True') {
-            mongoURI = 'mongodb://localhost:27017/test_calendoDB';
-        }
-        if (process.env.TESTING === 'false' || process.env.TESTING === 'False' ) await mongoose.connect(mongoURI);
+        if (process.env.TESTING === 'false') await mongoose.connect(mongoURI);
         console.log('Database class connected to MongoDB at: ' + mongoURI);
     }
 
-    // Get data for user by username/email (unique)
-    // ChatGPT usage: Partial
-    async getUser(useremail) {
-        if (await this.userExists(useremail) === false) {
-            throw new Error("No such user exists");
-        }
-        let user = await UserModel.findOne({ username: useremail });
-        return user;
-        return user;
+    /**
+     * Get data of a user by username/email
+     * ChatGPT usage: Partial
+     * @param {String} username email of user
+     * @returns User object in database
+     */
+    async getUser(username) {
+        return await UserModel.findOne({ username });
     }
 
-    // Get user data by google auth id (no endpoint calls this)
-    // ChatGPT usage: No
-    // async getUserById(id) {
-    //     if (await this.userExists(useremail) == false) {
-    //         throw new Error("No such user exists");
-    //     }
-    //     let user = await UserModel.findOne({ userId: id });
-    //     return user
-    // }
-
-    async userExists(useremail) {
-        let user = await UserModel.findOne({ username: useremail });
-        if (user == null) {
-            return false;
-        }
-        return true;
-    }
-    
-    async verifyUser(id_token, useremail, audience) {
-        try {
-            const ticket = await this.authClient.verifyIdToken({
-                idToken: id_token
-            });
-            const payload = ticket.getPayload();
-
-            if (payload) {
-                let { aud, iss, exp, email } = payload;
-        
-                if (aud === audience
-                    && (iss === 'accounts.google.com' || iss === 'https://accounts.google.com') 
-                    && exp > Math.floor(Date.now() / 1000)
-                    && email == useremail) 
-                {
-                    // hd++; 
-                    // The ID token is valid and satisfies the criteria
-                    console.log("\n id_token verified");
-                    return true;
-                }
-            }
-            return false;
-        } catch (e) {
-            console.log(e);
-            throw new Error("Error in verifyUser");
-        };
-    }
-
-    // Function to update multiple token fields for a user
-    async updateUserTokens(userEmail, tokensToUpdate) {
-        const validTokens = ['access_token', 'id_token', 'google_token', 'refresh_token', 'expire_time'];
-
-        // Validate token names
-        for (const tokenName of Object.keys(tokensToUpdate)) {
-            if (!validTokens.includes(tokenName)) {
-                throw new Error(`Invalid token name: ${tokenName}`);
-            }
-        }
-
-        // Check if user exists
-        if (await this.userExists(userEmail) === false) {
-            throw new Error("No such user exists");
-        }
-
-        // Prepare the update object
-        const update = {};
-        for (const [tokenName, tokenValue] of Object.entries(tokensToUpdate)) {
-            update[tokenName] = tokenValue;
-        }
-
-        // Update the user document
-        const updatedUser = await UserModel.findOneAndUpdate(
-            { username: userEmail },
-            { $set: update },
-            { new: true }
-        );
-
-        return updatedUser;
-        // Example usage:
-        // await database.updateUserTokens('user@example.com', {
-        //     access_token: 'newAccessToken',
-        //     id_token: 'newIdToken'
-        // });
-    }
-
-    // Function to get multiple token fields for a user
-    async getUserTokens(userEmail, tokenFields) {
-        const validTokens = ['access_token', 'id_token', 'google_token', 'refresh_token'];
-
-        // Validate token field names
-        for (const tokenField of tokenFields) {
-            if (!validTokens.includes(tokenField)) {
-                throw new Error(`Invalid token field: ${tokenField}`);
-            }
-        }
-
-        // Check if user exists
-        if (await this.userExists(userEmail) == false) {
-            throw new Error("No such user exists");
-        }
-
-        // Find the user and select the requested token fields
-        const user = await UserModel.findOne({ username: userEmail }).select(tokenFields.join(' '));
-
-        // Extract and return the token fields
-        const tokens = {};
-        for (const field of tokenFields) {
-            tokens[field] = user[field];
-        }
-
-        return tokens;
-    }
-
-    // Function to update multiple token fields for a user
-    async updateUserTokens(userEmail, tokensToUpdate) {
-        const validTokens = ['access_token', 'id_token', 'google_token', 'refresh_token', 'expire_time'];
-
-        // Validate token names
-        for (const tokenName of Object.keys(tokensToUpdate)) {
-            if (!validTokens.includes(tokenName)) {
-                throw new Error(`Invalid token name: ${tokenName}`);
-            }
-        }
-
-        // Check if user exists
-        if (await this.userExists(userEmail) === false) {
-            throw new Error("No such user exists");
-        }
-
-        // Prepare the update object
-        const update = {};
-        for (const [tokenName, tokenValue] of Object.entries(tokensToUpdate)) {
-            update[tokenName] = tokenValue;
-        }
-
-        // Update the user document
-        const updatedUser = await UserModel.findOneAndUpdate(
-            { username: userEmail },
-            { $set: update },
-            { new: true }
-        );
-
-        return updatedUser;
-        // Example usage:
-        // await database.updateUserTokens('user@example.com', {
-        //     access_token: 'newAccessToken',
-        //     id_token: 'newIdToken'
-        // });
-    }
-
-    // Function to get multiple token fields for a user
-    async getUserTokens(userEmail, tokenFields) {
-        const validTokens = ['access_token', 'id_token', 'google_token', 'refresh_token'];
-
-        // Validate token field names
-        for (const tokenField of tokenFields) {
-            if (!validTokens.includes(tokenField)) {
-                throw new Error(`Invalid token field: ${tokenField}`);
-            }
-        }
-
-        // Check if user exists
-        if (await this.userExists(userEmail) == false) {
-            throw new Error("No such user exists");
-        }
-
-        // Find the user and select the requested token fields
-        const user = await UserModel.findOne({ username: userEmail }).select(tokenFields.join(' '));
-
-        // Extract and return the token fields
-        const tokens = {};
-        for (const field of tokenFields) {
-            tokens[field] = user[field];
-        }
-
-        return tokens;
-        // Example usage:
-        // const userTokens = await database.getUserTokens('user@example.com', ['access_token', 'id_token']);
-    }
-
-    // Add a new user to Users Database
-    // ChatGPT usage: Partial
+    /**
+     * Add a new user to Users Database
+     * ChatGPT usage: Partial
+     * @param {String} user username user signed in with through google
+     * @returns true on success, false on null user
+     */
     async addUser(user) {
         if (user.username == null) return false;
     
@@ -260,35 +82,13 @@ class Database {
         return true;
     }
 
-    // get calendar events (this might not be needed anyway since we can get events from user in getUser)
-    // ChatGPT usage: Partial
-	async getCalendar(username) {
-        if (await this.userExists(username) == false) {
-            throw new Error("No such user exists");
-        }
-        return await UserModel.findOne({ username }).select('events');
-	}
-
-    // Function to update the calendar events for a user
-    async updateCalendar(username, events) {
-        // Check if the user exists
-        if (await this.userExists(username) === false) {
-            throw new Error("No such user exists");
-        }
-
-        // Update the events field for the user
-        const updatedUser = await UserModel.findOneAndUpdate(
-            { username: username },
-            { $set: { events: events } },
-            { new: true }
-        );
-
-        return updatedUser;
-    }
-	
-
-    // add events (array) to calendar
-    // ChatGPT usage: Partial
+    /**
+     * Add an array of events to events array in Database
+     * ChatGPT usage: Partial
+     * @param {String} username 
+     * @param {Array} events array with events to add to Database
+     * @returns true on success, false on no user
+     */
     async addEvents(username, events) {
         const user = await UserModel.findOne({ username });
         if (!user) return false;

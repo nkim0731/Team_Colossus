@@ -1,6 +1,5 @@
 package com.example.frontend;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +8,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+
+
 import java.util.List;
 
 /*
@@ -16,13 +17,15 @@ import java.util.List;
  * */
 public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHolder> {
     private List<EventData> eventList;
-
+//    private Context context;
     /*
      * ChatGPT usage: No
      * */
     public EventAdapter(List<EventData> eventList) {
         this.eventList = eventList;
+//        this.context = context;
     }
+
 
     /*
      * ChatGPT usage: Yes
@@ -30,17 +33,21 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     @NonNull
     @Override
     public EventViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_events, parent, false);
+        View view;
+        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_events, parent, false);
+
         return new EventViewHolder(view);
+
     }
+
 
     /*
      * ChatGPT usage: Yes
      * */
     @Override
     public void onBindViewHolder(@NonNull EventViewHolder holder, int position) {
-        EventData event = eventList.get(position);
-        holder.bind(event);
+        EventData events = eventList.get(position);
+        holder.bind(events);
     }
 
     /*
@@ -51,13 +58,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         return eventList.size();
     }
 
-    /*
-     * ChatGPT usage: No
-     * */
+
+
+
     public class EventViewHolder extends RecyclerView.ViewHolder {
         private TextView startTime;
         private TextView eventName;
         private TextView duration;
+
 
         /*
          * ChatGPT usage: Partial
@@ -72,11 +80,14 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         /*
          * ChatGPT usage: Partial
          * */
-        public void bind(EventData event) {
-            startTime.setText(event.getStartTime());
-            eventName.setText(event.getEventName());
-            duration.setText(event.getDuration());
-            // Additional styling or formatting can be applied here
+        public void bind(EventData events) {
+            // Bind data to the views
+            startTime.setText(events.getStartTime());
+            eventName.setText(events.getEventName());
+            duration.setText(events.getDuration());
         }
     }
+
+
+
 }

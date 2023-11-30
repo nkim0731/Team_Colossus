@@ -121,7 +121,7 @@ public class ChatRoomsActivity extends AppCompatActivity {
         JSONObject postData = new JSONObject();
         postData.put("chatName",chatName);
         String url = String.format(server_url + "/api/chatrooms?user=%s",userEmail);
-        httpsRequest.post(url, postData, null, new HttpsCallback() {
+        httpsRequest.post(url, postData, new HttpsCallback() {
             @Override
             public void onResponse(String response) {
                 Log.d(TAG,response);

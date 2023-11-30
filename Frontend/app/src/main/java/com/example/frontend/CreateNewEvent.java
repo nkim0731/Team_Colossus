@@ -57,7 +57,7 @@ public class CreateNewEvent extends AppCompatActivity {
             }
             Log.d(TAG, eventData.toString());
 
-            httpsRequest.post(server_url + "/api/calendar", data, null, new HttpsCallback() {
+            httpsRequest.post(server_url + "/api/calendar", data, new HttpsCallback() {
                 @Override
                 public void onResponse(String response) {
                     Log.d(TAG, response);
