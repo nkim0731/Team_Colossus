@@ -14,9 +14,13 @@ require('dotenv').config({ path: envFilePath });
 const app = express();
 app.use(express.json());
 
+// const options = {
+//     key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
+//     cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
+// };
 const options = {
-    key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
-    cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
+    key: fs.readFileSync('./privkey.pem'),
+    cert: fs.readFileSync('./fullchain.pem'),
 };
 const httpsServer = https.createServer(options, app);
 // const server = http.createServer(app); // HTTP server for testing 
