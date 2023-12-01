@@ -11,6 +11,9 @@ jest.mock('../Databases/Database.js');
 jest.mock('../Interfaces/GoogleCalendar.js');
 
 // clean up server of tests
+beforeAll(() => {
+    server.listen(3000, () => console.log('Server started on port 3000'));
+})
 afterAll(() => {
     server.close();
 })
