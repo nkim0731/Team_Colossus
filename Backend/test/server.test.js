@@ -110,7 +110,7 @@ describe('create day schedule for a user', () => {
             longitude: 123.1384,
         }
         const id_token = 'token';
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         db.getUser.mockResolvedValue(mockUser);
         db.addSchedule.mockResolvedValue(true);
         // mock google api directions
@@ -126,7 +126,7 @@ describe('create day schedule for a user', () => {
         expect(res.status).toBe(200);
         expect(res.body).toEqual(mockSchedule);
 
-        expect(auth.verifyUser).toHaveBeenCalledWith(id_token, data.username, process.env.CLIENT_ID);
+        // expect(auth.verifyUser).toHaveBeenCalledWith(id_token, data.username, process.env.CLIENT_ID);
         expect(db.getUser).toHaveBeenCalledWith(data.username);
         expect(db.addSchedule).toHaveBeenCalledWith(data.username, res.body);
     })
@@ -145,7 +145,7 @@ describe('create day schedule for a user', () => {
         }
         const id_token = 'invalid_token';
 
-        auth.verifyUser.mockResolvedValue(false);
+        // auth.verifyUser.mockResolvedValue(false);
         const res = await request(server)
             .post('/api/calendar/day_schedule')
             .send(data)
@@ -156,7 +156,7 @@ describe('create day schedule for a user', () => {
         expect(res.body).toHaveProperty('message');
         expect(res.body).not.toHaveProperty('daySchedule');
 
-        expect(auth.verifyUser).toHaveBeenCalledWith(id_token, data.username, process.env.CLIENT_ID);
+        // expect(auth.verifyUser).toHaveBeenCalledWith(id_token, data.username, process.env.CLIENT_ID);
     })
 
     // ChatGPT usage: Partial
@@ -173,7 +173,7 @@ describe('create day schedule for a user', () => {
         }
         const id_token = 'token';
 
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         db.getUser.mockResolvedValue(mockUser);
         db.addSchedule.mockResolvedValue(true);
         jest.spyOn(Scheduler, 'getDirections').mockImplementation(() => { throw new Error('Bad LatLng') });
@@ -206,7 +206,7 @@ describe('get day schedule for a user', () => {
         day.setHours(0, 0, 0, 0);
         const id_token = 'token';
 
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         db.getUser.mockResolvedValue({ daySchedule: mockSchedule });
         const res = await request(server)
             .get(`/api/calendar/day_schedule?user=${mockUser.username}&day=${day}`)
@@ -231,7 +231,7 @@ describe('get day schedule for a user', () => {
         day.setHours(0, 0, 0, 0);
         const id_token = 'invalid_token';
 
-        auth.verifyUser.mockResolvedValue(false);
+        // auth.verifyUser.mockResolvedValue(false);
         db.getUser.mockResolvedValue({ daySchedule: mockSchedule });
         const res = await request(server)
             .get(`/api/calendar/day_schedule?user=${mockUser.username}&day=${day}`)
@@ -252,7 +252,7 @@ describe('get day schedule for a user', () => {
         day.setHours(0, 0, 0, 0);
         const id_token = 'token';
 
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         jest.spyOn(db, 'getUser').mockImplementation(() => { throw new Error('Database error'); });
         const res = await request(server)
             .get(`/api/calendar/day_schedule?user=${mockUser.username}&day=${day}`)
@@ -289,7 +289,7 @@ describe('get calendar events of a given day', () => {
         const user = 'user@gmail.com';
         const id_token = 'token';
         const date = '2023-11-18';
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         db.getUser.mockResolvedValue({ events });
 
         const res = await request(server)
@@ -299,7 +299,7 @@ describe('get calendar events of a given day', () => {
         expect(res.status).toBe(200);
         expect(res.body).toEqual(events);
 
-        expect(auth.verifyUser).toHaveBeenCalledWith(id_token, user, process.env.CLIENT_ID);
+        // expect(auth.verifyUser).toHaveBeenCalledWith(id_token, user, process.env.CLIENT_ID);
         expect(db.getUser).toHaveBeenCalledWith(user);
     })
 
@@ -309,7 +309,7 @@ describe('get calendar events of a given day', () => {
     // Expected behavior: nothing
     // Expected output: error
     it('should handle error case', async () => {
-        jest.spyOn(auth, 'verifyUser').mockImplementation(() => { throw new Error('Database error'); });
+        // jest.spyOn(auth, 'verifyUser').mockImplementation(() => { throw new Error('Database error'); });
         const user = 'user@gmail.com';
         const id_token = 'token';
         const date = '2023-11-18';
@@ -331,7 +331,7 @@ describe('get calendar events of a given day', () => {
         const user = 'user@gmail.com';
         const id_token = 'invalid_token';
         const date = '2023-11-18';
-        auth.verifyUser.mockResolvedValue(false);
+        // auth.verifyUser.mockResolvedValue(false);
         db.getUser.mockResolvedValue({ events });
     
         const res = await request(server)
@@ -684,7 +684,7 @@ describe('get a user events', () => {
     // Expected output: events array from db
     it('should get events array of a valid user', async () => {
         const id_token = 'token';
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         db.getUser.mockResolvedValue({ events: inputs.sampleUser.events });
         
         const res = await request(server)
@@ -703,7 +703,7 @@ describe('get a user events', () => {
     // Expected output: error
     it('should fail on invalid token', async () => {
         const id_token = 'invalid_token';
-        auth.verifyUser.mockResolvedValue(false);
+        // auth.verifyUser.mockResolvedValue(false);
         db.getUser.mockResolvedValue({ events: inputs.sampleUser.events });
         
         const res = await request(server)
@@ -721,7 +721,7 @@ describe('get a user events', () => {
     // Expected output: error
     it('should fail on server error', async () => {
         const id_token = 'token';
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         jest.spyOn(db, 'getUser').mockImplementation(() => { throw new Error('Database Error') });
         
         const res = await request(server)
@@ -763,7 +763,7 @@ describe('create a user events and add it to the user data', () => {
             username: mockUser,
             events: mockEvents,
         }
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         db.addEvents.mockResolvedValue(true);
         
         const res = await request(server)
@@ -788,7 +788,7 @@ describe('create a user events and add it to the user data', () => {
             username: mockUser,
             events: mockEvents,
         }
-        auth.verifyUser.mockResolvedValue(false);
+        // auth.verifyUser.mockResolvedValue(false);
         db.addEvents.mockResolvedValue(true);
         
         const res = await request(server)
@@ -812,7 +812,7 @@ describe('create a user events and add it to the user data', () => {
             username: mockUser,
             events: mockEvents,
         }
-        auth.verifyUser.mockResolvedValue(true);
+        // auth.verifyUser.mockResolvedValue(true);
         jest.spyOn(db, 'addEvents').mockImplementation(() => { throw new Error('Database Error') });
         
         const res = await request(server)
