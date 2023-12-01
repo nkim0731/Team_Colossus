@@ -51,7 +51,9 @@ app.post('/api/calendar/import', async (req, res) => {
     const calendarInstance = new GoogleCalendar();
     try {
         const events = await calendarInstance.getCalendarEvents(authCode);
-        await db.addEvents(username, events);
+        const addResult = await db.addEvents(username, events);
+        if (!addResult) return res.status(404).json({ error: "Fail to add events, no user" });
+
         res.status(200).json({ result: 'success' });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -142,9 +144,10 @@ app.route('/api/calendar/day_schedule')
 })
 // ChatGPT usage: No
 .get(async (req, res) => { // ?user=username
+    const username = req.query.user;
     try {
-        const user = await db.getUser(req.query.user);
-        if (!user) return res.status(404).json({ message: 'No user for username: ' + data.username });
+        const user = await db.getUser(username);
+        if (!user) return res.status(404).json({ message: 'No user for username: ' + username });
 
         res.status(200).send(user.daySchedule);
     } catch (e) {

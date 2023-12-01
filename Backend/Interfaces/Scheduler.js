@@ -68,21 +68,18 @@ class Scheduler {
             
             if (!dayEvents[i].address) continue;
             else shouldSetOrigin = true;
-            try {
-                const directions = await this.getDirections(origin, dayEvents[i], preferences);
-                let routes = directions.routes;
-                routes.sort(this.compareRoutes); 
-                const route = {
-                    distance: routes[0].legs[0].distance,
-                    duration: routes[0].legs[0].duration,
-                    end_address: routes[0].legs[0].end_address,
-                    start_address: routes[0].legs[0].start_address,
-                }
-                const eventRoute = { event: dayEvents[i], route };
-                schedule.push(eventRoute);
-            } catch (e) {
-                throw e;
+
+            const directions = await this.getDirections(origin, dayEvents[i], preferences);
+            let routes = directions.routes;
+            routes.sort(this.compareRoutes); 
+            const route = {
+                distance: routes[0].legs[0].distance,
+                duration: routes[0].legs[0].duration,
+                end_address: routes[0].legs[0].end_address,
+                start_address: routes[0].legs[0].start_address,
             }
+            const eventRoute = { event: dayEvents[i], route };
+            schedule.push(eventRoute);
         }
         return schedule;
     }

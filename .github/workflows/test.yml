@@ -9,8 +9,11 @@ jobs:
     env:
       MONGO_URI: mongodb://localhost:27017/calendoDB
       TESTING: true
-      # this is set to null just so Scheduler has something to read in github actions
+      # set these values so tests have something to read
       GOOGLE_API_KEY: null
+      CLIENT_ID: null
+      CLIENT_SECRET: null
+      REDIRECT_URL: null
 
     steps:
       - name: Checkout code
