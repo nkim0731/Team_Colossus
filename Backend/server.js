@@ -14,10 +14,6 @@ require('dotenv').config({ path: envFilePath });
 const app = express();
 app.use(express.json());
 
-// const options = {
-//     key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
-//     cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
-// };
 const options = {
     key: fs.readFileSync('./privkey.pem'),
     cert: fs.readFileSync('./fullchain.pem'),
@@ -27,7 +23,6 @@ const server = http.createServer(app); // HTTP server for testing
 
 // Start socket io service for group chats
 require('./Interfaces/Messaging.js')(httpsServer);
-// require('./Interfaces/Messaging.js')(server);
 
 // handle signin (and register if first time login) with google account
 // ChatGPT usage: Partial
@@ -193,8 +188,11 @@ app.get('/api/chatrooms', async (req, res) => {
 
 const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
-    
-httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
-// server.listen(3000, () => console.log('Server started on port 3000'));
+
+if (process.env.TESTING === 'false') {
+    httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
+} else {
+    server.listen(3000, () => console.log('Server started on port 3000'));
+}
 
 module.exports = server;

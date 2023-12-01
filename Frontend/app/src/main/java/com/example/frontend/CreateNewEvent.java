@@ -62,6 +62,7 @@ public class CreateNewEvent extends AppCompatActivity {
                 public void onResponse(String response) {
                     Log.d(TAG, response);
                     Intent eventIntent = new Intent(CreateNewEvent.this, CalendarActivity.class);
+                    eventIntent.putExtras(userData);
                     startActivity(eventIntent);
                 }
                 @Override
