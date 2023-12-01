@@ -3,12 +3,12 @@ const request = require('supertest');
 
 const db = require('../Databases/Database.js');
 const Scheduler = require('../Interfaces/Scheduler.js');
-const auth = require('../Interfaces/GoogleAuth.js');
+const auth = require('../Interfaces/GoogleCalendar.js');
 const inputs = require('./mockInputs.js');
 
 // mock database functions to only test endpoint functionalities
 jest.mock('../Databases/Database.js');
-jest.mock('../Interfaces/GoogleAuth.js');
+jest.mock('../Interfaces/GoogleCalendar.js');
 
 // clean up server of tests
 afterAll(() => {
