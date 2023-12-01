@@ -1,5 +1,5 @@
 const express = require('express');
-const http = require('http');
+// const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
@@ -14,16 +14,16 @@ require('dotenv').config({ path: envFilePath });
 const app = express();
 app.use(express.json());
 
-// const options = {
-//     key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
-//     cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
-// };
-// const httpsServer = https.createServer(options, app);
-const server = http.createServer(app); // HTTP server for testing 
+const options = {
+    key: fs.readFileSync('/home/CPEN321_admin/privkey.pem'),
+    cert: fs.readFileSync('/home/CPEN321_admin/fullchain.pem'),
+};
+const httpsServer = https.createServer(options, app);
+// const server = http.createServer(app); // HTTP server for testing 
 
 // Start socket io service for group chats
-// require('./Interfaces/Messaging.js')(httpsServer);
-require('./Interfaces/Messaging.js')(server);
+require('./Interfaces/Messaging.js')(httpsServer);
+// require('./Interfaces/Messaging.js')(server);
 
 // handle signin (and register if first time login) with google account
 // ChatGPT usage: Partial
@@ -190,7 +190,8 @@ app.get('/api/chatrooms', async (req, res) => {
 const port = 8081; // Standard HTTPS port
 const host = "calendo.westus2.cloudapp.azure.com";
     
-// httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
-server.listen(3000, () => console.log('Server started on port 3000'));
+httpsServer.listen(port, () => { console.log(`Server is running on https://${host}:${port}`); });
+// server.listen(3000, () => console.log('Server started on port 3000'));
 
-module.exports = server;
+// module.exports = server;
+module.exports = httpsServer;
