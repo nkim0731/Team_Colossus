@@ -64,10 +64,11 @@ class Scheduler {
         let schedule = [];
         let shouldSetOrigin = false;
         for (let i = 0; i < dayEvents.length; i++) {
+            if (!dayEvents[i].address) {
+                continue;
+            }
             if (shouldSetOrigin) origin = dayEvents[i].address;
-            
-            if (!dayEvents[i].address) continue;
-            else shouldSetOrigin = true;
+            shouldSetOrigin = true;
 
             const directions = await this.getDirections(origin, dayEvents[i], preferences);
             let routes = directions.routes;
