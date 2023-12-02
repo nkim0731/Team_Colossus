@@ -14,7 +14,8 @@ public class AlarmReceiver extends BroadcastReceiver {
 
     /*
      * ChatGPT usage: Partial
-     * */
+     * 
+     */
     @Override
     public void onReceive(Context context, Intent intent) {
         // Handle the alarm here. For instance, you can show a notification.
